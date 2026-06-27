@@ -33,7 +33,9 @@ export default function SignupPage() {
       options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback` },
     });
     if (error) {
-      setError(error.message || error.name || JSON.stringify(error));
+      console.error('Signup error:', error);
+      const msg = error.message || (error as any).code || (error as any).error_description || String(error);
+      setError(msg && msg !== '{}' ? msg : 'Sign up failed — please try again or contact support.');
       setLoading(false);
       return;
     }
