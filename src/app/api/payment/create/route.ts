@@ -51,6 +51,8 @@ export async function POST(req: NextRequest) {
       order_id: orderId,
       cancel_url: `${appUrl}/payment/cancel`,
       redirect_url: `${appUrl}/payment/success?type=${type}&profile=${directoryProfileId || ""}`,
+      client: "WEB",
+      environment: "sandbox",
     }),
   });
 

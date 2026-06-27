@@ -18,6 +18,8 @@ export async function GET() {
       order_id: `test_${Date.now()}`,
       cancel_url: "https://rishta-app-sigma.vercel.app/payment/cancel",
       redirect_url: "https://rishta-app-sigma.vercel.app/payment/success",
+      client: "WEB",
+      environment: "sandbox",
     }),
   });
 
