@@ -454,8 +454,17 @@ export default function OnboardingPage() {
   };
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setUserId(data.user.id);
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      setUserId(data.user.id);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_complete")
+        .eq("id", data.user.id)
+        .single();
+      if (profile?.onboarding_complete) {
+        router.replace("/discover");
+      }
     });
   }, [supabase]);
 
