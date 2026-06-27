@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Bell,
   Camera,
   Check,
-  ChevronDown,
   Loader2,
-  Plus,
-  RefreshCw,
   Search,
   Upload,
   X,
@@ -21,9 +18,52 @@ import { createClient } from "@/lib/supabase/client";
 
 const TOTAL_STEPS = 33; // 0-32
 
+const STEP_BG: Record<number, string> = {
+  0: "from-emerald-900 via-teal-800 to-emerald-700",
+  1: "from-violet-600 via-purple-600 to-indigo-700",
+  2: "from-emerald-500 via-teal-500 to-cyan-600",
+  3: "from-blue-600 via-indigo-600 to-violet-700",
+  4: "from-rose-500 via-pink-500 to-red-600",
+  5: "from-amber-500 via-orange-500 to-yellow-600",
+  6: "from-emerald-600 via-green-600 to-teal-700",
+  7: "from-teal-600 via-emerald-600 to-green-700",
+  8: "from-blue-600 via-cyan-600 to-teal-600",
+  9: "from-indigo-600 via-blue-600 to-cyan-700",
+  10: "from-violet-600 via-purple-500 to-fuchsia-600",
+  11: "from-sky-600 via-blue-600 to-indigo-700",
+  12: "from-green-600 via-emerald-600 to-teal-700",
+  13: "from-orange-500 via-amber-500 to-yellow-500",
+  14: "from-cyan-600 via-sky-600 to-blue-700",
+  15: "from-rose-600 via-pink-600 to-fuchsia-700",
+  16: "from-emerald-600 via-teal-600 to-cyan-700",
+  17: "from-amber-600 via-yellow-500 to-orange-600",
+  18: "from-teal-700 via-emerald-700 to-green-800",
+  19: "from-green-500 via-lime-500 to-emerald-600",
+  20: "from-gray-600 via-slate-600 to-zinc-700",
+  21: "from-blue-700 via-indigo-700 to-violet-800",
+  22: "from-pink-500 via-rose-500 to-red-500",
+  23: "from-sky-500 via-blue-500 to-indigo-600",
+  24: "from-amber-700 via-orange-600 to-yellow-700",
+  25: "from-fuchsia-600 via-purple-600 to-violet-700",
+  26: "from-violet-600 via-indigo-600 to-blue-700",
+  27: "from-emerald-600 via-teal-600 to-cyan-700",
+  28: "from-rose-600 via-pink-600 to-purple-700",
+  29: "from-teal-600 via-emerald-600 to-green-700",
+  30: "from-teal-600 via-emerald-600 to-green-700",
+  31: "from-emerald-700 via-teal-700 to-cyan-800",
+  32: "from-emerald-600 via-green-600 to-teal-700",
+};
+
 const SECTS = [
-  "Sunni", "Shia", "Deobandi", "Barelvi", "Ahl-e-Hadith",
-  "Ahmadiyya", "Ismaili", "Other", "Prefer not to say",
+  { val: "Sunni", emoji: "☀️" },
+  { val: "Shia", emoji: "🌙" },
+  { val: "Deobandi", emoji: "📖" },
+  { val: "Barelvi", emoji: "🕌" },
+  { val: "Ahl-e-Hadith", emoji: "📿" },
+  { val: "Ahmadiyya", emoji: "🌟" },
+  { val: "Ismaili", emoji: "✨" },
+  { val: "Other", emoji: "🤝" },
+  { val: "Prefer not to say", emoji: "🤐" },
 ];
 
 const PROFESSION_GROUPS: Record<string, string[]> = {
@@ -42,10 +82,20 @@ const PROFESSION_GROUPS: Record<string, string[]> = {
 const ALL_PROFESSIONS = Object.values(PROFESSION_GROUPS).flat();
 
 const EDUCATION_OPTIONS = [
-  "High School / O-Levels", "A-Levels / Intermediate", "Diploma / Vocational",
-  "Bachelor's Degree", "Master's Degree", "PhD / Doctorate", "Medical Degree (MBBS/MD)",
-  "Law Degree (LLB/JD)", "Engineering Degree", "MBA", "CA / CPA / ACCA",
-  "Hafiz-e-Quran", "Islamic Studies", "Other",
+  { val: "High School / O-Levels", emoji: "🏫" },
+  { val: "A-Levels / Intermediate", emoji: "📚" },
+  { val: "Diploma / Vocational", emoji: "🎓" },
+  { val: "Bachelor's Degree", emoji: "🎓" },
+  { val: "Master's Degree", emoji: "🏆" },
+  { val: "PhD / Doctorate", emoji: "🔬" },
+  { val: "Medical Degree (MBBS/MD)", emoji: "🏥" },
+  { val: "Law Degree (LLB/JD)", emoji: "⚖️" },
+  { val: "Engineering Degree", emoji: "⚙️" },
+  { val: "MBA", emoji: "💼" },
+  { val: "CA / CPA / ACCA", emoji: "📊" },
+  { val: "Hafiz-e-Quran", emoji: "📖" },
+  { val: "Islamic Studies", emoji: "🕌" },
+  { val: "Other", emoji: "✏️" },
 ];
 
 const NATIONALITIES = [
@@ -71,11 +121,63 @@ const ETHNICITY_GROUPS: Record<string, string[]> = {
 
 const PAKISTANI_SUB = ["Punjabi", "Sindhi", "Pathan/Pashtun", "Baloch", "Mohajir/Urdu-speaking", "Kashmiri", "Saraiki", "Gilgiti", "AJK"];
 
-const FAITH_GROUPS: Record<string, string[]> = {
-  "Worship": ["Prays 5x daily", "Prays Fajr regularly", "Reads Quran daily", "Reads Quran regularly", "Attends Jumu'ah", "Prays Tahajjud"],
-  "Pillars & Practices": ["Completed Hajj", "Completed Umrah", "Pays Zakat", "Fasts in Ramadan", "Fasts voluntary (Sunnah)", "Gives Sadaqah regularly"],
-  "Knowledge & Community": ["Studies Islamic knowledge", "Attends Islamic lectures", "Involved in charity work", "Volunteers in community", "Memorised Quran (Hafiz/a)"],
-  "Character": ["Good Akhlaq (character)", "Lowers gaze", "Dresses modestly", "Avoids music", "Avoids mixed gatherings"],
+const FAITH_GROUPS: Record<string, { val: string; emoji: string }[]> = {
+  "Worship": [
+    { val: "Prays 5x daily", emoji: "🕌" },
+    { val: "Prays Fajr regularly", emoji: "🌅" },
+    { val: "Reads Quran daily", emoji: "📖" },
+    { val: "Reads Quran regularly", emoji: "📚" },
+    { val: "Attends Jumu'ah", emoji: "🕌" },
+    { val: "Prays Tahajjud", emoji: "🌙" },
+  ],
+  "Pillars & Practices": [
+    { val: "Completed Hajj", emoji: "🕋" },
+    { val: "Completed Umrah", emoji: "🕌" },
+    { val: "Pays Zakat", emoji: "💰" },
+    { val: "Fasts in Ramadan", emoji: "🌙" },
+    { val: "Fasts voluntary (Sunnah)", emoji: "⭐" },
+    { val: "Gives Sadaqah regularly", emoji: "💝" },
+  ],
+  "Knowledge & Community": [
+    { val: "Studies Islamic knowledge", emoji: "📖" },
+    { val: "Attends Islamic lectures", emoji: "🎤" },
+    { val: "Involved in charity work", emoji: "🤲" },
+    { val: "Volunteers in community", emoji: "🤝" },
+    { val: "Memorised Quran (Hafiz/a)", emoji: "📿" },
+  ],
+  "Character": [
+    { val: "Good Akhlaq (character)", emoji: "💚" },
+    { val: "Lowers gaze", emoji: "👁️" },
+    { val: "Dresses modestly", emoji: "🧕" },
+    { val: "Avoids music", emoji: "🔇" },
+    { val: "Avoids mixed gatherings", emoji: "🚶" },
+  ],
+};
+
+const INTEREST_EMOJIS: Record<string, string> = {
+  "Photography": "📸", "Painting": "🎨", "Drawing": "✏️", "Calligraphy": "🖋️",
+  "Pottery": "🏺", "Sculpture": "🗿", "DIY & Crafts": "🔨", "Knitting": "🧶",
+  "Sewing": "🧵", "Interior Design": "🏠", "Architecture": "🏛️", "Fashion": "👗",
+  "Jewellery Making": "💍", "Cooking": "👨‍🍳", "Baking": "🍰", "Food Photography": "📸",
+  "Trying New Cuisines": "🌍", "Coffee": "☕", "Tea": "🍵", "BBQ": "🔥",
+  "Meal Prep": "📦", "Food Blogging": "📝", "Gym": "💪", "Running": "🏃",
+  "Cycling": "🚴", "Swimming": "🏊", "Hiking": "🥾", "Football/Soccer": "⚽",
+  "Cricket": "🏏", "Badminton": "🏸", "Tennis": "🎾", "Squash": "🏉",
+  "Martial Arts": "🥋", "Yoga": "🧘", "Rock Climbing": "🧗", "Horse Riding": "🐴",
+  "Reading": "📚", "Writing": "✍️", "Poetry": "📜", "Blogging": "💻",
+  "Movies": "🎬", "TV Series": "📺", "Anime": "🎌", "Gaming": "🎮",
+  "Board Games": "♟️", "Escape Rooms": "🔐", "Comedy": "😂", "Stand-up": "🎤",
+  "Nasheed": "🎵", "Qawwali": "🎶", "Instruments": "🎸", "Singing": "🎤",
+  "Theatre": "🎭", "Dancing": "💃", "Travelling": "✈️", "Backpacking": "🎒",
+  "Road Trips": "🚗", "Camping": "⛺", "Nature": "🌿", "Museums": "🏛️",
+  "Cultural Experiences": "🌍", "Learning Languages": "🗣️", "Coding": "💻",
+  "Robotics": "🤖", "AI & Technology": "🤖", "Science": "🔬", "Astronomy": "🔭",
+  "Finance & Investing": "📈", "Islamic History": "📜", "Quranic Studies": "📖",
+  "Dawah": "🤲", "Charity & Volunteering": "❤️", "Spiritual Retreats": "🕌",
+  "Halal Travel": "✈️", "Parenting": "👨‍👩‍👧", "Gardening": "🌱", "Home Decor": "🏡",
+  "Minimalism": "🪴", "Sustainability": "♻️", "Animals & Pets": "🐾",
+  "Child Education": "📚", "Entrepreneurship": "💼", "Public Speaking": "🎤",
+  "Leadership": "👑", "Mentoring": "🤝", "Social Work": "❤️",
 };
 
 const INTEREST_GROUPS: Record<string, string[]> = {
@@ -89,6 +191,23 @@ const INTEREST_GROUPS: Record<string, string[]> = {
   "Islam & Spirituality": ["Islamic History", "Quranic Studies", "Dawah", "Charity & Volunteering", "Spiritual Retreats", "Halal Travel"],
   "Family & Lifestyle": ["Parenting", "Gardening", "Home Decor", "Minimalism", "Sustainability", "Animals & Pets", "Child Education"],
   "Personality-based": ["Entrepreneurship", "Public Speaking", "Leadership", "Mentoring", "Social Work"],
+};
+
+const PERSONALITY_EMOJIS: Record<string, string> = {
+  "Adventurous": "🏔️", "Ambitious": "🚀", "Analytical": "🔍", "Animal Lover": "🐾",
+  "Artistic": "🎨", "Bookworm": "📚", "Carefree": "🌸", "Caring": "💚",
+  "Charismatic": "✨", "Cheerful": "😊", "Creative": "🎨", "Curious": "🔍",
+  "Dependable": "🤝", "Detail-oriented": "🔬", "Disciplined": "⚡", "Empathetic": "💛",
+  "Family-oriented": "👨‍👩‍👧", "Funny/Humorous": "😂", "Generous": "💝", "Gentle": "🌸",
+  "Hardworking": "💪", "Homebody": "🏠", "Imaginative": "💭", "Independent": "🦅",
+  "Intellectual": "🧠", "Introvert": "🌙", "Extrovert": "☀️", "Kind-hearted": "💚",
+  "Leader": "👑", "Loyal": "🤝", "Methodical": "📋", "Nurturing": "🌱",
+  "Open-minded": "🌈", "Optimistic": "☀️", "Outgoing": "🎉", "Passionate": "🔥",
+  "Patient": "🕊️", "Perfectionist": "✨", "Playful": "🎮", "Practical": "🔧",
+  "Protective": "🛡️", "Quiet": "🌿", "Reliable": "⚓", "Romantic": "🌹",
+  "Sarcastic (friendly)": "😏", "Sensitive": "💛", "Sincere": "💎", "Social": "👥",
+  "Spiritual": "🕌", "Spontaneous": "⚡", "Straightforward": "💬", "Thoughtful": "🌷",
+  "Traditional": "📜", "Witty": "😄",
 };
 
 const PERSONALITY_TRAITS = [
@@ -179,32 +298,36 @@ function TapCard({
   label,
   selected,
   onClick,
-  icon,
-  description,
+  emoji,
+  sublabel,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
-  icon?: React.ReactNode;
-  description?: string;
+  emoji?: string;
+  sublabel?: string;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-4 rounded-2xl border-2 transition-all active:scale-95 ${
+      className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all active:scale-95 ${
         selected
-          ? "border-emerald-500 bg-emerald-50 text-emerald-900"
-          : "border-gray-200 bg-white text-gray-800 hover:border-gray-300"
+          ? "border-emerald-500 bg-emerald-50 shadow-md"
+          : "border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm"
       }`}
     >
-      <div className="flex items-center gap-3">
-        {icon && <span className="text-2xl">{icon}</span>}
-        <div className="flex-1">
-          <div className="font-semibold text-sm">{label}</div>
-          {description && <div className="text-xs text-gray-500 mt-0.5">{description}</div>}
-        </div>
-        {selected && <Check className="h-4 w-4 text-emerald-600 flex-shrink-0" />}
+      {emoji && <span className="text-2xl flex-shrink-0">{emoji}</span>}
+      <div className="text-left flex-1">
+        <p className="font-semibold text-gray-900">{label}</p>
+        {sublabel && <p className="text-xs text-gray-500 mt-0.5">{sublabel}</p>}
       </div>
+      {selected && (
+        <div className="ml-auto w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        </div>
+      )}
     </button>
   );
 }
@@ -261,11 +384,13 @@ function ChipGrid({
   selected,
   onChange,
   max,
+  emojiMap,
 }: {
   options: string[];
   selected: string[];
   onChange: (v: string[]) => void;
   max?: number;
+  emojiMap?: Record<string, string>;
 }) {
   const toggle = (opt: string) => {
     if (selected.includes(opt)) {
@@ -278,16 +403,18 @@ function ChipGrid({
     <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
         const sel = selected.includes(opt);
+        const emoji = emojiMap?.[opt];
         return (
           <button
             key={opt}
             onClick={() => toggle(opt)}
-            className={`px-3 py-1.5 rounded-full text-sm border transition-all active:scale-95 ${
+            className={`px-3 py-1.5 rounded-xl border-2 text-sm font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
               sel
-                ? "bg-emerald-600 border-emerald-600 text-white font-medium"
-                : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
             }`}
           >
+            {emoji && <span>{emoji}</span>}
             {opt}
           </button>
         );
@@ -305,8 +432,6 @@ export default function OnboardingPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [referralExpanded, setReferralExpanded] = useState<string | null>(null);
   const [professionSearch, setProfessionSearch] = useState("");
-  const [otpTimer, setOtpTimer] = useState(30);
-  const [otpSent, setOtpSent] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [selfieData, setSelfieData] = useState<string | null>(null);
   const [verifyingFace, setVerifyingFace] = useState(false);
@@ -365,14 +490,6 @@ export default function OnboardingPage() {
     });
   }, [supabase]);
 
-  // OTP timer
-  useEffect(() => {
-    if (step === 30 && otpSent && otpTimer > 0) {
-      const t = setTimeout(() => setOtpTimer((v) => v - 1), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [step, otpSent, otpTimer]);
-
   const goToStep = (n: number) => {
     setVisible(false);
     setTimeout(() => {
@@ -424,7 +541,6 @@ export default function OnboardingPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const url = e.target?.result as string;
-      // Heuristic: if file > 50KB assume face detected
       setTimeout(() => {
         if (file.size > 50 * 1024) {
           const updated = [...form.photo_urls];
@@ -468,7 +584,6 @@ export default function OnboardingPage() {
       relocation: form.relocation,
       born_religion: form.born_religion,
       about_me: form.about_me,
-      // Extended fields — will be skipped if columns don't exist
       marriage_readiness: form.marriage_readiness,
       referral_source: form.referral_source,
       referral_detail: form.referral_detail,
@@ -500,7 +615,7 @@ export default function OnboardingPage() {
       // ── Step 0: Welcome ──────────────────────────────────────────────────────
       case 0:
         return (
-          <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-emerald-700 flex flex-col items-center justify-center px-6 text-center">
+          <div className={`min-h-screen bg-gradient-to-br ${STEP_BG[0]} flex flex-col items-center justify-center px-6 text-center`}>
             <div className="relative mb-8">
               <div className="w-24 h-24 bg-white/15 rounded-3xl flex items-center justify-center border border-white/20 mb-6 mx-auto">
                 <span className="text-white text-5xl">ر</span>
@@ -526,7 +641,7 @@ export default function OnboardingPage() {
       // ── Step 1: Gender ───────────────────────────────────────────────────────
       case 1:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="I am a...">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="I am a..." bgClass={STEP_BG[1]}>
             <div className="grid grid-cols-2 gap-4">
               {[
                 { val: "male", icon: "👨", label: "Man" },
@@ -537,8 +652,8 @@ export default function OnboardingPage() {
                   onClick={() => autoNext("gender", val)}
                   className={`flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 transition-all active:scale-95 ${
                     form.gender === val
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-gray-200 bg-white hover:border-gray-300"
+                      ? "border-emerald-500 bg-emerald-50 shadow-md"
+                      : "border-gray-100 bg-white hover:border-gray-200"
                   }`}
                 >
                   <span className="text-5xl">{icon}</span>
@@ -552,7 +667,7 @@ export default function OnboardingPage() {
       // ── Step 2: Name ─────────────────────────────────────────────────────────
       case 2:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My name is" onContinue={next} continueDisabled={!form.full_name.trim()}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My name is" bgClass={STEP_BG[2]} onContinue={next} continueDisabled={!form.full_name.trim()}>
             <input
               type="text"
               placeholder="Your full name"
@@ -569,7 +684,7 @@ export default function OnboardingPage() {
         const maxDate = new Date();
         maxDate.setFullYear(maxDate.getFullYear() - 18);
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Date of birth" onContinue={next} continueDisabled={!form.date_of_birth}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Date of birth" bgClass={STEP_BG[3]} onContinue={next} continueDisabled={!form.date_of_birth}>
             <p className="text-sm text-gray-500 mb-4">You must be at least 18 years old</p>
             <input
               type="date"
@@ -585,16 +700,18 @@ export default function OnboardingPage() {
       // ── Step 4: Marriage Readiness ───────────────────────────────────────────
       case 4:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Are you ready to get married?">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Are you ready to get married?" bgClass={STEP_BG[4]}>
             <div className="space-y-3">
               {[
-                { val: "ready_soon", label: "Yes, I'm ready to get married soon" },
-                { val: "know_first", label: "I want to get to know someone first" },
-                { val: "curious", label: "I'm just curious about the app" },
-              ].map(({ val, label }) => (
+                { val: "ready_soon", emoji: "💍", label: "Yes, ready to get married soon", sublabel: "I'm ready to find my life partner" },
+                { val: "know_first", emoji: "💬", label: "I want to get to know someone first", sublabel: "Take it slow" },
+                { val: "curious", emoji: "👀", label: "Just curious about the app", sublabel: "Exploring my options" },
+              ].map(({ val, emoji, label, sublabel }) => (
                 <TapCard
                   key={val}
+                  emoji={emoji}
                   label={label}
+                  sublabel={sublabel}
                   selected={form.marriage_readiness === val}
                   onClick={() => autoNext("marriage_readiness", val)}
                 />
@@ -605,21 +722,29 @@ export default function OnboardingPage() {
 
       // ── Step 5: Referral Source ──────────────────────────────────────────────
       case 5: {
-        const sources: Array<{ val: string; label: string; sub?: string[] }> = [
-          { val: "social_media", label: "Social Media", sub: ["Instagram", "TikTok", "Facebook", "YouTube", "Twitter/X", "Snapchat"] },
-          { val: "friend_family", label: "Friend or Family" },
-          { val: "google", label: "Google Search" },
-          { val: "app_store", label: "App Store / Play Store" },
-          { val: "tv_radio", label: "TV or Radio" },
-          { val: "blog", label: "Blog or Article" },
-          { val: "other", label: "Other" },
+        const sources: Array<{ val: string; emoji: string; label: string; sub?: Array<{ val: string; emoji: string }> }> = [
+          { val: "social_media", emoji: "📱", label: "Social Media", sub: [
+            { val: "Instagram", emoji: "📸" },
+            { val: "TikTok", emoji: "🎵" },
+            { val: "Facebook", emoji: "👤" },
+            { val: "YouTube", emoji: "▶️" },
+            { val: "Twitter/X", emoji: "🐦" },
+            { val: "Snapchat", emoji: "👻" },
+          ]},
+          { val: "friend_family", emoji: "👥", label: "Friend or Family" },
+          { val: "google", emoji: "🔍", label: "Google Search" },
+          { val: "app_store", emoji: "📲", label: "App Store / Play Store" },
+          { val: "tv_radio", emoji: "📺", label: "TV or Radio" },
+          { val: "blog", emoji: "📝", label: "Blog or Article" },
+          { val: "other", emoji: "🤷", label: "Other" },
         ];
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="How did you hear about us?">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="How did you hear about us?" bgClass={STEP_BG[5]}>
             <div className="space-y-2">
-              {sources.map(({ val, label, sub }) => (
+              {sources.map(({ val, emoji, label, sub }) => (
                 <div key={val}>
                   <TapCard
+                    emoji={emoji}
                     label={label}
                     selected={form.referral_source === val}
                     onClick={() => {
@@ -637,18 +762,18 @@ export default function OnboardingPage() {
                     <div className="mt-2 ml-4 grid grid-cols-2 gap-2">
                       {sub.map((s) => (
                         <button
-                          key={s}
+                          key={s.val}
                           onClick={() => {
-                            set("referral_detail", s);
+                            set("referral_detail", s.val);
                             setTimeout(() => goToStep(step + 1), 200);
                           }}
-                          className={`py-2 px-3 rounded-xl border text-sm transition-all ${
-                            form.referral_detail === s
+                          className={`py-2 px-3 rounded-xl border text-sm transition-all flex items-center gap-2 ${
+                            form.referral_detail === s.val
                               ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-medium"
                               : "border-gray-200 bg-white text-gray-700"
                           }`}
                         >
-                          {s}
+                          <span>{s.emoji}</span> {s.val}
                         </button>
                       ))}
                     </div>
@@ -663,7 +788,7 @@ export default function OnboardingPage() {
       // ── Step 6: Success Stories ──────────────────────────────────────────────
       case 6:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Love stories from Rishta" onContinue={next}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Love stories from Rishta" bgClass={STEP_BG[6]} onContinue={next}>
             <div className="space-y-4">
               {[
                 { names: "Ahmed & Fatima", story: "Matched in 2 weeks", emoji: "💚" },
@@ -688,10 +813,10 @@ export default function OnboardingPage() {
       // ── Step 7: Sect ─────────────────────────────────────────────────────────
       case 7:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My sect">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My sect" bgClass={STEP_BG[7]}>
             <div className="space-y-2">
-              {SECTS.map((s) => (
-                <TapCard key={s} label={s} selected={form.sect === s} onClick={() => autoNext("sect", s)} />
+              {SECTS.map(({ val, emoji }) => (
+                <TapCard key={val} emoji={emoji} label={val} selected={form.sect === val} onClick={() => autoNext("sect", val)} />
               ))}
             </div>
           </StepWrapper>
@@ -703,7 +828,7 @@ export default function OnboardingPage() {
           ? ALL_PROFESSIONS.filter((p) => p.toLowerCase().includes(professionSearch.toLowerCase()))
           : null;
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My profession" onContinue={next} continueDisabled={!form.profession}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My profession" bgClass={STEP_BG[8]} onContinue={next} continueDisabled={!form.profession}>
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
@@ -764,10 +889,10 @@ export default function OnboardingPage() {
       // ── Step 9: Education ────────────────────────────────────────────────────
       case 9:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My education" onContinue={next} continueDisabled={!form.education}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My education" bgClass={STEP_BG[9]} onContinue={next} continueDisabled={!form.education}>
             <div className="space-y-2">
-              {EDUCATION_OPTIONS.map((e) => (
-                <TapCard key={e} label={e} selected={form.education === e} onClick={() => set("education", e)} />
+              {EDUCATION_OPTIONS.map(({ val, emoji }) => (
+                <TapCard key={val} emoji={emoji} label={val} selected={form.education === val} onClick={() => set("education", val)} />
               ))}
             </div>
             {form.education === "Other" && (
@@ -785,36 +910,36 @@ export default function OnboardingPage() {
       // ── Step 10: Notifications ───────────────────────────────────────────────
       case 10:
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
-            <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-8">
-              <Bell className="w-12 h-12 text-emerald-600" />
+          <div className={`min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br ${STEP_BG[10]}`}>
+            <ProgressBar step={step} total={TOTAL_STEPS} />
+            <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center mb-8">
+              <Bell className="w-12 h-12 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Don't miss a match!</h2>
-            <p className="text-gray-500 text-sm text-center mb-10 max-w-xs">
+            <h2 className="text-2xl font-bold text-white mb-2 text-center">Don't miss a match!</h2>
+            <p className="text-white/70 text-sm text-center mb-10 max-w-xs">
               We'll let you know when someone likes you or sends you a message
             </p>
             <div className="w-full max-w-sm space-y-4">
               <button
                 onClick={() => { set("notifications_enabled", true); next(); }}
-                className="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl text-base hover:bg-emerald-700 active:scale-95 transition-all"
+                className="w-full bg-white text-violet-700 font-bold py-4 rounded-2xl text-base hover:bg-violet-50 active:scale-95 transition-all shadow-lg"
               >
-                Turn on Notifications
+                🔔 Turn on Notifications
               </button>
               <button
                 onClick={next}
-                className="w-full text-gray-400 text-sm py-2 hover:text-gray-600"
+                className="w-full text-white/60 text-sm py-2 hover:text-white"
               >
                 Maybe Later
               </button>
             </div>
-            <ProgressBar step={step} total={TOTAL_STEPS} />
           </div>
         );
 
       // ── Step 11: Nationality ─────────────────────────────────────────────────
       case 11:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My nationality" onContinue={next} continueDisabled={!form.nationality}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My nationality" bgClass={STEP_BG[11]} onContinue={next} continueDisabled={!form.nationality}>
             <SearchableList
               options={NATIONALITIES}
               value={form.nationality}
@@ -827,7 +952,7 @@ export default function OnboardingPage() {
       // ── Step 12: Grew up in ──────────────────────────────────────────────────
       case 12:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Where I grew up" onContinue={next} continueDisabled={!form.grew_up_in}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Where I grew up" bgClass={STEP_BG[12]} onContinue={next} continueDisabled={!form.grew_up_in}>
             <SearchableList
               options={NATIONALITIES}
               value={form.grew_up_in}
@@ -840,7 +965,7 @@ export default function OnboardingPage() {
       // ── Step 13: Ethnicity ───────────────────────────────────────────────────
       case 13:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My ethnicity" subtitle="Select up to 2" onContinue={next} continueDisabled={form.ethnicity.length === 0}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My ethnicity" subtitle="Select up to 2" bgClass={STEP_BG[13]} onContinue={next} continueDisabled={form.ethnicity.length === 0}>
             <div className="space-y-4">
               {Object.entries(ETHNICITY_GROUPS).map(([group, items]) => (
                 <div key={group}>
@@ -874,7 +999,7 @@ export default function OnboardingPage() {
       // ── Step 14: Height ──────────────────────────────────────────────────────
       case 14:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My height" onContinue={next}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My height" bgClass={STEP_BG[14]} onContinue={next}>
             <div className="flex gap-4 mb-4">
               <div className="flex-1">
                 <label className="text-xs font-semibold text-gray-500 mb-1 block">Feet</label>
@@ -908,10 +1033,17 @@ export default function OnboardingPage() {
       // ── Step 15: Marital Status ──────────────────────────────────────────────
       case 15:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My marital status">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My marital status" bgClass={STEP_BG[15]}>
             <div className="space-y-2">
-              {["Never Married", "Divorced", "Widowed", "Separated", "Annulled", "Prefer not to say"].map((s) => (
-                <TapCard key={s} label={s} selected={form.marital_status === s} onClick={() => autoNext("marital_status", s)} />
+              {[
+                { val: "Never Married", emoji: "💚" },
+                { val: "Divorced", emoji: "💔" },
+                { val: "Widowed", emoji: "🕊️" },
+                { val: "Separated", emoji: "⏸️" },
+                { val: "Annulled", emoji: "📜" },
+                { val: "Prefer not to say", emoji: "🤐" },
+              ].map(({ val, emoji }) => (
+                <TapCard key={val} emoji={emoji} label={val} selected={form.marital_status === val} onClick={() => autoNext("marital_status", val)} />
               ))}
             </div>
           </StepWrapper>
@@ -925,6 +1057,7 @@ export default function OnboardingPage() {
             total={TOTAL_STEPS}
             onBack={back}
             title="Marriage intentions"
+            bgClass={STEP_BG[16]}
             onContinue={next}
             continueDisabled={!form.knowing_timeline || !form.marriage_timeline}
           >
@@ -932,16 +1065,30 @@ export default function OnboardingPage() {
               <div>
                 <p className="font-semibold text-gray-800 mb-3 text-sm">How long to get to know someone before marriage?</p>
                 <div className="space-y-2">
-                  {["Less than 3 months", "3–6 months", "6–12 months", "1–2 years", "We'll decide together", "No preference"].map((o) => (
-                    <TapCard key={o} label={o} selected={form.knowing_timeline === o} onClick={() => set("knowing_timeline", o)} />
+                  {[
+                    { val: "Less than 3 months", emoji: "⚡" },
+                    { val: "3–6 months", emoji: "🌱" },
+                    { val: "6–12 months", emoji: "🌿" },
+                    { val: "1–2 years", emoji: "🌳" },
+                    { val: "We'll decide together", emoji: "🤝" },
+                    { val: "No preference", emoji: "💭" },
+                  ].map(({ val, emoji }) => (
+                    <TapCard key={val} emoji={emoji} label={val} selected={form.knowing_timeline === val} onClick={() => set("knowing_timeline", val)} />
                   ))}
                 </div>
               </div>
               <div>
                 <p className="font-semibold text-gray-800 mb-3 text-sm">When do you hope to get married?</p>
                 <div className="space-y-2">
-                  {["As soon as possible", "Within 1 year", "Within 2 years", "Within 3–5 years", "When the right person comes", "No rush"].map((o) => (
-                    <TapCard key={o} label={o} selected={form.marriage_timeline === o} onClick={() => set("marriage_timeline", o)} />
+                  {[
+                    { val: "As soon as possible", emoji: "🚀" },
+                    { val: "Within 1 year", emoji: "📅" },
+                    { val: "Within 2 years", emoji: "🗓️" },
+                    { val: "Within 3–5 years", emoji: "⏳" },
+                    { val: "When the right person comes", emoji: "💫" },
+                    { val: "No rush", emoji: "😌" },
+                  ].map(({ val, emoji }) => (
+                    <TapCard key={val} emoji={emoji} label={val} selected={form.marriage_timeline === val} onClick={() => set("marriage_timeline", val)} />
                   ))}
                 </div>
               </div>
@@ -952,16 +1099,16 @@ export default function OnboardingPage() {
       // ── Step 17: Religiosity ─────────────────────────────────────────────────
       case 17:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="How practicing am I?">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="How practicing am I?" bgClass={STEP_BG[17]}>
             <div className="space-y-2">
               {[
-                { val: "very", label: "Very Practicing", desc: "Salah 5x daily, Quran regularly" },
-                { val: "practicing", label: "Practicing", desc: "Trying my best" },
-                { val: "moderate", label: "Moderately Practicing", desc: "Working on it" },
-                { val: "not_very", label: "Not very practicing", desc: "Muslim by faith" },
-                { val: "prefer_not", label: "Prefer not to say", desc: "" },
-              ].map(({ val, label, desc }) => (
-                <TapCard key={val} label={label} description={desc} selected={form.religiosity === val} onClick={() => autoNext("religiosity", val)} />
+                { val: "very", emoji: "🌟", label: "Very Practicing", sublabel: "5x Salah, regular Quran" },
+                { val: "practicing", emoji: "✨", label: "Practicing", sublabel: "Trying my best" },
+                { val: "moderate", emoji: "🌙", label: "Moderately Practicing", sublabel: "Working on it" },
+                { val: "not_very", emoji: "💛", label: "Not very practicing", sublabel: "Muslim by faith" },
+                { val: "prefer_not", emoji: "🤐", label: "Prefer not to say" },
+              ].map(({ val, emoji, label, sublabel }) => (
+                <TapCard key={val} emoji={emoji} label={label} sublabel={sublabel} selected={form.religiosity === val} onClick={() => autoNext("religiosity", val)} />
               ))}
             </div>
           </StepWrapper>
@@ -970,16 +1117,34 @@ export default function OnboardingPage() {
       // ── Step 18: Faith & Values ──────────────────────────────────────────────
       case 18:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My faith & values" subtitle="Select all that apply" onContinue={next}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My faith & values" subtitle="Select all that apply" bgClass={STEP_BG[18]} onContinue={next}>
             <div className="space-y-5">
               {Object.entries(FAITH_GROUPS).map(([group, items]) => (
                 <div key={group}>
                   <p className="text-xs font-semibold text-gray-400 uppercase mb-2">{group}</p>
-                  <ChipGrid
-                    options={items}
-                    selected={form.faith_values}
-                    onChange={(v) => set("faith_values", v)}
-                  />
+                  <div className="flex flex-wrap gap-2">
+                    {items.map(({ val, emoji }) => {
+                      const sel = form.faith_values.includes(val);
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => {
+                            const next_vals = sel
+                              ? form.faith_values.filter((v) => v !== val)
+                              : [...form.faith_values, val];
+                            set("faith_values", next_vals);
+                          }}
+                          className={`px-3 py-2 rounded-xl border-2 text-sm font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
+                            sel
+                              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                          }`}
+                        >
+                          <span>{emoji}</span> {val}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
@@ -989,15 +1154,15 @@ export default function OnboardingPage() {
       // ── Step 19: Diet ────────────────────────────────────────────────────────
       case 19:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Do I eat only Halal food?">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Do I eat only Halal food?" bgClass={STEP_BG[19]}>
             <div className="space-y-2">
               {[
-                { val: "strictly_halal", label: "Yes — strictly halal" },
-                { val: "mostly_halal", label: "Mostly halal" },
-                { val: "no_preference", label: "No preference" },
-                { val: "prefer_not", label: "Prefer not to say" },
-              ].map(({ val, label }) => (
-                <TapCard key={val} label={label} selected={form.diet === val} onClick={() => autoNext("diet", val)} />
+                { val: "strictly_halal", emoji: "✅", label: "Yes — strictly halal only" },
+                { val: "mostly_halal", emoji: "🍽️", label: "Mostly halal" },
+                { val: "no_preference", emoji: "🤷", label: "No preference" },
+                { val: "prefer_not", emoji: "🤐", label: "Prefer not to say" },
+              ].map(({ val, emoji, label }) => (
+                <TapCard key={val} emoji={emoji} label={label} selected={form.diet === val} onClick={() => autoNext("diet", val)} />
               ))}
             </div>
           </StepWrapper>
@@ -1006,10 +1171,15 @@ export default function OnboardingPage() {
       // ── Step 20: Smoking ─────────────────────────────────────────────────────
       case 20:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Do I smoke?">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Do I smoke?" bgClass={STEP_BG[20]}>
             <div className="space-y-2">
-              {["Non-smoker", "Occasionally", "Yes I smoke", "Prefer not to say"].map((o) => (
-                <TapCard key={o} label={o} selected={form.smoking === o} onClick={() => autoNext("smoking", o)} />
+              {[
+                { val: "Non-smoker", emoji: "🚭" },
+                { val: "Occasionally", emoji: "🌬️" },
+                { val: "Yes I smoke", emoji: "🚬" },
+                { val: "Prefer not to say", emoji: "🤐" },
+              ].map(({ val, emoji }) => (
+                <TapCard key={val} emoji={emoji} label={val} selected={form.smoking === val} onClick={() => autoNext("smoking", val)} />
               ))}
             </div>
           </StepWrapper>
@@ -1018,10 +1188,15 @@ export default function OnboardingPage() {
       // ── Step 21: Drinking ────────────────────────────────────────────────────
       case 21:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Do I drink alcohol?">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Do I drink alcohol?" bgClass={STEP_BG[21]}>
             <div className="space-y-2">
-              {["Never", "Occasionally", "Yes", "Prefer not to say"].map((o) => (
-                <TapCard key={o} label={o} selected={form.drinking === o} onClick={() => autoNext("drinking", o)} />
+              {[
+                { val: "Never", emoji: "✅" },
+                { val: "Occasionally", emoji: "🌊" },
+                { val: "Yes", emoji: "🍷" },
+                { val: "Prefer not to say", emoji: "🤐" },
+              ].map(({ val, emoji }) => (
+                <TapCard key={val} emoji={emoji} label={val} selected={form.drinking === val} onClick={() => autoNext("drinking", val)} />
               ))}
             </div>
           </StepWrapper>
@@ -1030,18 +1205,28 @@ export default function OnboardingPage() {
       // ── Step 22: Children ────────────────────────────────────────────────────
       case 22:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Do I have children?" onContinue={next} continueDisabled={!form.has_children}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Do I have children?" bgClass={STEP_BG[22]} onContinue={next} continueDisabled={!form.has_children}>
             <div className="space-y-2 mb-6">
-              {["No children", "Yes — living with me", "Yes — not living with me", "Prefer not to say"].map((o) => (
-                <TapCard key={o} label={o} selected={form.has_children === o} onClick={() => set("has_children", o)} />
+              {[
+                { val: "No children", emoji: "🚫" },
+                { val: "Yes — living with me", emoji: "👨‍👧" },
+                { val: "Yes — not living with me", emoji: "💛" },
+                { val: "Prefer not to say", emoji: "🤐" },
+              ].map(({ val, emoji }) => (
+                <TapCard key={val} emoji={emoji} label={val} selected={form.has_children === val} onClick={() => set("has_children", val)} />
               ))}
             </div>
             {form.has_children && form.has_children !== "No children" && form.has_children !== "Prefer not to say" && (
               <div>
                 <p className="font-semibold text-gray-800 mb-3 text-sm">Do you want more children?</p>
                 <div className="space-y-2">
-                  {["Yes", "Maybe", "No", "Prefer not to say"].map((o) => (
-                    <TapCard key={o} label={o} selected={form.wants_children === o} onClick={() => set("wants_children", o)} />
+                  {[
+                    { val: "Yes, I want children", emoji: "👶" },
+                    { val: "Maybe", emoji: "🤔" },
+                    { val: "No", emoji: "🚫" },
+                    { val: "Prefer not to say", emoji: "🤐" },
+                  ].map(({ val, emoji }) => (
+                    <TapCard key={val} emoji={emoji} label={val} selected={form.wants_children === val} onClick={() => set("wants_children", val)} />
                   ))}
                 </div>
               </div>
@@ -1052,15 +1237,15 @@ export default function OnboardingPage() {
       // ── Step 23: Relocation ──────────────────────────────────────────────────
       case 23:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Plans to relocate for marriage?">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Plans to relocate for marriage?" bgClass={STEP_BG[23]}>
             <div className="space-y-2">
               {[
-                "Yes — willing to relocate",
-                "Maybe — open to discussion",
-                "No — want to stay local",
-                "Prefer not to say",
-              ].map((o) => (
-                <TapCard key={o} label={o} selected={form.relocation === o} onClick={() => autoNext("relocation", o)} />
+                { val: "Yes — willing to relocate", emoji: "✈️" },
+                { val: "Maybe — open to discussion", emoji: "💬" },
+                { val: "No — want to stay local", emoji: "🏠" },
+                { val: "Prefer not to say", emoji: "🤐" },
+              ].map(({ val, emoji }) => (
+                <TapCard key={val} emoji={emoji} label={val} selected={form.relocation === val} onClick={() => autoNext("relocation", val)} />
               ))}
             </div>
           </StepWrapper>
@@ -1069,10 +1254,15 @@ export default function OnboardingPage() {
       // ── Step 24: Born Religion ───────────────────────────────────────────────
       case 24:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Religion I was born into">
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Religion I was born into" bgClass={STEP_BG[24]}>
             <div className="space-y-2">
-              {["Islam (from birth)", "Converted to Islam", "Other religion", "Prefer not to say"].map((o) => (
-                <TapCard key={o} label={o} selected={form.born_religion === o} onClick={() => autoNext("born_religion", o)} />
+              {[
+                { val: "Islam (from birth)", emoji: "☪️" },
+                { val: "Converted to Islam", emoji: "🌟" },
+                { val: "Other religion", emoji: "🙏" },
+                { val: "Prefer not to say", emoji: "🤐" },
+              ].map(({ val, emoji }) => (
+                <TapCard key={val} emoji={emoji} label={val} selected={form.born_religion === val} onClick={() => autoNext("born_religion", val)} />
               ))}
             </div>
           </StepWrapper>
@@ -1087,6 +1277,7 @@ export default function OnboardingPage() {
             onBack={back}
             title="My interests"
             subtitle={`${form.interests.length}/15 selected`}
+            bgClass={STEP_BG[25]}
             onContinue={next}
             continueDisabled={form.interests.length === 0}
           >
@@ -1099,6 +1290,7 @@ export default function OnboardingPage() {
                     selected={form.interests}
                     onChange={(v) => set("interests", v)}
                     max={15}
+                    emojiMap={INTEREST_EMOJIS}
                   />
                 </div>
               ))}
@@ -1115,6 +1307,7 @@ export default function OnboardingPage() {
             onBack={back}
             title="My personality"
             subtitle={`${form.personality_traits.length}/5 selected`}
+            bgClass={STEP_BG[26]}
             onContinue={next}
             continueDisabled={form.personality_traits.length === 0}
           >
@@ -1126,6 +1319,7 @@ export default function OnboardingPage() {
                   selected={form.personality_traits}
                   onChange={(v) => set("personality_traits", v)}
                   max={5}
+                  emojiMap={PERSONALITY_EMOJIS}
                 />
               </div>
               <div>
@@ -1147,7 +1341,7 @@ export default function OnboardingPage() {
       // ── Step 27: Bio ─────────────────────────────────────────────────────────
       case 27:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My bio" onContinue={next}>
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My bio" bgClass={STEP_BG[27]} onContinue={next}>
             <div className="space-y-3">
               <div className="relative">
                 <textarea
@@ -1188,6 +1382,7 @@ export default function OnboardingPage() {
             onBack={back}
             title="My photos"
             subtitle="Min 3 required (first 3 slots)"
+            bgClass={STEP_BG[28]}
             onContinue={next}
             continueDisabled={photoCount < 3}
           >
@@ -1268,10 +1463,9 @@ export default function OnboardingPage() {
       // ── Step 29: Phone ───────────────────────────────────────────────────────
       case 29:
         return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My phone number" onContinue={async () => {
+          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My phone number" bgClass={STEP_BG[29]} onContinue={async () => {
             if (!form.phone) return;
             const fullPhone = `${form.country_code}${form.phone.replace(/^0/, "")}`;
-            // Save phone to profile and continue (SMS OTP requires Twilio setup)
             await supabase.from("profiles").update({ phone: fullPhone }).eq("id", userId!);
             next();
           }} continueDisabled={!form.phone}>
@@ -1297,11 +1491,10 @@ export default function OnboardingPage() {
           </StepWrapper>
         );
 
-      // ── Step 30: OTP ─────────────────────────────────────────────────────────
+      // ── Step 30: OTP (skip) ──────────────────────────────────────────────────
       case 30: {
-        const otpRefs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
-        // SMS OTP requires Twilio — skip this step automatically
-        next();
+        // SMS OTP requires Twilio — skip automatically
+        setTimeout(() => goToStep(31), 0);
         return null;
       }
 
@@ -1313,6 +1506,7 @@ export default function OnboardingPage() {
             total={TOTAL_STEPS}
             onBack={back}
             title="Face Verification"
+            bgClass={STEP_BG[31]}
             onContinue={form.face_verified ? next : undefined}
             continueDisabled={!form.face_verified}
           >
@@ -1375,19 +1569,20 @@ export default function OnboardingPage() {
       // ── Step 32: Done ────────────────────────────────────────────────────────
       case 32:
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br from-emerald-50 to-teal-50 text-center">
-            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mb-8 shadow-xl">
+          <div className={`min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br ${STEP_BG[32]} text-center`}>
+            <ProgressBar step={step} total={TOTAL_STEPS} />
+            <div className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center mb-8 shadow-xl">
               <Check className="h-14 w-14 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">All done! 🎉</h1>
-            <h2 className="text-lg font-semibold text-emerald-700 mb-2">Your profile is under review</h2>
-            <p className="text-gray-500 text-sm mb-10 max-w-xs">
+            <h1 className="text-3xl font-bold text-white mb-3">All done! 🎉</h1>
+            <h2 className="text-lg font-semibold text-white/80 mb-2">Your profile is under review</h2>
+            <p className="text-white/60 text-sm mb-10 max-w-xs">
               We'll notify you within 24 hours once your profile is approved. Time to find your perfect match!
             </p>
             <button
               onClick={saveProfile}
               disabled={saving}
-              className="w-full max-w-sm bg-emerald-600 text-white font-bold py-4 rounded-2xl text-base hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full max-w-sm bg-white text-emerald-700 font-bold py-4 rounded-2xl text-base hover:bg-emerald-50 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
             >
               {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
               Start Exploring →
@@ -1414,9 +1609,9 @@ export default function OnboardingPage() {
 function ProgressBar({ step, total }: { step: number; total: number }) {
   const pct = Math.round((step / (total - 1)) * 100);
   return (
-    <div className="fixed top-0 left-0 right-0 h-1 bg-gray-100 z-50">
+    <div className="fixed top-0 left-0 right-0 h-1 bg-white/20 z-50">
       <div
-        className="h-full bg-emerald-500 transition-all duration-300"
+        className="h-full bg-white transition-all duration-300"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -1434,6 +1629,7 @@ function StepWrapper({
   children,
   onContinue,
   continueDisabled,
+  bgClass,
 }: {
   step: number;
   total: number;
@@ -1443,41 +1639,47 @@ function StepWrapper({
   children: React.ReactNode;
   onContinue?: () => void;
   continueDisabled?: boolean;
+  bgClass?: string;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className={`min-h-screen flex flex-col bg-gradient-to-br ${bgClass || "from-emerald-600 to-teal-700"}`}>
       <ProgressBar step={step} total={total} />
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-6 pb-2">
         <button
           onClick={onBack}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
         >
-          <ArrowLeft className="h-5 w-5 text-gray-600" />
+          <ArrowLeft className="h-5 w-5 text-white" />
         </button>
         <div className="flex-1">
-          <p className="text-xs text-gray-400">Step {step} of {total - 1}</p>
+          <p className="text-xs text-white/60">Step {step} of {total - 1}</p>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-5 pt-4 pb-32 overflow-y-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">{title}</h2>
-        {subtitle && <p className="text-sm text-gray-400 mb-4">{subtitle}</p>}
-        {!subtitle && <div className="mb-5" />}
-        {children}
+      {/* Step title */}
+      <div className="px-5 pt-3 pb-4">
+        <h2 className="text-2xl font-bold text-white">{title}</h2>
+        {subtitle && <p className="text-sm text-white/70 mt-1">{subtitle}</p>}
+      </div>
+
+      {/* Content card */}
+      <div className="flex-1 mx-4 mb-4 bg-white/95 backdrop-blur rounded-3xl shadow-2xl overflow-hidden">
+        <div className="h-full px-5 pt-5 pb-28 overflow-y-auto">
+          {children}
+        </div>
       </div>
 
       {/* Continue Button */}
       {onContinue && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-5 py-4 safe-area-bottom">
+        <div className="fixed bottom-0 left-0 right-0 px-5 py-4">
           <button
             onClick={onContinue}
             disabled={continueDisabled}
-            className="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl text-base hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full bg-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-emerald-700 hover:bg-emerald-50"
           >
-            Continue
+            Continue →
           </button>
         </div>
       )}

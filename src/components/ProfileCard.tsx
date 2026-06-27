@@ -1,9 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import { Heart, MessageCircle, MapPin, GraduationCap, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { calculateAge } from "@/lib/utils";
 
@@ -16,9 +12,13 @@ interface Profile {
   sect?: string;
   education?: string;
   profession?: string;
+  marital_status?: string;
+  religiosity?: string;
   about_me?: string;
   avatar_url?: string;
   is_verified?: boolean;
+  gender?: string;
+  type?: string;
 }
 
 interface ProfileCardProps {
@@ -33,85 +33,100 @@ export function ProfileCard({ profile, isMatch, onLike, onMessage, className }: 
   const age = profile.date_of_birth ? calculateAge(profile.date_of_birth) : null;
 
   return (
-    <div className={cn("bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden", className)}>
-      {/* Photo */}
-      <div className="relative h-64 bg-gradient-to-br from-emerald-50 to-emerald-100">
+    <div className={cn("bg-white rounded-3xl shadow-lg overflow-hidden", className)}>
+      {/* Photo with gradient overlay */}
+      <div className="relative h-72 bg-gradient-to-br from-emerald-200 to-teal-300">
         {profile.avatar_url ? (
-          <Image
-            src={profile.avatar_url}
-            alt={profile.full_name}
-            fill
-            className="object-cover"
-          />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-24 h-24 rounded-full bg-emerald-200 flex items-center justify-center">
-              <span className="text-3xl font-bold text-emerald-600">
-                {profile.full_name?.charAt(0) || "?"}
-              </span>
-            </div>
+          <div className="w-full h-full flex items-center justify-center text-7xl">
+            {profile.gender === "male" ? "👨" : "👩"}
           </div>
         )}
+        {/* Gradient overlay at bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        {/* Name + age on photo */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="flex items-end justify-between">
+            <div>
+              <h3 className="text-white text-xl font-bold">
+                {profile.full_name}{age ? `, ${age}` : ""}
+              </h3>
+              {(profile.city || profile.country) && (
+                <p className="text-white/80 text-sm">
+                  📍 {[profile.city, profile.country].filter(Boolean).join(", ")}
+                </p>
+              )}
+            </div>
+            {isMatch ? (
+              <button
+                onClick={() => onMessage?.(profile.id)}
+                className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white"
+              >
+                💬 Message
+              </button>
+            ) : null}
+          </div>
+        </div>
+        {/* Verified badge */}
         {profile.is_verified && (
-          <div className="absolute top-3 right-3 bg-emerald-600 text-white rounded-full p-1">
-            <Star className="h-3 w-3 fill-white" />
+          <div className="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
+            ✓ Verified
           </div>
         )}
       </div>
 
-      {/* Info */}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <div>
-            <h3 className="font-semibold text-gray-900 text-lg leading-tight">
-              {profile.full_name}
-              {age && <span className="font-normal text-gray-500">, {age}</span>}
-            </h3>
-            {(profile.city || profile.country) && (
-              <div className="flex items-center gap-1 text-sm text-gray-500 mt-0.5">
-                <MapPin className="h-3 w-3" />
-                <span>{[profile.city, profile.country].filter(Boolean).join(", ")}</span>
-              </div>
-            )}
-          </div>
-          {profile.sect && (
-            <Badge variant="secondary" className="shrink-0">{profile.sect}</Badge>
-          )}
-        </div>
-
+      {/* Info pills row */}
+      <div className="px-4 py-3 flex flex-wrap gap-2">
+        {profile.sect && (
+          <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">
+            🕌 {profile.sect}
+          </span>
+        )}
+        {profile.marital_status && (
+          <span className="bg-rose-50 text-rose-700 px-3 py-1 rounded-full text-xs font-medium">
+            💚 {profile.marital_status}
+          </span>
+        )}
+        {profile.education && (
+          <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+            🎓 {profile.education}
+          </span>
+        )}
         {profile.profession && (
-          <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
-            <GraduationCap className="h-3.5 w-3.5 text-emerald-600" />
-            <span>{profile.profession}</span>
-            {profile.education && <span className="text-gray-400">• {profile.education}</span>}
-          </div>
+          <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-medium">
+            💼 {profile.profession}
+          </span>
         )}
-
-        {profile.about_me && (
-          <p className="text-sm text-gray-600 line-clamp-2 mb-3">{profile.about_me}</p>
+        {profile.religiosity && (
+          <span className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-medium">
+            ✨ {profile.religiosity}
+          </span>
         )}
+      </div>
 
-        {/* Actions */}
-        <div className="flex gap-2 mt-3">
-          {isMatch ? (
-            <Button
-              className="flex-1"
-              onClick={() => onMessage?.(profile.id)}
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Message
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => onLike?.(profile.id)}
-            >
-              <Heart className="h-4 w-4 mr-2" />
-              Like
-            </Button>
-          )}
+      {/* About me snippet */}
+      {profile.about_me && (
+        <div className="px-4 pb-3">
+          <p className="text-gray-600 text-sm line-clamp-2">"{profile.about_me}"</p>
         </div>
+      )}
+
+      {/* Action buttons */}
+      <div className="px-4 pb-4 flex gap-3">
+        <button
+          onClick={() => {/* pass action */}}
+          className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-semibold text-sm hover:border-red-300 hover:text-red-500 transition-all active:scale-95"
+        >
+          ✕ Pass
+        </button>
+        <button
+          onClick={() => onLike?.(profile.id)}
+          className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95"
+        >
+          💚 Like
+        </button>
       </div>
     </div>
   );
