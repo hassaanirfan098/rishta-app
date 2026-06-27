@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-const SAFEPAY_BASE = "https://api.getsafepay.com";
+// Use sandbox while in test mode
+const SAFEPAY_BASE = "https://sandbox.api.getsafepay.com";
+const CHECKOUT_BASE = "https://sandbox.api.getsafepay.com";
 
 async function getSessionUser() {
   const cookieStore = await cookies();
@@ -20,28 +22,20 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { type, directoryProfileId } = await req.json();
-  // type: "unlock" | "bundle" | "gold_monthly" | "gold_yearly"
 
   const amounts: Record<string, number> = {
-    unlock: 50000,       // Rs 500 in paisas
-    bundle: 500000,      // Rs 5,000
-    gold_monthly: 99900, // Rs 999
-    gold_yearly: 799900, // Rs 7,999
-  };
-
-  const labels: Record<string, string> = {
-    unlock: "Contact Unlock — Rs 500",
-    bundle: "30 Contact Bundle — Rs 5,000",
-    gold_monthly: "Gold Monthly — Rs 999",
-    gold_yearly: "Gold Yearly — Rs 7,999",
+    unlock: 50000,
+    bundle: 500000,
+    gold_monthly: 99900,
+    gold_yearly: 799900,
   };
 
   const amount = amounts[type];
   if (!amount) return NextResponse.json({ error: "Invalid type" }, { status: 400 });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const orderId = `${type}_${user.id}_${Date.now()}`;
 
-  // Create Safepay payment tracker
   const res = await fetch(`${SAFEPAY_BASE}/order/v1/init`, {
     method: "POST",
     headers: {
@@ -49,30 +43,32 @@ export async function POST(req: NextRequest) {
       "X-SFPY-MERCHANT-SECRET": process.env.SAFEPAY_SECRET_KEY!,
     },
     body: JSON.stringify({
-      merchant_api_key: process.env.SAFEPAY_SECRET_KEY!,
+      merchant_api_key: process.env.SAFEPAY_SECRET_KEY,
       intent: "CYBERSOURCE",
       mode: "payment",
       currency: "PKR",
       amount,
-      order_id: `${type}_${user.id}_${Date.now()}`,
-      source: "custom",
+      order_id: orderId,
       cancel_url: `${appUrl}/payment/cancel`,
       redirect_url: `${appUrl}/payment/success?type=${type}&profile=${directoryProfileId || ""}`,
     }),
   });
 
+  const responseText = await res.text();
+  console.log("Safepay response:", res.status, responseText);
+
   if (!res.ok) {
-    const err = await res.text();
-    console.error("Safepay error:", err);
-    return NextResponse.json({ error: "Payment init failed" }, { status: 500 });
+    return NextResponse.json({ error: "Payment init failed", detail: responseText }, { status: 500 });
   }
 
-  const data = await res.json();
-  const token = data?.data?.tracker?.token;
+  let data: any;
+  try { data = JSON.parse(responseText); } catch { return NextResponse.json({ error: "Invalid response from Safepay" }, { status: 500 }); }
 
-  if (!token) return NextResponse.json({ error: "No token from Safepay" }, { status: 500 });
+  const token = data?.data?.tracker?.token || data?.token;
 
-  const checkoutUrl = `https://sandbox.api.getsafepay.com/checkout/pay?tbt=${token}&source=custom&order_id=${type}_${user.id}_${Date.now()}`;
+  if (!token) return NextResponse.json({ error: "No token from Safepay", raw: data }, { status: 500 });
+
+  const checkoutUrl = `${CHECKOUT_BASE}/checkout/pay?tbt=${token}&source=custom`;
 
   return NextResponse.json({ url: checkoutUrl, token });
 }
