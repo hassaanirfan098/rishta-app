@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useLang } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, Camera, Trash2, LogOut, AlertTriangle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export default function SettingsPage() {
   const [pwMsg, setPwMsg] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const { lang, setLang } = useLang();
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -224,6 +226,16 @@ export default function SettingsPage() {
               <SelectContent>{MARITAL.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
             </Select>
           </Field>
+          <Field label="Height (cm)">
+            <Input
+              type="number"
+              value={profile?.height_cm || ""}
+              onChange={(e) => update("height_cm", e.target.value ? Number(e.target.value) : null)}
+              placeholder="e.g. 170"
+              min={140}
+              max={220}
+            />
+          </Field>
         </SectionCard>
 
         {/* About Me */}
@@ -261,6 +273,24 @@ export default function SettingsPage() {
           <Field label="Education">
             <Input value={profile?.education || ""} onChange={(e) => update("education", e.target.value)} />
           </Field>
+        </SectionCard>
+
+        {/* Language */}
+        <SectionCard title="Language / زبان">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setLang("en")}
+              className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${lang === "en" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 text-gray-500"}`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setLang("ur")}
+              className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${lang === "ur" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 text-gray-500"}`}
+            >
+              اردو
+            </button>
+          </div>
         </SectionCard>
 
         {/* Change Password */}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { calculateAge } from "@/lib/utils";
@@ -33,9 +34,15 @@ interface ProfileCardProps {
 export function ProfileCard({ profile, isMatch, onLike, onMessage, className }: ProfileCardProps) {
   const age = profile.date_of_birth ? calculateAge(profile.date_of_birth) : null;
   const router = useRouter();
+  const [swipe, setSwipe] = useState<"like" | "pass" | null>(null);
 
   return (
-    <div className={cn("bg-white rounded-3xl shadow-lg overflow-hidden", className)}>
+    <div className={cn(
+      "bg-white rounded-3xl shadow-lg overflow-hidden transition-all duration-300",
+      swipe === "like" && "translate-x-8 rotate-3 opacity-0",
+      swipe === "pass" && "-translate-x-8 -rotate-3 opacity-0",
+      className
+    )}>
       {/* Photo with gradient overlay */}
       <div className="relative h-72 bg-gradient-to-br from-emerald-200 to-teal-300 cursor-pointer" onClick={() => router.push(`/profile/${profile.id}`)}>
         {profile.avatar_url ? (
@@ -118,13 +125,19 @@ export function ProfileCard({ profile, isMatch, onLike, onMessage, className }: 
       {/* Action buttons */}
       <div className="px-4 pb-4 flex gap-3">
         <button
-          onClick={() => {/* pass action */}}
+          onClick={() => {
+            setSwipe("pass");
+            setTimeout(() => setSwipe(null), 350);
+          }}
           className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-semibold text-sm hover:border-red-300 hover:text-red-500 transition-all active:scale-95"
         >
           ✕ Pass
         </button>
         <button
-          onClick={() => onLike?.(profile.id)}
+          onClick={() => {
+            setSwipe("like");
+            setTimeout(() => { onLike?.(profile.id); setSwipe(null); }, 350);
+          }}
           className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95"
         >
           💚 Like
