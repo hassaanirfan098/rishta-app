@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { calculateAge } from "@/lib/utils";
 
@@ -31,11 +32,12 @@ interface ProfileCardProps {
 
 export function ProfileCard({ profile, isMatch, onLike, onMessage, className }: ProfileCardProps) {
   const age = profile.date_of_birth ? calculateAge(profile.date_of_birth) : null;
+  const router = useRouter();
 
   return (
     <div className={cn("bg-white rounded-3xl shadow-lg overflow-hidden", className)}>
       {/* Photo with gradient overlay */}
-      <div className="relative h-72 bg-gradient-to-br from-emerald-200 to-teal-300">
+      <div className="relative h-72 bg-gradient-to-br from-emerald-200 to-teal-300 cursor-pointer" onClick={() => router.push(`/profile/${profile.id}`)}>
         {profile.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
