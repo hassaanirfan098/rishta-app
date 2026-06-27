@@ -16,6 +16,8 @@ interface Filters {
   ethnicity: string;
   ageMin: string;
   ageMax: string;
+  heightMin: string;
+  heightMax: string;
   city: string;
   marital_status: string;
 }
@@ -34,9 +36,12 @@ export default function DiscoverPage() {
     ethnicity: "",
     ageMin: "18",
     ageMax: "45",
+    heightMin: "",
+    heightMax: "",
     city: "",
     marital_status: "Any",
   });
+  const [activeFilters, setActiveFilters] = useState<Filters | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [unlockTarget, setUnlockTarget] = useState<string | null>(null);
@@ -44,10 +49,24 @@ export default function DiscoverPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    loadData();
+    loadData(null);
   }, []);
 
-  const loadData = async () => {
+  const applyFilters = () => {
+    setActiveFilters({ ...filters });
+    loadData({ ...filters });
+    setShowFilters(false);
+  };
+
+  const clearFilters = () => {
+    const reset: Filters = { sect: "Any", ethnicity: "", ageMin: "18", ageMax: "45", heightMin: "", heightMax: "", city: "", marital_status: "Any" };
+    setFilters(reset);
+    setActiveFilters(null);
+    loadData(null);
+    setShowFilters(false);
+  };
+
+  const loadData = async (f: Filters | null) => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -60,6 +79,13 @@ export default function DiscoverPage() {
 
     setCurrentUser(profile);
 
+    // Build age range from date_of_birth
+    const now = new Date();
+    const ageMin = parseInt(f?.ageMin || "18");
+    const ageMax = parseInt(f?.ageMax || "45");
+    const dobMin = new Date(now.getFullYear() - ageMax - 1, now.getMonth(), now.getDate()).toISOString().split("T")[0];
+    const dobMax = new Date(now.getFullYear() - ageMin, now.getMonth(), now.getDate()).toISOString().split("T")[0];
+
     // Load opposite gender approved profiles
     let query = supabase
       .from("profiles")
@@ -67,9 +93,19 @@ export default function DiscoverPage() {
       .eq("is_approved", true)
       .neq("id", user.id);
 
-    if (profile?.gender) {
-      query = query.neq("gender", profile.gender);
+    if (profile?.gender) query = query.neq("gender", profile.gender);
+    if (f?.sect && f.sect !== "Any") query = query.eq("sect", f.sect);
+    if (f?.marital_status && f.marital_status !== "Any") query = query.eq("marital_status", f.marital_status);
+    if (f?.city) query = query.ilike("city", `%${f.city}%`);
+    if (f?.ethnicity) query = query.ilike("ethnicity", `%${f.ethnicity}%`);
+    if (f?.ageMin || f?.ageMax) {
+      query = query.gte("date_of_birth", dobMin).lte("date_of_birth", dobMax);
     }
+    if (f?.heightMin) query = query.gte("height_cm", parseInt(f.heightMin));
+    if (f?.heightMax) query = query.lte("height_cm", parseInt(f.heightMax));
+
+    // Boosted profiles first
+    query = query.order("boosted_until", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
 
     const { data: memberProfiles } = await query.limit(20);
     setProfiles(memberProfiles || []);
@@ -162,9 +198,10 @@ export default function DiscoverPage() {
             variant="ghost"
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
-            className={showFilters ? "bg-emerald-50 text-emerald-600" : ""}
+            className={`relative ${showFilters || activeFilters ? "bg-emerald-50 text-emerald-600" : ""}`}
           >
             <SlidersHorizontal className="h-5 w-5" />
+            {activeFilters && <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full" />}
           </Button>
         </div>
 
@@ -206,23 +243,27 @@ export default function DiscoverPage() {
               <div>
                 <Label className="text-xs">Age Range</Label>
                 <div className="flex gap-1 mt-1">
-                  <Input
-                    className="h-9 text-xs"
-                    type="number"
-                    value={filters.ageMin}
-                    onChange={(e) => setFilters((f) => ({ ...f, ageMin: e.target.value }))}
-                    min={18} max={80}
-                  />
+                  <Input className="h-9 text-xs" type="number" value={filters.ageMin} onChange={(e) => setFilters((f) => ({ ...f, ageMin: e.target.value }))} min={18} max={80} />
                   <span className="flex items-center text-gray-400 text-xs">–</span>
-                  <Input
-                    className="h-9 text-xs"
-                    type="number"
-                    value={filters.ageMax}
-                    onChange={(e) => setFilters((f) => ({ ...f, ageMax: e.target.value }))}
-                    min={18} max={80}
-                  />
+                  <Input className="h-9 text-xs" type="number" value={filters.ageMax} onChange={(e) => setFilters((f) => ({ ...f, ageMax: e.target.value }))} min={18} max={80} />
                 </div>
               </div>
+              <div>
+                <Label className="text-xs">Height (cm)</Label>
+                <div className="flex gap-1 mt-1">
+                  <Input className="h-9 text-xs" type="number" placeholder="Min" value={filters.heightMin} onChange={(e) => setFilters((f) => ({ ...f, heightMin: e.target.value }))} />
+                  <span className="flex items-center text-gray-400 text-xs">–</span>
+                  <Input className="h-9 text-xs" type="number" placeholder="Max" value={filters.heightMax} onChange={(e) => setFilters((f) => ({ ...f, heightMax: e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Ethnicity</Label>
+                <Input className="mt-1 h-9 text-xs" placeholder="e.g. Punjabi" value={filters.ethnicity} onChange={(e) => setFilters((f) => ({ ...f, ethnicity: e.target.value }))} />
+              </div>
+            </div>
+            <div className="max-w-lg mx-auto flex gap-2 mt-3">
+              <Button variant="outline" size="sm" className="flex-1" onClick={clearFilters}>Clear</Button>
+              <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={applyFilters}>Apply Filters</Button>
             </div>
           </div>
         )}

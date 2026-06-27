@@ -3,6 +3,7 @@ create table if not exists reports (
   reporter_id uuid references profiles(id) on delete cascade,
   reported_id uuid references profiles(id) on delete cascade,
   reason text not null,
+  status text default 'pending',
   created_at timestamptz default now(),
   unique(reporter_id, reported_id)
 );

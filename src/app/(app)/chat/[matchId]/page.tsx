@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Send, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Send, CheckCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Message {
@@ -10,7 +10,7 @@ interface Message {
   sender_id: string;
   content: string;
   created_at: string;
-  read_at?: string;
+  read_at?: string | null;
 }
 
 export default function ChatRoomPage() {
@@ -26,65 +26,48 @@ export default function ChatRoomPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    init();
-  }, [matchId]);
+  useEffect(() => { init(); }, [matchId]);
 
   const init = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setCurrentUserId(user.id);
 
-    // Get match details
-    const { data: match } = await supabase
-      .from("matches")
-      .select("*")
-      .eq("id", matchId)
-      .single();
-
+    const { data: match } = await supabase.from("matches").select("*").eq("id", matchId).single();
     if (!match) { router.push("/matches"); return; }
-
-    // Ensure user is part of this match
-    if (match.user1_id !== user.id && match.user2_id !== user.id) {
-      router.push("/matches");
-      return;
-    }
+    if (match.user1_id !== user.id && match.user2_id !== user.id) { router.push("/matches"); return; }
 
     const otherId = match.user1_id === user.id ? match.user2_id : match.user1_id;
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url")
-      .eq("id", otherId)
-      .single();
-
+    const { data: profile } = await supabase.from("profiles").select("id, full_name, avatar_url").eq("id", otherId).single();
     setOtherProfile(profile);
 
-    // Load messages
-    const { data: msgs } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("match_id", matchId)
-      .order("created_at", { ascending: true });
-
+    const { data: msgs } = await supabase.from("messages").select("*").eq("match_id", matchId).order("created_at", { ascending: true });
     setMessages(msgs || []);
     setLoading(false);
+
+    // Mark unread messages from the other person as read
+    await supabase.from("messages")
+      .update({ read_at: new Date().toISOString() })
+      .eq("match_id", matchId)
+      .eq("sender_id", otherId)
+      .is("read_at", null);
 
     // Subscribe to realtime
     const channel = supabase
       .channel(`chat-${matchId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `match_id=eq.${matchId}`,
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `match_id=eq.${matchId}` }, async (payload) => {
+        const msg = payload.new as Message;
+        setMessages((prev) => [...prev, msg]);
+        // Mark as read if from other person
+        if (msg.sender_id !== user.id) {
+          await supabase.from("messages").update({ read_at: new Date().toISOString() }).eq("id", msg.id);
+          setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, read_at: new Date().toISOString() } : m));
         }
-      )
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `match_id=eq.${matchId}` }, (payload) => {
+        const updated = payload.new as Message;
+        setMessages((prev) => prev.map((m) => m.id === updated.id ? updated : m));
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -97,38 +80,26 @@ export default function ChatRoomPage() {
   const sendMessage = async () => {
     if (!newMessage.trim() || sending) return;
     setSending(true);
-
     const content = newMessage.trim();
     setNewMessage("");
-
-    await supabase.from("messages").insert({
-      match_id: matchId,
-      sender_id: currentUserId,
-      content,
-    });
-
+    await supabase.from("messages").insert({ match_id: matchId, sender_id: currentUserId, content });
     setSending(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
-  const formatTime = (ts: string) => {
-    return new Date(ts).toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
-  };
+  const formatTime = (ts: string) => new Date(ts).toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
+
+  // Find last own message that is read
+  const lastReadOwnMsgId = [...messages].reverse().find((m) => m.sender_id === currentUserId && m.read_at)?.id;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-100 flex items-center gap-3 px-4 py-3 sticky top-0 z-10">
-        <button
-          onClick={() => router.back()}
-          className="text-gray-500 hover:text-gray-700"
-        >
+        <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700">
           <ArrowLeft className="h-5 w-5" />
         </button>
         {otherProfile && (
@@ -137,9 +108,7 @@ export default function ChatRoomPage() {
               {otherProfile.avatar_url ? (
                 <img src={otherProfile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
               ) : (
-                <span className="font-bold text-emerald-600 text-sm">
-                  {otherProfile.full_name?.charAt(0)}
-                </span>
+                <span className="font-bold text-emerald-600 text-sm">{otherProfile.full_name?.charAt(0)}</span>
               )}
             </div>
             <div>
@@ -164,23 +133,19 @@ export default function ChatRoomPage() {
         ) : (
           messages.map((msg) => {
             const isOwn = msg.sender_id === currentUserId;
+            const showSeen = isOwn && msg.id === lastReadOwnMsgId;
             return (
-              <div
-                key={msg.id}
-                className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                    isOwn
-                      ? "bg-emerald-600 text-white rounded-br-sm"
-                      : "bg-white text-gray-900 border border-gray-100 rounded-bl-sm"
-                  }`}
-                >
+              <div key={msg.id} className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
+                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isOwn ? "bg-emerald-600 text-white rounded-br-sm" : "bg-white text-gray-900 border border-gray-100 rounded-bl-sm"}`}>
                   <p className="text-sm leading-relaxed">{msg.content}</p>
-                  <p className={`text-[10px] mt-1 ${isOwn ? "text-emerald-200" : "text-gray-400"} text-right`}>
-                    {formatTime(msg.created_at)}
-                  </p>
+                  <p className={`text-[10px] mt-1 ${isOwn ? "text-emerald-200" : "text-gray-400"} text-right`}>{formatTime(msg.created_at)}</p>
                 </div>
+                {showSeen && (
+                  <div className="flex items-center gap-1 mt-0.5 mr-1">
+                    <CheckCheck className="h-3 w-3 text-emerald-500" />
+                    <span className="text-[10px] text-emerald-500">Seen</span>
+                  </div>
+                )}
               </div>
             );
           })
@@ -190,9 +155,6 @@ export default function ChatRoomPage() {
 
       {/* Input */}
       <div className="bg-white border-t border-gray-100 px-4 py-3 flex gap-2 items-end safe-area-inset-bottom">
-        <button className="text-gray-400 hover:text-gray-600 pb-2">
-          <ImageIcon className="h-5 w-5" />
-        </button>
         <div className="flex-1 bg-gray-100 rounded-2xl px-4 py-2.5">
           <textarea
             className="w-full bg-transparent text-sm text-gray-900 resize-none focus:outline-none max-h-24"

@@ -1,32 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, Eye } from "lucide-react";
+import { CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { createClient } from "@/lib/supabase/client";
 
 export default function AdminReportsPage() {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadReports();
-  }, []);
+  useEffect(() => { loadReports(); }, []);
 
   const loadReports = async () => {
-    const { data } = await supabase
-      .from("reports")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setReports(data || []);
+    const res = await fetch("/api/admin/reports");
+    const data = await res.json();
+    setReports(Array.isArray(data) ? data : []);
     setLoading(false);
   };
 
   const resolve = async (id: string) => {
-    await supabase.from("reports").update({ status: "resolved" }).eq("id", id);
+    setActionLoading(id);
+    await fetch("/api/admin/reports", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status: "resolved" }),
+    });
     setReports((r) => r.map((x) => x.id === id ? { ...x, status: "resolved" } : x));
+    setActionLoading(null);
   };
 
   return (
@@ -46,35 +46,25 @@ export default function AdminReportsPage() {
         <div className="space-y-3">
           {reports.map((report) => (
             <div key={report.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant={report.status === "pending" ? "destructive" : "secondary"}>
-                      {report.status}
-                    </Badge>
-                    <span className="text-xs text-gray-400">
-                      {new Date(report.created_at).toLocaleDateString()}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${report.status === "resolved" ? "bg-gray-100 text-gray-500" : "bg-red-100 text-red-700"}`}>
+                      {report.status || "pending"}
                     </span>
+                    <span className="text-xs text-gray-400">{new Date(report.created_at).toLocaleDateString()}</span>
                   </div>
                   <p className="text-sm font-medium text-gray-900 mb-1">
-                    Reason: <span className="font-normal">{report.reason || "Not specified"}</span>
+                    Reason: <span className="font-normal text-gray-700">{report.reason || "Not specified"}</span>
                   </p>
-                  {report.details && (
-                    <p className="text-sm text-gray-600">{report.details}</p>
-                  )}
                   <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                    <span>Reporter: {report.reporter_id?.slice(0, 8)}...</span>
-                    <span>Reported: {report.reported_id?.slice(0, 8)}...</span>
+                    <span>Reporter: <span className="font-medium text-gray-700">{report.reporter?.full_name || report.reporter_id?.slice(0, 8)}</span></span>
+                    <span>Reported: <span className="font-medium text-gray-700">{report.reported?.full_name || report.reported_id?.slice(0, 8)}</span></span>
                   </div>
                 </div>
-                {report.status === "pending" && (
-                  <Button
-                    size="sm"
-                    onClick={() => resolve(report.id)}
-                    className="shrink-0 ml-4"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Resolve
+                {report.status !== "resolved" && (
+                  <Button size="sm" onClick={() => resolve(report.id)} disabled={actionLoading === report.id} className="shrink-0">
+                    {actionLoading === report.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle className="h-4 w-4 mr-1" />Resolve</>}
                   </Button>
                 )}
               </div>

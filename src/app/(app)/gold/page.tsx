@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Crown, Check, ArrowLeft, Loader2 } from "lucide-react";
+import { Crown, Check, ArrowLeft, Loader2, Zap } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const PLANS = [
   { id: "gold_monthly", label: "1 Month", price: "Rs 2,000", sub: "Rs 2,000/month", popular: false },
@@ -21,7 +22,30 @@ const PERKS = [
 export default function GoldPage() {
   const [selected, setSelected] = useState("gold_yearly");
   const [loading, setLoading] = useState(false);
+  const [boostLoading, setBoostLoading] = useState(false);
+  const [boostedUntil, setBoostedUntil] = useState<string | null>(null);
+  const [isGold, setIsGold] = useState(false);
   const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("is_gold, gold_until, boosted_until").eq("id", user.id).single();
+      setIsGold(!!(data?.is_gold && data?.gold_until && new Date(data.gold_until) > new Date()));
+      setBoostedUntil(data?.boosted_until && new Date(data.boosted_until) > new Date() ? data.boosted_until : null);
+    };
+    load();
+  }, []);
+
+  const handleBoost = async () => {
+    setBoostLoading(true);
+    const res = await fetch("/api/boost", { method: "POST" });
+    const data = await res.json();
+    setBoostLoading(false);
+    if (data.boosted_until) setBoostedUntil(data.boosted_until);
+  };
 
   const startPayment = async () => {
     setLoading(true);
@@ -107,6 +131,36 @@ export default function GoldPage() {
         <p className="text-center text-xs text-gray-400 mt-4">
           Secure payment via Safepay · Cancel anytime
         </p>
+
+        {/* Profile Boost — Gold only */}
+        {isGold && (
+          <div className="mt-6 bg-white rounded-2xl border border-amber-100 p-5 shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-2xl flex items-center justify-center">
+                <Zap className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900">Profile Boost</p>
+                <p className="text-xs text-gray-500">Appear at the top of Discover for 24 hours</p>
+              </div>
+            </div>
+            {boostedUntil ? (
+              <div className="bg-amber-50 rounded-xl p-3 text-center">
+                <p className="text-sm text-amber-700 font-medium">⚡ Boost active</p>
+                <p className="text-xs text-amber-600 mt-0.5">Expires {new Date(boostedUntil).toLocaleString("en-PK", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</p>
+              </div>
+            ) : (
+              <button
+                onClick={handleBoost}
+                disabled={boostLoading}
+                className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-500 text-white font-bold text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {boostLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                Boost Now — Free with Gold
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
