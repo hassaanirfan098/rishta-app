@@ -1,201 +1,114 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Phone, Mail, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Phone, Mail, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type Tab = "email" | "phone";
+const GRADIENTS = [
+  "from-emerald-900 via-teal-800 to-emerald-700",
+  "from-teal-900 via-emerald-800 to-cyan-700",
+  "from-emerald-800 via-green-900 to-teal-800",
+  "from-cyan-900 via-teal-800 to-emerald-900",
+];
+
+const PATTERN_SVGS = [
+  // Geometric star
+  `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='1'><polygon points='60,10 110,35 110,85 60,110 10,85 10,35'/><polygon points='60,25 95,42 95,78 60,95 25,78 25,42'/><line x1='60' y1='10' x2='60' y2='110'/><line x1='10' y1='35' x2='110' y2='85'/><line x1='110' y1='35' x2='10' y2='85'/></g></svg>`,
+  // Eight-pointed star
+  `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='1'><polygon points='60,5 72,48 115,48 80,73 93,115 60,90 27,115 40,73 5,48 48,48'/><circle cx='60' cy='60' r='30'/><circle cx='60' cy='60' r='50'/></g></svg>`,
+  // Arabesque
+  `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='1'><circle cx='60' cy='60' r='50'/><circle cx='60' cy='60' r='35'/><circle cx='60' cy='60' r='20'/><line x1='10' y1='60' x2='110' y2='60'/><line x1='60' y1='10' x2='60' y2='110'/><line x1='25' y1='25' x2='95' y2='95'/><line x1='95' y1='25' x2='25' y2='95'/></g></svg>`,
+  // Lattice
+  `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='none' stroke='rgba(255,255,255,0.07)' stroke-width='1'><rect x='15' y='15' width='90' height='90'/><rect x='30' y='30' width='60' height='60'/><rect x='45' y='45' width='30' height='30'/><line x1='15' y1='15' x2='105' y2='105'/><line x1='105' y1='15' x2='15' y2='105'/><line x1='15' y1='60' x2='105' y2='60'/><line x1='60' y1='15' x2='60' y2='105'/></g></svg>`,
+];
 
 export default function LoginPage() {
-  const [tab, setTab] = useState<Tab>("email");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [bgIndex, setBgIndex] = useState(0);
+  const [fading, setFading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
   const router = useRouter();
   const supabase = createClient();
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message || error.name || JSON.stringify(error));
-      setLoading(false);
-      return;
-    }
-    router.push("/discover");
-    router.refresh();
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setBgIndex((i) => (i + 1) % GRADIENTS.length);
+        setFading(false);
+      }, 600);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const handlePhoneLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogle = async () => {
     setError("");
-    if (!phone) return;
-    const phoneFormatted = phone.startsWith("+") ? phone : `+92${phone.replace(/^0/, "")}`;
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone: phoneFormatted });
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-    router.push(`/verify?phone=${encodeURIComponent(phoneFormatted)}`);
-  };
-
-  const handleGoogleLogin = async () => {
-    setGoogleLoading(true);
+    setLoading("google");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback` },
     });
     if (error) {
       setError(error.message);
-      setGoogleLoading(false);
+      setLoading(null);
     }
   };
 
+  const handleEmail = () => {
+    router.push("/login/email");
+  };
+
+  const handlePhone = () => {
+    router.push("/login/phone");
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-600 rounded-3xl shadow-lg mb-4">
-            <span className="text-white text-4xl">ر</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mt-2">
-            <span className="text-emerald-600">Rishta</span>
-          </h1>
-          <p className="text-gray-500 mt-1 text-sm">رشتہ — Muslim Matrimonial</p>
+    <div className="relative min-h-screen flex flex-col items-center justify-end overflow-hidden">
+      {/* Background */}
+      <div
+        className={`absolute inset-0 bg-gradient-to-br ${GRADIENTS[bgIndex]} transition-opacity duration-700 ${fading ? "opacity-0" : "opacity-100"}`}
+      />
+
+      {/* Islamic geometric pattern overlay */}
+      <div
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(PATTERN_SVGS[bgIndex])}")`,
+          backgroundSize: "120px 120px",
+          backgroundRepeat: "repeat",
+        }}
+      />
+
+      {/* Radial glow */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+
+      {/* Logo centered top area */}
+      <div className="absolute top-0 left-0 right-0 flex flex-col items-center justify-center pt-20 pb-10">
+        <div className="flex items-center justify-center w-24 h-24 bg-white/15 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl mb-5">
+          <span className="text-white text-5xl font-bold">ر</span>
         </div>
+        <h1 className="text-white text-4xl font-bold tracking-tight">Rishta</h1>
+        <p className="text-white/70 text-sm mt-1 tracking-widest uppercase">Muslim Matrimonial</p>
+      </div>
 
-        <div className="w-full max-w-sm">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-7">
-            <h2 className="text-xl font-semibold text-gray-900 mb-1">Welcome back</h2>
-            <p className="text-sm text-gray-500 mb-5">Sign in to your account</p>
+      {/* Bottom card */}
+      <div className="relative w-full max-w-sm mx-auto px-5 pb-10 z-10">
+        <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 p-7 shadow-2xl">
+          <h2 className="text-white text-2xl font-bold text-center mb-1">Find your match</h2>
+          <p className="text-white/60 text-sm text-center mb-7">Join thousands of Muslims finding their soulmate</p>
 
-            {/* Tabs */}
-            <div className="flex bg-gray-100 rounded-xl p-1 mb-5">
-              <button
-                onClick={() => { setTab("email"); setError(""); }}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-all ${
-                  tab === "email" ? "bg-white shadow-sm text-emerald-700" : "text-gray-500"
-                }`}
-              >
-                <Mail className="h-3.5 w-3.5" /> Email
-              </button>
-              <button
-                onClick={() => { setTab("phone"); setError(""); }}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-all ${
-                  tab === "phone" ? "bg-white shadow-sm text-emerald-700" : "text-gray-500"
-                }`}
-              >
-                <Phone className="h-3.5 w-3.5" /> Phone OTP
-              </button>
-            </div>
-
-            {tab === "email" ? (
-              <form onSubmit={handleEmailLogin} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pr-10"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                {error && (
-                  <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                    <p className="text-sm text-red-600">{error}</p>
-                  </div>
-                )}
-                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
-                  Sign In
-                </Button>
-              </form>
-            ) : (
-              <form onSubmit={handlePhoneLogin} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+92 300 1234567"
-                      className="pl-10"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ""))}
-                      required
-                    />
-                  </div>
-                  <p className="text-xs text-gray-400">Pakistani numbers: enter without country code</p>
-                </div>
-                {error && (
-                  <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                    <p className="text-sm text-red-600">{error}</p>
-                  </div>
-                )}
-                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
-                  Send OTP
-                </Button>
-              </form>
-            )}
-
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100" />
-              </div>
-              <div className="relative flex justify-center text-xs text-gray-400 bg-white px-3">
-                or continue with
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full border-gray-200"
-              onClick={handleGoogleLogin}
-              disabled={googleLoading}
+          <div className="space-y-3">
+            <button
+              onClick={handleGoogle}
+              disabled={loading !== null}
+              className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 font-semibold py-4 rounded-2xl shadow-lg hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-60"
             >
-              {googleLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              {loading === "google" ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -203,19 +116,45 @@ export default function LoginPage() {
                 </svg>
               )}
               Continue with Google
-            </Button>
+            </button>
+
+            <button
+              onClick={handleEmail}
+              disabled={loading !== null}
+              className="w-full flex items-center justify-center gap-3 bg-white/15 text-white font-semibold py-4 rounded-2xl border border-white/30 hover:bg-white/20 active:scale-95 transition-all disabled:opacity-60"
+            >
+              <Mail className="h-5 w-5" />
+              Continue with Email
+            </button>
+
+            <button
+              onClick={handlePhone}
+              disabled={loading !== null}
+              className="w-full flex items-center justify-center gap-3 bg-white/15 text-white font-semibold py-4 rounded-2xl border border-white/30 hover:bg-white/20 active:scale-95 transition-all disabled:opacity-60"
+            >
+              <Phone className="h-5 w-5" />
+              Continue with Phone
+            </button>
           </div>
 
-          <p className="text-center text-xs text-gray-400 mt-5">
-            New to Rishta?{" "}
-            <Link href="/signup" className="text-emerald-600 font-medium">
-              Create account
-            </Link>
-          </p>
-          <p className="text-center text-xs text-gray-400 mt-3">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
+          {error && (
+            <div className="mt-4 bg-red-500/20 border border-red-400/30 rounded-xl px-4 py-3">
+              <p className="text-red-200 text-sm text-center">{error}</p>
+            </div>
+          )}
+
+          <p className="text-white/40 text-xs text-center mt-6">
+            By continuing you agree to our{" "}
+            <Link href="/terms" className="text-white/60 underline underline-offset-2">Terms</Link>
+            {" "}and{" "}
+            <Link href="/privacy" className="text-white/60 underline underline-offset-2">Privacy Policy</Link>
           </p>
         </div>
+
+        <p className="text-white/40 text-xs text-center mt-4">
+          Already have an account?{" "}
+          <Link href="/signup" className="text-emerald-300 font-medium">Sign up instead</Link>
+        </p>
       </div>
     </div>
   );
