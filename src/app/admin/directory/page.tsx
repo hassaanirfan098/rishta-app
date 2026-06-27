@@ -1,0 +1,220 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Plus, Upload, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { createClient } from "@/lib/supabase/client";
+
+export default function AdminDirectoryPage() {
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [csvText, setCsvText] = useState("");
+  const [newProfile, setNewProfile] = useState({
+    full_name: "",
+    age: "",
+    city: "",
+    country: "Pakistan",
+    sect: "",
+    phone: "",
+    profession: "",
+    education: "",
+    marital_status: "Never married",
+  });
+  const supabase = createClient();
+
+  useEffect(() => {
+    loadProfiles();
+  }, []);
+
+  const loadProfiles = async () => {
+    const { data } = await supabase
+      .from("directory_profiles")
+      .select("id, full_name, age, city, country, sect, profession, is_active, created_at")
+      .order("created_at", { ascending: false });
+    setProfiles(data || []);
+    setLoading(false);
+  };
+
+  const addProfile = async () => {
+    if (!newProfile.full_name || !newProfile.phone) {
+      alert("Name and phone are required");
+      return;
+    }
+    await supabase.from("directory_profiles").insert({
+      ...newProfile,
+      age: newProfile.age ? parseInt(newProfile.age) : null,
+      consent_captured: true,
+    });
+    setShowAdd(false);
+    setNewProfile({ full_name: "", age: "", city: "", country: "Pakistan", sect: "", phone: "", profession: "", education: "", marital_status: "Never married" });
+    loadProfiles();
+  };
+
+  const toggleActive = async (id: string, current: boolean) => {
+    await supabase.from("directory_profiles").update({ is_active: !current }).eq("id", id);
+    setProfiles((p) => p.map((x) => x.id === id ? { ...x, is_active: !current } : x));
+  };
+
+  const deleteProfile = async (id: string) => {
+    if (!confirm("Delete this profile?")) return;
+    await supabase.from("directory_profiles").delete().eq("id", id);
+    setProfiles((p) => p.filter((x) => x.id !== id));
+  };
+
+  const handleCsvUpload = async () => {
+    if (!csvText.trim()) return;
+    const lines = csvText.trim().split("\n");
+    const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+
+    const rows = lines.slice(1).map((line) => {
+      const vals = line.split(",").map((v) => v.trim());
+      const obj: any = {};
+      headers.forEach((h, i) => { obj[h] = vals[i] || ""; });
+      return {
+        full_name: obj.full_name || obj.name || "",
+        age: obj.age ? parseInt(obj.age) : null,
+        city: obj.city || "",
+        country: obj.country || "Pakistan",
+        sect: obj.sect || "",
+        phone: obj.phone || "",
+        profession: obj.profession || "",
+        education: obj.education || "",
+        consent_captured: true,
+      };
+    }).filter((r) => r.full_name && r.phone);
+
+    if (rows.length === 0) { alert("No valid rows found"); return; }
+    const { error } = await supabase.from("directory_profiles").insert(rows);
+    if (error) { alert(error.message); return; }
+    alert(`Uploaded ${rows.length} profiles!`);
+    setCsvText("");
+    loadProfiles();
+  };
+
+  const up = (k: string, v: string) => setNewProfile((p) => ({ ...p, [k]: v }));
+
+  return (
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Directory Profiles</h1>
+          <p className="text-gray-500 text-sm mt-1">Manage community directory</p>
+        </div>
+        <Button onClick={() => setShowAdd(!showAdd)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Profile
+        </Button>
+      </div>
+
+      {/* Add Profile Form */}
+      {showAdd && (
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mb-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Add Single Profile</h3>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { k: "full_name", label: "Full Name *" },
+              { k: "phone", label: "Phone *" },
+              { k: "age", label: "Age" },
+              { k: "city", label: "City" },
+              { k: "country", label: "Country" },
+              { k: "sect", label: "Sect" },
+              { k: "profession", label: "Profession" },
+              { k: "education", label: "Education" },
+            ].map(({ k, label }) => (
+              <div key={k}>
+                <Label className="text-xs">{label}</Label>
+                <Input
+                  className="mt-1 h-9"
+                  value={(newProfile as any)[k]}
+                  onChange={(e) => up(k, e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button onClick={addProfile}>Save Profile</Button>
+            <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {/* CSV Upload */}
+      <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mb-6">
+        <h3 className="font-semibold text-gray-900 mb-1">Bulk CSV Upload</h3>
+        <p className="text-xs text-gray-500 mb-3">
+          Headers: full_name, phone, age, city, country, sect, profession, education
+        </p>
+        <textarea
+          className="w-full h-28 border border-gray-200 rounded-xl p-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          placeholder={"full_name,phone,age,city,country,sect\nFatima Khan,03001234567,25,Lahore,Pakistan,Sunni"}
+          value={csvText}
+          onChange={(e) => setCsvText(e.target.value)}
+        />
+        <Button className="mt-3" onClick={handleCsvUpload} disabled={!csvText.trim()}>
+          <Upload className="h-4 w-4 mr-2" />
+          Upload CSV
+        </Button>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Location</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Sect</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {profiles.map((p) => (
+                <tr key={p.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <p className="font-medium text-sm text-gray-900">{p.full_name}</p>
+                    <p className="text-xs text-gray-500">{p.age ? `${p.age} yrs` : ""}</p>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{[p.city, p.country].filter(Boolean).join(", ")}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{p.sect || "—"}</td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${p.is_active ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-600"}`}>
+                      {p.is_active ? "Active" : "Hidden"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => toggleActive(p.id, p.is_active)}
+                        className="text-xs text-gray-500 hover:text-emerald-600 underline"
+                      >
+                        {p.is_active ? "Hide" : "Show"}
+                      </button>
+                      <button
+                        onClick={() => deleteProfile(p.id)}
+                        className="text-red-400 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {profiles.length === 0 && (
+            <div className="py-12 text-center text-gray-500 text-sm">No directory profiles yet</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
