@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const secretKey = process.env.SAFEPAY_SECRET_KEY;
 
-  const res = await fetch("https://sandbox.api.getsafepay.com/order/v1/init", {
+  const res = await fetch("https://api.getsafepay.com/order/v1/init", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -19,7 +19,7 @@ export async function GET() {
       cancel_url: "https://rishta-app-sigma.vercel.app/payment/cancel",
       redirect_url: "https://rishta-app-sigma.vercel.app/payment/success",
       client: "WEB",
-      environment: "sandbox",
+      environment: "production",
     }),
   });
 

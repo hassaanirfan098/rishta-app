@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-// Use sandbox while in test mode
-const SAFEPAY_BASE = "https://sandbox.api.getsafepay.com";
-const CHECKOUT_BASE = "https://sandbox.api.getsafepay.com";
+const SAFEPAY_BASE = "https://api.getsafepay.com";
+const CHECKOUT_BASE = "https://getsafepay.com";
 
 async function getSessionUser() {
   const cookieStore = await cookies();
@@ -52,7 +51,7 @@ export async function POST(req: NextRequest) {
       cancel_url: `${appUrl}/payment/cancel`,
       redirect_url: `${appUrl}/payment/success?type=${type}&profile=${directoryProfileId || ""}`,
       client: "WEB",
-      environment: "sandbox",
+      environment: "production",
     }),
   });
 
