@@ -104,9 +104,27 @@ export default function DiscoverPage() {
     router.push("/matches");
   };
 
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
   const handleUnlock = (profileId: string) => {
     setUnlockTarget(profileId);
     setShowUnlockModal(true);
+  };
+
+  const startPayment = async (type: "unlock" | "bundle") => {
+    setPaymentLoading(true);
+    const res = await fetch("/api/payment/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, directoryProfileId: unlockTarget }),
+    });
+    const data = await res.json();
+    setPaymentLoading(false);
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Payment setup failed. Please try again.");
+    }
   };
 
   // Interleave member and directory profiles
@@ -264,8 +282,8 @@ export default function DiscoverPage() {
               Unlock this person's phone number for a one-time payment of <span className="font-bold text-gray-900">Rs 500</span>.
             </p>
 
-            <div className="bg-emerald-50 rounded-2xl p-4 mb-5">
-              <p className="text-sm font-medium text-emerald-800 mb-2">Payment Methods</p>
+            <div className="bg-emerald-50 rounded-2xl p-4 mb-4">
+              <p className="text-sm font-medium text-emerald-800 mb-2">Accepted Payment Methods</p>
               <div className="flex gap-3">
                 <div className="flex-1 bg-white rounded-xl p-3 text-center border border-emerald-100">
                   <div className="text-2xl mb-1">💚</div>
@@ -277,7 +295,7 @@ export default function DiscoverPage() {
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-3 text-center border border-emerald-100">
                   <div className="text-2xl mb-1">💳</div>
-                  <p className="text-xs font-medium">Card</p>
+                  <p className="text-xs font-medium">Visa/MC</p>
                 </div>
               </div>
             </div>
@@ -288,12 +306,25 @@ export default function DiscoverPage() {
               </p>
             </div>
 
-            <Button className="w-full" onClick={() => alert("Payment integration coming soon!")}>
-              Pay Rs 500 — Coming Soon
+            <Button
+              className="w-full mb-3"
+              disabled={paymentLoading}
+              onClick={() => startPayment("unlock")}
+            >
+              {paymentLoading ? "Redirecting..." : "Pay Rs 500 — Unlock Contact"}
+            </Button>
+
+            <Button
+              variant="outline"
+              className="w-full mb-3 border-amber-300 text-amber-700 hover:bg-amber-50"
+              disabled={paymentLoading}
+              onClick={() => startPayment("bundle")}
+            >
+              Get 30 Contacts for Rs 5,000
             </Button>
 
             <button
-              className="w-full text-center text-sm text-gray-400 mt-3 hover:text-gray-600"
+              className="w-full text-center text-sm text-gray-400 mt-1 hover:text-gray-600"
               onClick={() => setShowUnlockModal(false)}
             >
               Cancel

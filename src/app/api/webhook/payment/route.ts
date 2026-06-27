@@ -1,51 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
-/**
- * Payment webhook endpoint.
- * When JazzCash/Easypaisa confirms a payment, this route:
- * 1. Verifies the webhook signature (TODO: add signature check for your provider)
- * 2. Records the unlock or subscription in the DB
- */
-export async function POST(request: NextRequest) {
-  const body = await request.json();
+const adminSupabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-  // TODO: Verify webhook signature based on payment provider
-  // const signature = request.headers.get("x-jazzcash-signature");
+export async function POST(req: NextRequest) {
+  const body = await req.text();
+  const signature = req.headers.get("x-sfpy-signature") || "";
 
-  const { type, payment_id, user_id, directory_profile_id, amount_pkr, tier } = body;
+  const expected = crypto
+    .createHmac("sha256", process.env.SAFEPAY_WEBHOOK_SECRET!)
+    .update(body)
+    .digest("hex");
 
-  const supabase = await createServiceClient();
+  if (signature !== expected) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+
+  const event = JSON.parse(body);
+  if (event.type !== "payment:created") return NextResponse.json({ ok: true });
+
+  const orderId: string = event.data?.tracker?.order_id || "";
+  // order_id format: "type_userId_timestamp"
+  const [type, userId] = orderId.split("_");
+
+  if (!userId || !type) return NextResponse.json({ ok: true });
 
   if (type === "unlock") {
-    const { error } = await supabase.from("unlocks").insert({
-      user_id,
-      directory_profile_id,
-      payment_id,
-      amount_pkr,
-    });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const profileId = event.data?.tracker?.metadata?.directoryProfileId;
+    if (profileId) {
+      await adminSupabase.from("unlocks").insert({ user_id: userId, directory_profile_id: profileId });
     }
-  } else if (type === "subscription") {
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + 1); // 1 month subscription
-
-    const { error } = await supabase.from("subscriptions").insert({
-      user_id,
-      tier: tier || "gold",
-      status: "active",
-      started_at: new Date().toISOString(),
-      expires_at: expiresAt.toISOString(),
-      payment_id,
-      amount_pkr,
-    });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+  } else if (type === "bundle") {
+    const { data: profile } = await adminSupabase.from("profiles").select("unlock_credits").eq("id", userId).single();
+    await adminSupabase.from("profiles").update({ unlock_credits: (profile?.unlock_credits || 0) + 30 }).eq("id", userId);
+  } else if (type === "gold_monthly") {
+    const until = new Date();
+    until.setMonth(until.getMonth() + 1);
+    await adminSupabase.from("profiles").update({ is_gold: true, gold_until: until.toISOString() }).eq("id", userId);
+  } else if (type === "gold_yearly") {
+    const until = new Date();
+    until.setFullYear(until.getFullYear() + 1);
+    await adminSupabase.from("profiles").update({ is_gold: true, gold_until: until.toISOString() }).eq("id", userId);
   }
+
+  await adminSupabase.from("payments").insert({
+    user_id: userId,
+    type,
+    amount: event.data?.tracker?.amount,
+    currency: "PKR",
+    safepay_token: event.data?.tracker?.token,
+    status: "paid",
+  });
 
   return NextResponse.json({ ok: true });
 }
