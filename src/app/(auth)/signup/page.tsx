@@ -33,7 +33,7 @@ export default function SignupPage() {
       options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback` },
     });
     if (error) {
-      setError(error.message);
+      setError(error.message || error.name || JSON.stringify(error));
       setLoading(false);
       return;
     }

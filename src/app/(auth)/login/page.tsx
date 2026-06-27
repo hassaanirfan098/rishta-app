@@ -29,7 +29,7 @@ export default function LoginPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError(error.message);
+      setError(error.message || error.name || JSON.stringify(error));
       setLoading(false);
       return;
     }
