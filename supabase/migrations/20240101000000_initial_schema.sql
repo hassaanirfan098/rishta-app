@@ -37,11 +37,11 @@ create table profiles (
 create or replace function handle_new_user()
 returns trigger as $$
 begin
-  insert into profiles (id)
+  insert into public.profiles (id)
   values (new.id);
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -222,11 +222,17 @@ create policy "users can read own profile"
   on profiles for select
   using (auth.uid() = id);
 
+-- Helper to get current user's gender without triggering RLS recursion
+create or replace function get_my_gender()
+returns text as $$
+  select gender from public.profiles where id = auth.uid();
+$$ language sql security definer set search_path = public;
+
 create policy "users can read approved opposite-gender profiles"
   on profiles for select
   using (
     is_approved = true
-    and gender != (select gender from profiles where id = auth.uid())
+    and gender != get_my_gender()
   );
 
 create policy "users can update own profile"
