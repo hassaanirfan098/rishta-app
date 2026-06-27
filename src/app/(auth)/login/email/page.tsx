@@ -46,7 +46,7 @@ export default function EmailLoginPage() {
         setLoading(false);
         return;
       }
-      router.push("/onboarding");
+      router.push("/discover");
       router.refresh();
     }
   };
