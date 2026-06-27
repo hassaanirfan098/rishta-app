@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { Crown, Check, ArrowLeft, Loader2 } from "lucide-react";
 
 const PLANS = [
-  { id: "gold_monthly", label: "1 Month", price: "Rs 999", sub: "Rs 999/month", popular: false },
-  { id: "gold_yearly", label: "1 Year", price: "Rs 7,999", sub: "Rs 667/month — save 33%", popular: true },
+  { id: "gold_monthly", label: "1 Month", price: "Rs 2,000", sub: "Rs 2,000/month", popular: false },
+  { id: "gold_yearly", label: "1 Year", price: "Rs 10,000", sub: "Rs 833/month — save 58%", popular: true },
 ];
 
 const PERKS = [

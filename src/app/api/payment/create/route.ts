@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
   const amounts: Record<string, number> = {
     unlock: 50000,
     bundle: 500000,
-    gold_monthly: 99900,
-    gold_yearly: 799900,
+    gold_monthly: 200000,
+    gold_yearly: 1000000,
   };
 
   const amount = amounts[type];
