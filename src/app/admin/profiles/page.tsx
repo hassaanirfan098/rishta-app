@@ -34,13 +34,21 @@ export default function AdminProfilesPage() {
   };
 
   const approve = async (id: string) => {
-    await supabase.from("profiles").update({ is_approved: true }).eq("id", id);
-    setProfiles((p) => p.filter((x) => filter === "all" ? x : x.id !== id));
+    const res = await fetch("/api/admin/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profileId: id, action: "approve" }),
+    });
+    if (res.ok) setProfiles((p) => filter === "pending" ? p.filter((x) => x.id !== id) : p.map((x) => x.id === id ? { ...x, is_approved: true } : x));
   };
 
   const reject = async (id: string) => {
-    await supabase.from("profiles").update({ is_approved: false }).eq("id", id);
-    loadProfiles();
+    const res = await fetch("/api/admin/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profileId: id, action: "revoke" }),
+    });
+    if (res.ok) setProfiles((p) => filter === "approved" ? p.filter((x) => x.id !== id) : p.map((x) => x.id === id ? { ...x, is_approved: false } : x));
   };
 
   return (
