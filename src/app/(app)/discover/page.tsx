@@ -124,6 +124,13 @@ export default function DiscoverPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Pending review banner */}
+      {currentUser && !currentUser.is_approved && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center gap-2">
+          <span className="text-amber-600 text-sm">⏳</span>
+          <p className="text-amber-800 text-xs font-medium">Your profile is under review. You can browse while we verify it — usually within 24 hours.</p>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">

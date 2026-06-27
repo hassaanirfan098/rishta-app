@@ -18,41 +18,10 @@ import { createClient } from "@/lib/supabase/client";
 
 const TOTAL_STEPS = 33; // 0-32
 
-const STEP_BG: Record<number, string> = {
-  0: "from-emerald-900 via-teal-800 to-emerald-700",
-  1: "from-violet-600 via-purple-600 to-indigo-700",
-  2: "from-emerald-500 via-teal-500 to-cyan-600",
-  3: "from-blue-600 via-indigo-600 to-violet-700",
-  4: "from-rose-500 via-pink-500 to-red-600",
-  5: "from-amber-500 via-orange-500 to-yellow-600",
-  6: "from-emerald-600 via-green-600 to-teal-700",
-  7: "from-teal-600 via-emerald-600 to-green-700",
-  8: "from-blue-600 via-cyan-600 to-teal-600",
-  9: "from-indigo-600 via-blue-600 to-cyan-700",
-  10: "from-violet-600 via-purple-500 to-fuchsia-600",
-  11: "from-sky-600 via-blue-600 to-indigo-700",
-  12: "from-green-600 via-emerald-600 to-teal-700",
-  13: "from-orange-500 via-amber-500 to-yellow-500",
-  14: "from-cyan-600 via-sky-600 to-blue-700",
-  15: "from-rose-600 via-pink-600 to-fuchsia-700",
-  16: "from-emerald-600 via-teal-600 to-cyan-700",
-  17: "from-amber-600 via-yellow-500 to-orange-600",
-  18: "from-teal-700 via-emerald-700 to-green-800",
-  19: "from-green-500 via-lime-500 to-emerald-600",
-  20: "from-gray-600 via-slate-600 to-zinc-700",
-  21: "from-blue-700 via-indigo-700 to-violet-800",
-  22: "from-pink-500 via-rose-500 to-red-500",
-  23: "from-sky-500 via-blue-500 to-indigo-600",
-  24: "from-amber-700 via-orange-600 to-yellow-700",
-  25: "from-fuchsia-600 via-purple-600 to-violet-700",
-  26: "from-violet-600 via-indigo-600 to-blue-700",
-  27: "from-emerald-600 via-teal-600 to-cyan-700",
-  28: "from-rose-600 via-pink-600 to-purple-700",
-  29: "from-teal-600 via-emerald-600 to-green-700",
-  30: "from-teal-600 via-emerald-600 to-green-700",
-  31: "from-emerald-700 via-teal-700 to-cyan-800",
-  32: "from-emerald-600 via-green-600 to-teal-700",
-};
+// Single professional theme throughout
+const STEP_BG: Record<number, string> = Object.fromEntries(
+  Array.from({ length: 33 }, (_, i) => [i, "from-slate-900 via-slate-800 to-emerald-900"])
+);
 
 const SECTS = [
   { val: "Sunni", emoji: "☀️" },
@@ -597,9 +566,13 @@ export default function OnboardingPage() {
       onboarding_complete: true,
     };
 
-    await supabase.from("profiles").upsert(profileData);
+    const { error: saveErr } = await supabase.from("profiles").update(profileData).eq("id", userId);
     setSaving(false);
+    if (saveErr) {
+      console.error("Profile save error:", saveErr);
+    }
     router.push("/discover");
+    router.refresh();
   };
 
   const heightCm = Math.round(
@@ -1569,24 +1542,25 @@ export default function OnboardingPage() {
       // ── Step 32: Done ────────────────────────────────────────────────────────
       case 32:
         return (
-          <div className={`min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br ${STEP_BG[32]} text-center`}>
-            <ProgressBar step={step} total={TOTAL_STEPS} />
-            <div className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center mb-8 shadow-xl">
-              <Check className="h-14 w-14 text-white" />
+          <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 text-center">
+            <div className="w-28 h-28 rounded-full bg-emerald-500/30 border-2 border-emerald-400/50 flex items-center justify-center mb-8 shadow-xl">
+              <Check className="h-14 w-14 text-emerald-400" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-3">All done! 🎉</h1>
-            <h2 className="text-lg font-semibold text-white/80 mb-2">Your profile is under review</h2>
-            <p className="text-white/60 text-sm mb-10 max-w-xs">
-              We'll notify you within 24 hours once your profile is approved. Time to find your perfect match!
+            <h1 className="text-3xl font-bold text-white mb-2">Profile Complete! 🎉</h1>
+            <p className="text-white/60 text-sm mb-2 max-w-xs leading-relaxed">
+              Your profile has been submitted. You can start exploring while our team reviews it — usually within 24 hours.
             </p>
+            <div className="flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 rounded-xl px-4 py-2 mb-10">
+              <span className="text-amber-400 text-sm">⏳ Profile under review</span>
+            </div>
             <button
               onClick={saveProfile}
               disabled={saving}
-              className="w-full max-w-sm bg-white text-emerald-700 font-bold py-4 rounded-2xl text-base hover:bg-emerald-50 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
+              className="w-full max-w-sm bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
             >
-              {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
-              Start Exploring →
+              {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start Exploring →"}
             </button>
+            {saving && <p className="text-white/40 text-xs mt-3">Saving your profile…</p>}
           </div>
         );
 
@@ -1673,11 +1647,11 @@ function StepWrapper({
 
       {/* Continue Button */}
       {onContinue && (
-        <div className="fixed bottom-0 left-0 right-0 px-5 py-4">
+        <div className="fixed bottom-0 left-0 right-0 px-5 py-5 bg-gradient-to-t from-black/30 to-transparent">
           <button
             onClick={onContinue}
             disabled={continueDisabled}
-            className="w-full bg-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg text-emerald-700 hover:bg-emerald-50"
+            className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
           >
             Continue →
           </button>
