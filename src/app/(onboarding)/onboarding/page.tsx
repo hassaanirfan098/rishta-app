@@ -1271,12 +1271,9 @@ export default function OnboardingPage() {
           <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="My phone number" onContinue={async () => {
             if (!form.phone) return;
             const fullPhone = `${form.country_code}${form.phone.replace(/^0/, "")}`;
-            const { error } = await supabase.auth.signInWithOtp({ phone: fullPhone });
-            if (!error) {
-              setOtpSent(true);
-              setOtpTimer(30);
-              next();
-            }
+            // Save phone to profile and continue (SMS OTP requires Twilio setup)
+            await supabase.from("profiles").update({ phone: fullPhone }).eq("id", userId!);
+            next();
           }} continueDisabled={!form.phone}>
             <div className="flex gap-2">
               <select
@@ -1303,59 +1300,9 @@ export default function OnboardingPage() {
       // ── Step 30: OTP ─────────────────────────────────────────────────────────
       case 30: {
         const otpRefs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
-        const verifyOtp = async () => {
-          const code = form.otp.join("");
-          const fullPhone = `${form.country_code}${form.phone.replace(/^0/, "")}`;
-          const { error } = await supabase.auth.verifyOtp({ phone: fullPhone, token: code, type: "sms" });
-          if (!error) next();
-        };
-        return (
-          <StepWrapper step={step} total={TOTAL_STEPS} onBack={back} title="Enter verification code" onContinue={verifyOtp} continueDisabled={form.otp.join("").length < 6}>
-            <p className="text-sm text-gray-500 mb-6">We sent a 6-digit code to {form.country_code} {form.phone}</p>
-            <div className="flex gap-2 justify-center">
-              {form.otp.map((digit, i) => (
-                <input
-                  key={i}
-                  ref={otpRefs[i]}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  autoFocus={i === 0}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(-1);
-                    const newOtp = [...form.otp];
-                    newOtp[i] = val;
-                    set("otp", newOtp);
-                    if (val && i < 5) otpRefs[i + 1].current?.focus();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Backspace" && !digit && i > 0) {
-                      otpRefs[i - 1].current?.focus();
-                    }
-                  }}
-                  className="w-12 h-14 text-center text-xl font-bold rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none"
-                />
-              ))}
-            </div>
-            <div className="text-center mt-6">
-              {otpTimer > 0 ? (
-                <p className="text-sm text-gray-400">Resend code in {otpTimer}s</p>
-              ) : (
-                <button
-                  onClick={async () => {
-                    const fullPhone = `${form.country_code}${form.phone.replace(/^0/, "")}`;
-                    await supabase.auth.signInWithOtp({ phone: fullPhone });
-                    setOtpTimer(30);
-                  }}
-                  className="text-emerald-600 text-sm font-medium flex items-center gap-1 mx-auto"
-                >
-                  <RefreshCw className="h-3 w-3" /> Resend code
-                </button>
-              )}
-            </div>
-          </StepWrapper>
-        );
+        // SMS OTP requires Twilio — skip this step automatically
+        next();
+        return null;
       }
 
       // ── Step 31: Face Verification ───────────────────────────────────────────
