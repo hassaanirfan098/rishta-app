@@ -8,9 +8,27 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://rishta-app.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Rishta — Muslim Matrimonial",
-  description: "Find your perfect Muslim match. Rishta connects practising Muslims for marriage.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Rishta — Muslim Matrimonial for Pakistan & Diaspora",
+    template: "%s · Rishta",
+  },
+  description:
+    "A modern, private, and faith-first platform for practising Muslims to find marriage. Verified profiles, halal communication, and serious intentions only.",
+  applicationName: "Rishta",
+  keywords: [
+    "Muslim matrimonial",
+    "Pakistani rishta",
+    "halal marriage",
+    "Islamic marriage app",
+    "Muslim marriage Pakistan",
+    "nikah",
+    "shaadi",
+  ],
+  authors: [{ name: "Rishta" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -19,6 +37,25 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Rishta",
+    title: "Rishta — Find your rishta the halal way",
+    description:
+      "A modern, private, faith-first matrimonial platform for marriage-minded Muslims across Pakistan and the diaspora.",
+    url: SITE_URL,
+    locale: "en_PK",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rishta — Muslim Matrimonial",
+    description:
+      "Verified profiles. Halal communication. Serious intentions only.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
