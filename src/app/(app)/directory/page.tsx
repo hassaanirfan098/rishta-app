@@ -5,6 +5,7 @@ import { Search, X, Package, Loader2 } from "lucide-react";
 import { DirectoryCard } from "@/components/DirectoryCard";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/Toast";
 
 export default function DirectoryPage() {
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -15,6 +16,7 @@ export default function DirectoryPage() {
   const [unlockTarget, setUnlockTarget] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const supabase = createClient();
+  const { toast } = useToast();
 
   useEffect(() => { loadData(); }, []);
 
@@ -56,7 +58,7 @@ export default function DirectoryPage() {
     if (data.url) {
       window.location.href = data.url;
     } else {
-      alert("Payment setup failed. Please try again.");
+      toast("Payment setup failed. Please try again.", "error");
     }
   };
 

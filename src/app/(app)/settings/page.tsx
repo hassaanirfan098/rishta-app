@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/Toast";
 
 const SECTS = ["Sunni", "Shia", "Deobandi", "Barelvi", "Ahl-e-Hadith", "Other"];
 const RELIGIOSITY = ["Very practicing", "Practicing", "Moderate", "Learning"];
@@ -46,6 +47,7 @@ export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const { lang, setLang } = useLang();
+  const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -73,7 +75,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     if (!profile) return;
     setSaving(true);
-    await supabase.from("profiles").update({
+    const { error } = await supabase.from("profiles").update({
       full_name: profile.full_name,
       phone: profile.phone,
       city: profile.city,
@@ -87,6 +89,8 @@ export default function SettingsPage() {
       height_cm: profile.height_cm,
     }).eq("id", profile.id);
     setSaving(false);
+    if (error) { toast(error.message, "error"); return; }
+    toast("Profile saved", "success");
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -99,7 +103,7 @@ export default function SettingsPage() {
     const ext = file.name.split(".").pop();
     const path = `${profile.id}/${Date.now()}.${ext}`;
     const { error: uploadErr } = await supabase.storage.from("avatars").upload(path, file);
-    if (uploadErr) { alert(uploadErr.message); setUploadingPhoto(false); return; }
+    if (uploadErr) { toast(uploadErr.message, "error"); setUploadingPhoto(false); return; }
 
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
 

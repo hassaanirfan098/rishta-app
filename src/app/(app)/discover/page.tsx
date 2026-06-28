@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/Toast";
 
 interface Filters {
   sect: string;
@@ -47,6 +48,7 @@ export default function DiscoverPage() {
   const [unlockTarget, setUnlockTarget] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadData(null);
@@ -133,6 +135,18 @@ export default function DiscoverPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     await supabase.from("likes").insert({ liker_id: user.id, liked_id: profileId });
+
+    // Did this create a mutual match?
+    const { data: match } = await supabase
+      .from("matches")
+      .select("id")
+      .or(`and(user1_id.eq.${user.id},user2_id.eq.${profileId}),and(user1_id.eq.${profileId},user2_id.eq.${user.id})`)
+      .single();
+    if (match) {
+      toast("It's a match! 💚 Start a conversation.", "success");
+    } else {
+      toast("Liked 💚", "success");
+    }
   };
 
   const handleMessage = (profileId: string) => {
@@ -159,7 +173,7 @@ export default function DiscoverPage() {
     if (data.url) {
       window.location.href = data.url;
     } else {
-      alert("Payment setup failed. Please try again.");
+      toast("Payment setup failed. Please try again.", "error");
     }
   };
 

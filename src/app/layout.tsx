@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { LangProvider } from "@/lib/i18n";
+import { ToastProvider } from "@/components/Toast";
 import "./globals.css";
 
 const geist = Geist({
@@ -73,7 +74,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full bg-gray-50 text-gray-900"><LangProvider>{children}</LangProvider></body>
+      <body className="min-h-full bg-gray-50 text-gray-900"><LangProvider><ToastProvider>{children}</ToastProvider></LangProvider></body>
     </html>
   );
 }

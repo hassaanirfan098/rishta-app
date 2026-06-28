@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Crown, Check, ArrowLeft, Loader2, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/Toast";
 
 const PLANS = [
   { id: "gold_monthly", label: "1 Month", price: "Rs 2,000", sub: "Rs 2,000/month", popular: false },
@@ -27,6 +28,7 @@ export default function GoldPage() {
   const [isGold, setIsGold] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     const load = async () => {
@@ -44,7 +46,12 @@ export default function GoldPage() {
     const res = await fetch("/api/boost", { method: "POST" });
     const data = await res.json();
     setBoostLoading(false);
-    if (data.boosted_until) setBoostedUntil(data.boosted_until);
+    if (data.boosted_until) {
+      setBoostedUntil(data.boosted_until);
+      toast("⚡ Your profile is boosted for 24 hours!", "success");
+    } else {
+      toast(data.error || "Could not boost right now.", "error");
+    }
   };
 
   const startPayment = async () => {
@@ -59,7 +66,7 @@ export default function GoldPage() {
     if (data.url) {
       window.location.href = data.url;
     } else {
-      alert("Payment setup failed. Please try again.");
+      toast("Payment setup failed. Please try again.", "error");
     }
   };
 
