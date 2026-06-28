@@ -6,6 +6,7 @@ import { MessageCircle, Heart, Lock, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
 import { ListSkeleton } from "@/components/Skeletons";
+import { LogoGlyph } from "@/components/Logo";
 
 export default function MatchesPage() {
   const [tab, setTab] = useState<"matches" | "liked">("matches");
@@ -76,8 +77,8 @@ export default function MatchesPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold text-gray-900 mb-3">
-            <span className="text-emerald-600">ر</span> Matches
+          <h1 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <LogoGlyph className="w-5 h-5 text-emerald-600" /> Matches
           </h1>
           <div className="flex bg-gray-100 rounded-xl p-1">
             <button

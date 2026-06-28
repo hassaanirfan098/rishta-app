@@ -6,6 +6,7 @@ import { MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
 import { ListSkeleton } from "@/components/Skeletons";
+import { LogoGlyph } from "@/components/Logo";
 
 export default function ChatListPage() {
   const [conversations, setConversations] = useState<any[]>([]);
@@ -50,8 +51,8 @@ export default function ChatListPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold text-gray-900">
-            <span className="text-emerald-600">ر</span> Messages
+          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <LogoGlyph className="w-5 h-5 text-emerald-600" /> Messages
           </h1>
         </div>
       </div>

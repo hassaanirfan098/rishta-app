@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
 import { ProfileGridSkeleton } from "@/components/Skeletons";
+import { LogoGlyph } from "@/components/Logo";
 
 interface Filters {
   sect: string;
@@ -204,8 +205,8 @@ export default function DiscoverPage() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              <span className="text-emerald-600">ر</span> Discover
+            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <LogoGlyph className="w-5 h-5 text-emerald-600" /> Discover
             </h1>
             <p className="text-xs text-gray-400">Find your match</p>
           </div>

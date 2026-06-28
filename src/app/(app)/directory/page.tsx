@@ -6,6 +6,7 @@ import { DirectoryCard } from "@/components/DirectoryCard";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
+import { LogoGlyph } from "@/components/Logo";
 
 export default function DirectoryPage() {
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -77,8 +78,8 @@ export default function DirectoryPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 pt-4 pb-3">
-          <h1 className="text-xl font-bold text-gray-900 mb-3">
-            <span className="text-emerald-600">ر</span> Directory
+          <h1 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <LogoGlyph className="w-5 h-5 text-emerald-600" /> Directory
           </h1>
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

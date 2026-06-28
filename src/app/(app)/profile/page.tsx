@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
+import { LogoGlyph } from "@/components/Logo";
 
 function Section({
   title,
@@ -154,8 +155,8 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">
-            <span className="text-emerald-600">ر</span> Profile
+          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <LogoGlyph className="w-5 h-5 text-emerald-600" /> Profile
           </h1>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" onClick={() => router.push("/settings")}>

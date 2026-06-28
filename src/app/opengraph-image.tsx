@@ -64,12 +64,12 @@ export default async function OgImage() {
           <svg width="84" height="84" viewBox="0 0 512 512">
             <mask id="og-crescent">
               <rect width="512" height="512" fill="black" />
-              <circle cx="232" cy="256" r="150" fill="white" />
-              <circle cx="300" cy="256" r="128" fill="black" />
+              <circle cx="244" cy="256" r="150" fill="white" />
+              <circle cx="312" cy="256" r="130" fill="black" />
             </mask>
             <rect width="512" height="512" fill="#047857" mask="url(#og-crescent)" />
             <path
-              transform="translate(286 196) scale(7.2)"
+              transform="translate(300 198) scale(5.8)"
               fill="#047857"
               d="M12 21s-1-.7-2.6-2.1C6.9 16.6 3 13.2 3 8.9 3 6.2 5.1 4 7.8 4c1.6 0 3.1.8 4.2 2.1C13.1 4.8 14.6 4 16.2 4 18.9 4 21 6.2 21 8.9c0 4.3-3.9 7.7-6.4 10C13 20.3 12 21 12 21z"
             />
