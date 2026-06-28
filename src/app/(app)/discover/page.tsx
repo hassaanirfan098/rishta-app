@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
+import { ProfileGridSkeleton } from "@/components/Skeletons";
 
 interface Filters {
   sect: string;
@@ -286,19 +287,23 @@ export default function DiscoverPage() {
       {/* Content */}
       <div className="max-w-lg mx-auto px-4 py-5">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="w-10 h-10 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-sm text-gray-500">Finding matches...</p>
-            </div>
-          </div>
+          <ProfileGridSkeleton count={4} />
         ) : combined.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="text-5xl mb-4">🤍</div>
-            <h3 className="text-lg font-semibold text-gray-800">No profiles yet</h3>
-            <p className="text-sm text-gray-500 mt-2">
-              Complete your profile to start discovering matches
+            <h3 className="text-lg font-semibold text-gray-800">
+              {activeFilters ? "No matches for these filters" : "No profiles yet"}
+            </h3>
+            <p className="text-sm text-gray-500 mt-2 max-w-xs">
+              {activeFilters
+                ? "Try widening your filters to see more people."
+                : "New members join every day. Check back soon for fresh matches."}
             </p>
+            {activeFilters && (
+              <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
+                Clear filters
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

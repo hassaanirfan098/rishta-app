@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MessageCircle, Heart, Lock, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
+import { ListSkeleton } from "@/components/Skeletons";
 
 export default function MatchesPage() {
   const [tab, setTab] = useState<"matches" | "liked">("matches");
@@ -98,9 +99,7 @@ export default function MatchesPage() {
 
       <div className="max-w-lg mx-auto px-4 py-5">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-10 h-10 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-          </div>
+          <ListSkeleton count={5} />
         ) : tab === "matches" ? (
           matches.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">

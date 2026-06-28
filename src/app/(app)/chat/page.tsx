@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
+import { ListSkeleton } from "@/components/Skeletons";
 
 export default function ChatListPage() {
   const [conversations, setConversations] = useState<any[]>([]);
@@ -57,9 +58,7 @@ export default function ChatListPage() {
 
       <div className="max-w-lg mx-auto px-4 py-4">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-          </div>
+          <ListSkeleton count={6} />
         ) : conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
