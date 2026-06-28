@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Phone, Mail, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { LogoGlyph } from "@/components/Logo";
 
 const GRADIENTS = [
   "from-emerald-900 via-teal-800 to-emerald-700",
@@ -87,7 +88,7 @@ export default function LoginPage() {
       {/* Logo centered top area */}
       <div className="absolute top-0 left-0 right-0 flex flex-col items-center justify-center pt-20 pb-10">
         <div className="flex items-center justify-center w-24 h-24 bg-white/15 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl mb-5">
-          <span className="text-white text-5xl font-bold">ر</span>
+          <LogoGlyph className="w-14 h-14 text-white" />
         </div>
         <h1 className="text-white text-4xl font-bold tracking-tight">Rishta</h1>
         <p className="text-white/70 text-sm mt-1 tracking-widest uppercase">Muslim Matrimonial</p>

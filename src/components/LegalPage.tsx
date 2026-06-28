@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { LogoMark } from "@/components/Logo";
 
 export function LegalPage({
   title,
@@ -15,9 +16,7 @@ export function LegalPage({
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-3xl mx-auto px-5 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-lg">
-              ر
-            </div>
+            <LogoMark className="w-9 h-9" />
             <span className="font-bold text-lg">Rishta</span>
           </Link>
           <Link

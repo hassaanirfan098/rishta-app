@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { Home, Search } from "lucide-react";
+import { LogoMark } from "@/components/Logo";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-white flex items-center justify-center px-5">
       <div className="text-center max-w-sm">
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-4xl font-bold mx-auto shadow-lg shadow-emerald-200">
-          ر
-        </div>
+        <LogoMark className="w-20 h-20 rounded-3xl shadow-lg shadow-emerald-200 mx-auto" rounded="rounded-3xl" />
         <p className="mt-8 text-6xl font-bold text-gray-900">404</p>
         <h1 className="mt-2 text-xl font-semibold text-gray-800">
           Page not found

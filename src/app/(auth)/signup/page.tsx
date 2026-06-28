@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { LogoGlyph } from "@/components/Logo";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -47,7 +48,7 @@ export default function SignupPage() {
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-600 rounded-3xl shadow-lg mb-6">
-            <span className="text-white text-4xl">ر</span>
+            <LogoGlyph className="w-11 h-11 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
           <p className="text-gray-500 text-sm mb-6">
@@ -66,7 +67,7 @@ export default function SignupPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-600 rounded-3xl shadow-lg mb-4">
-            <span className="text-white text-4xl">ر</span>
+            <LogoGlyph className="w-11 h-11 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mt-2">
             <span className="text-emerald-600">Rishta</span>

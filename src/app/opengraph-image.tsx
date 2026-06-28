@@ -48,7 +48,7 @@ export default async function OgImage() {
           }}
         />
 
-        {/* Logo mark */}
+        {/* Logo mark — crescent + heart */}
         <div
           style={{
             width: 132,
@@ -58,13 +58,22 @@ export default async function OgImage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 80,
-            fontWeight: 700,
-            color: "#047857",
             boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
           }}
         >
-          ر
+          <svg width="84" height="84" viewBox="0 0 512 512">
+            <mask id="og-crescent">
+              <rect width="512" height="512" fill="black" />
+              <circle cx="232" cy="256" r="150" fill="white" />
+              <circle cx="300" cy="256" r="128" fill="black" />
+            </mask>
+            <rect width="512" height="512" fill="#047857" mask="url(#og-crescent)" />
+            <path
+              transform="translate(286 196) scale(7.2)"
+              fill="#047857"
+              d="M12 21s-1-.7-2.6-2.1C6.9 16.6 3 13.2 3 8.9 3 6.2 5.1 4 7.8 4c1.6 0 3.1.8 4.2 2.1C13.1 4.8 14.6 4 16.2 4 18.9 4 21 6.2 21 8.9c0 4.3-3.9 7.7-6.4 10C13 20.3 12 21 12 21z"
+            />
+          </svg>
         </div>
 
         <div style={{ fontSize: 76, fontWeight: 800, marginTop: 44, letterSpacing: -1 }}>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X, Download } from "lucide-react";
+import { LogoMark } from "@/components/Logo";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -48,9 +49,7 @@ export function PWAInstallPrompt() {
   return (
     <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[90] w-[calc(100%-2rem)] max-w-sm animate-slide-up">
       <div className="flex items-center gap-3 bg-white rounded-2xl shadow-xl border border-gray-100 p-3.5">
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
-          ر
-        </div>
+        <LogoMark className="w-11 h-11 rounded-xl shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-900">Install Rishta</p>
           <p className="text-xs text-gray-500">Add to your home screen for a faster, app-like experience.</p>

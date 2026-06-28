@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { LogoGlyph } from "@/components/Logo";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -600,7 +601,7 @@ export default function OnboardingPage() {
           <div className={`min-h-screen bg-gradient-to-br ${STEP_BG[0]} flex flex-col items-center justify-center px-6 text-center`}>
             <div className="relative mb-8">
               <div className="w-24 h-24 bg-white/15 rounded-3xl flex items-center justify-center border border-white/20 mb-6 mx-auto">
-                <span className="text-white text-5xl">ر</span>
+                <LogoGlyph className="w-14 h-14 text-white" />
               </div>
               <div className="absolute -inset-4 bg-white/5 rounded-full blur-2xl" />
             </div>

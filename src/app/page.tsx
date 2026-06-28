@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { LogoMark } from "@/components/Logo";
 import {
   ShieldCheck,
   Heart,
@@ -107,9 +108,7 @@ export default async function Home() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <nav className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              ر
-            </div>
+            <LogoMark className="w-9 h-9" />
             <span className="font-bold text-lg tracking-tight">Rishta</span>
           </div>
           <div className="flex items-center gap-2">
@@ -293,9 +292,7 @@ export default async function Home() {
           <div className="relative">
             <div className="aspect-square rounded-[2rem] bg-gradient-to-br from-emerald-100 via-teal-50 to-white border border-emerald-100 p-8 flex items-center justify-center">
               <div className="text-center">
-                <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-5xl font-bold mx-auto shadow-xl shadow-emerald-200">
-                  ر
-                </div>
+                <LogoMark className="w-24 h-24 rounded-3xl shadow-xl shadow-emerald-200 mx-auto" rounded="rounded-3xl" />
                 <p className="mt-6 text-2xl font-bold text-gray-900">Rishta</p>
                 <p className="text-gray-500 text-sm mt-1">رشتہ — a bond for life</p>
                 <div className="mt-6 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-emerald-100 text-emerald-700 text-xs font-medium shadow-sm">
@@ -447,9 +444,7 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto px-5 py-12">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold">
-                ر
-              </div>
+              <LogoMark className="w-8 h-8 rounded-lg" rounded="rounded-lg" />
               <span className="font-bold">Rishta</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">

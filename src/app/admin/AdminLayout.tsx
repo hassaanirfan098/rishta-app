@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LayoutDashboard, Users, BookOpen, Flag, Menu, X } from "lucide-react";
+import { LogoGlyph } from "@/components/Logo";
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -33,7 +34,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
         <div className="p-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">ر</span>
+              <LogoGlyph className="w-5 h-5 text-white" />
             </div>
             <div>
               <p className="font-bold text-gray-900 text-sm">Rishta</p>
@@ -68,7 +69,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
           </button>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-emerald-600 rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-xs">ر</span>
+              <LogoGlyph className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-gray-900 text-sm">Admin Panel</span>
           </div>
