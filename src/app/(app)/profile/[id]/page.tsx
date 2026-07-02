@@ -156,11 +156,11 @@ export default function ProfileViewPage() {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-        <button onClick={() => router.back()} className="absolute top-12 left-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+        <button aria-label="Go back" onClick={() => router.back()} className="absolute top-12 left-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
           <ArrowLeft className="h-5 w-5 text-white" />
         </button>
 
-        <button onClick={() => setShowReportModal(true)} className="absolute top-12 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+        <button aria-label="Report or block" onClick={() => setShowReportModal(true)} className="absolute top-12 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
           <Flag className="h-4 w-4 text-white" />
         </button>
 
@@ -174,8 +174,8 @@ export default function ProfileViewPage() {
 
         {photos.length > 1 && (
           <>
-            <button className="absolute inset-y-0 left-0 w-1/3" onClick={() => setPhotoIdx((i) => Math.max(0, i - 1))} />
-            <button className="absolute inset-y-0 right-0 w-1/3" onClick={() => setPhotoIdx((i) => Math.min(photos.length - 1, i + 1))} />
+            <button aria-label="Previous photo" className="absolute inset-y-0 left-0 w-1/3" onClick={() => setPhotoIdx((i) => Math.max(0, i - 1))} />
+            <button aria-label="Next photo" className="absolute inset-y-0 right-0 w-1/3" onClick={() => setPhotoIdx((i) => Math.min(photos.length - 1, i + 1))} />
           </>
         )}
 

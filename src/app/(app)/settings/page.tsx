@@ -166,7 +166,7 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
-          <button onClick={() => router.back()}>
+          <button aria-label="Go back" onClick={() => router.back()}>
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </button>
           <h1 className="text-lg font-bold text-gray-900 flex-1">Settings</h1>

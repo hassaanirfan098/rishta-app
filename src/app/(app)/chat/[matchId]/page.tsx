@@ -99,7 +99,7 @@ export default function ChatRoomPage() {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-100 flex items-center gap-3 px-4 py-3 sticky top-0 z-10">
-        <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700">
+        <button aria-label="Back to messages" onClick={() => router.back()} className="text-gray-500 hover:text-gray-700">
           <ArrowLeft className="h-5 w-5" />
         </button>
         {otherProfile && (
