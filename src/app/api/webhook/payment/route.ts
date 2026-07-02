@@ -37,9 +37,17 @@ export async function POST(req: NextRequest) {
   } else if (type === "bundle") {
     const { data: profile } = await adminSupabase.from("profiles").select("unlock_credits").eq("id", userId).single();
     await adminSupabase.from("profiles").update({ unlock_credits: (profile?.unlock_credits || 0) + 30 }).eq("id", userId);
+  } else if (type === "gold_weekly") {
+    const until = new Date();
+    until.setDate(until.getDate() + 7);
+    await adminSupabase.from("profiles").update({ is_gold: true, gold_until: until.toISOString() }).eq("id", userId);
   } else if (type === "gold_monthly") {
     const until = new Date();
     until.setMonth(until.getMonth() + 1);
+    await adminSupabase.from("profiles").update({ is_gold: true, gold_until: until.toISOString() }).eq("id", userId);
+  } else if (type === "gold_quarterly") {
+    const until = new Date();
+    until.setMonth(until.getMonth() + 3);
     await adminSupabase.from("profiles").update({ is_gold: true, gold_until: until.toISOString() }).eq("id", userId);
   } else if (type === "gold_yearly") {
     const until = new Date();
