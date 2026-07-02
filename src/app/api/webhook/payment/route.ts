@@ -24,10 +24,16 @@ export async function POST(req: NextRequest) {
   if (event.type !== "payment:created") return NextResponse.json({ ok: true });
 
   const orderId: string = event.data?.tracker?.order_id || "";
-  // order_id format: "type_userId_timestamp"
-  const [type, userId] = orderId.split("_");
+  // order_id format: "type_userId_timestamp", created in /api/payment/create as
+  // `${type}_${user.id}_${Date.now()}`. `type` values like "gold_monthly" contain
+  // underscores themselves, so a naive split("_") mis-parses type/userId — parse
+  // from the right instead, since userId (UUID) and timestamp never contain "_".
+  const parts = orderId.split("_");
+  const timestamp = parts.pop();
+  const userId = parts.pop();
+  const type = parts.join("_");
 
-  if (!userId || !type) return NextResponse.json({ ok: true });
+  if (!userId || !type || !timestamp) return NextResponse.json({ ok: true });
 
   if (type === "unlock") {
     const profileId = event.data?.tracker?.metadata?.directoryProfileId;
