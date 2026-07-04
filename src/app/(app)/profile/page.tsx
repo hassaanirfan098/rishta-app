@@ -13,8 +13,6 @@ function Section({
   title,
   emoji,
   children,
-  bg = "bg-brand-50",
-  border = "border-brand-100",
 }: {
   title: string;
   emoji: string;
@@ -23,9 +21,10 @@ function Section({
   border?: string;
 }) {
   return (
-    <div className={`${bg} rounded-2xl p-4 border ${border}`}>
-      <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-        <span className="text-xl">{emoji}</span> {title}
+    <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+      <h3 className="font-extrabold text-gray-900 text-lg mb-4 flex items-center gap-2.5">
+        <span className="w-9 h-9 rounded-2xl bg-brand-50 flex items-center justify-center text-lg">{emoji}</span>
+        {title}
       </h3>
       {children}
     </div>
@@ -155,9 +154,10 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <LogoGlyph className="w-5 h-5 text-brand-600" /> Profile
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <LogoGlyph className="w-7 h-7" />
+            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Profile</h1>
+          </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" onClick={() => router.push("/settings")}>
               <Edit2 className="h-5 w-5" />
@@ -171,40 +171,37 @@ export default function ProfilePage() {
 
       <div className="max-w-lg mx-auto pb-10">
         {/* Hero */}
-        <div className="relative h-[350px] bg-gradient-to-br from-brand-200 to-brand-300">
+        <div className="relative h-[440px] bg-gradient-to-br from-brand-300 to-brand-600 sm:rounded-b-[32px] overflow-hidden">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-8xl">
+            <div className="w-full h-full flex items-center justify-center text-[7rem]">
               {gender === "male" ? "👨" : "👩"}
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+          <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+            {profile?.is_verified && (
+              <div className="flex items-center gap-1 bg-white/90 backdrop-blur text-brand-700 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm">
+                <Shield className="h-3 w-3 text-gold-600" />
+                Verified
+              </div>
+            )}
+            {!profile?.is_approved && (
+              <Badge variant="secondary">Pending Approval</Badge>
+            )}
+          </div>
           <div className="absolute bottom-5 left-5 right-5">
-            <div className="flex items-end justify-between">
-              <div>
-                <h2 className="text-white text-2xl font-bold">
-                  {(profile?.full_name as string) || "Your Name"}{age ? `, ${age}` : ""}
-                </h2>
-                {!!(profile?.city || profile?.country) && (
-                  <p className="text-white/80 text-sm mt-1">
-                    📍 {[(profile?.city as string | undefined), (profile?.country as string | undefined)].filter(Boolean).join(", ")}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-2 items-end">
-                {profile?.is_verified && (
-                  <div className="flex items-center gap-1 bg-blue-500 text-white rounded-full px-2.5 py-1 text-xs font-bold">
-                    <Shield className="h-3 w-3" />
-                    Verified
-                  </div>
-                )}
-                {!profile?.is_approved && (
-                  <Badge variant="secondary">Pending Approval</Badge>
-                )}
-              </div>
-            </div>
+            <h2 className="text-white text-3xl font-extrabold tracking-tight leading-none drop-shadow">
+              {(profile?.full_name as string) || "Your Name"}{age ? <span className="font-semibold">, {age}</span> : ""}
+            </h2>
+            {!!(profile?.city || profile?.country) && (
+              <p className="text-white/85 text-sm mt-2 flex items-center gap-1">
+                <span>📍</span>
+                {[(profile?.city as string | undefined), (profile?.country as string | undefined)].filter(Boolean).join(", ")}
+              </p>
+            )}
           </div>
         </div>
 

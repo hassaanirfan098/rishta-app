@@ -6,13 +6,14 @@ import { ArrowLeft, Heart, MessageCircle, Flag, Loader2, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
 
-function Section({ title, emoji, children, bg = "bg-gray-50", border = "border-gray-100" }: {
+function Section({ title, emoji, children }: {
   title: string; emoji: string; children: React.ReactNode; bg?: string; border?: string;
 }) {
   return (
-    <div className={`${bg} rounded-2xl p-4 border ${border}`}>
-      <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-        <span>{emoji}</span> {title}
+    <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+      <h3 className="font-extrabold text-gray-900 text-lg mb-4 flex items-center gap-2.5">
+        <span className="w-9 h-9 rounded-2xl bg-brand-50 flex items-center justify-center text-lg">{emoji}</span>
+        {title}
       </h3>
       {children}
     </div>
@@ -180,9 +181,9 @@ export default function ProfileViewPage() {
         )}
 
         <div className="absolute bottom-5 left-5 right-5">
-          <h1 className="text-white text-2xl font-bold">
-            {profile.full_name}{age ? `, ${age}` : ""}
-            {profile.is_verified && <span className="ml-2 text-sm bg-blue-500 px-2 py-0.5 rounded-full">✓</span>}
+          <h1 className="text-white text-3xl font-extrabold tracking-tight leading-none drop-shadow">
+            {profile.full_name}{age ? <span className="font-semibold">, {age}</span> : ""}
+            {profile.is_verified && <span className="ml-2 align-middle text-xs bg-white/90 text-brand-700 px-2 py-0.5 rounded-full font-bold">✓</span>}
           </h1>
           {(profile.city || profile.country) && (
             <p className="text-white/80 text-sm mt-0.5">📍 {[profile.city, profile.country].filter(Boolean).join(", ")}</p>
