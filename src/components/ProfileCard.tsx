@@ -44,7 +44,7 @@ export function ProfileCard({ profile, isMatch, onLike, onMessage, className }: 
       className
     )}>
       {/* Photo with gradient overlay */}
-      <div className="relative h-72 bg-gradient-to-br from-emerald-200 to-teal-300 cursor-pointer" onClick={() => router.push(`/profile/${profile.id}`)}>
+      <div className="relative h-72 bg-gradient-to-br from-brand-200 to-brand-300 cursor-pointer" onClick={() => router.push(`/profile/${profile.id}`)}>
         {profile.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
@@ -71,7 +71,7 @@ export function ProfileCard({ profile, isMatch, onLike, onMessage, className }: 
             {isMatch ? (
               <button
                 onClick={() => onMessage?.(profile.id)}
-                className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white"
+                className="px-3 py-1 rounded-full text-xs font-bold bg-brand-500 text-white"
               >
                 💬 Message
               </button>
@@ -89,7 +89,7 @@ export function ProfileCard({ profile, isMatch, onLike, onMessage, className }: 
       {/* Info pills row */}
       <div className="px-4 py-3 flex flex-wrap gap-2">
         {profile.sect && (
-          <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">
+          <span className="bg-brand-50 text-brand-700 px-3 py-1 rounded-full text-xs font-medium">
             🕌 {profile.sect}
           </span>
         )}
@@ -138,7 +138,7 @@ export function ProfileCard({ profile, isMatch, onLike, onMessage, className }: 
             setSwipe("like");
             setTimeout(() => { onLike?.(profile.id); setSwipe(null); }, 350);
           }}
-          className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95"
+          className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-500 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95"
         >
           💚 Like
         </button>

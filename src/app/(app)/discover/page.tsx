@@ -206,7 +206,7 @@ export default function DiscoverPage() {
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <LogoGlyph className="w-5 h-5 text-emerald-600" /> Discover
+              <LogoGlyph className="w-5 h-5 text-brand-600" /> Discover
             </h1>
             <p className="text-xs text-gray-400">Find your match</p>
           </div>
@@ -214,10 +214,10 @@ export default function DiscoverPage() {
             variant="ghost"
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
-            className={`relative ${showFilters || activeFilters ? "bg-emerald-50 text-emerald-600" : ""}`}
+            className={`relative ${showFilters || activeFilters ? "bg-brand-50 text-brand-600" : ""}`}
           >
             <SlidersHorizontal className="h-5 w-5" />
-            {activeFilters && <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full" />}
+            {activeFilters && <span className="absolute top-1 right-1 w-2 h-2 bg-brand-500 rounded-full" />}
           </Button>
         </div>
 
@@ -279,7 +279,7 @@ export default function DiscoverPage() {
             </div>
             <div className="max-w-lg mx-auto flex gap-2 mt-3">
               <Button variant="outline" size="sm" className="flex-1" onClick={clearFilters}>Clear</Button>
-              <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={applyFilters}>Apply Filters</Button>
+              <Button size="sm" className="flex-1 bg-brand-600 hover:bg-brand-700" onClick={applyFilters}>Apply Filters</Button>
             </div>
           </div>
         )}
@@ -343,18 +343,18 @@ export default function DiscoverPage() {
               Unlock this person's phone number for a one-time payment of <span className="font-bold text-gray-900">Rs 500</span>.
             </p>
 
-            <div className="bg-emerald-50 rounded-2xl p-4 mb-4">
-              <p className="text-sm font-medium text-emerald-800 mb-2">Accepted Payment Methods</p>
+            <div className="bg-brand-50 rounded-2xl p-4 mb-4">
+              <p className="text-sm font-medium text-brand-800 mb-2">Accepted Payment Methods</p>
               <div className="flex gap-3">
-                <div className="flex-1 bg-white rounded-xl p-3 text-center border border-emerald-100">
+                <div className="flex-1 bg-white rounded-xl p-3 text-center border border-brand-100">
                   <div className="text-2xl mb-1">💚</div>
                   <p className="text-xs font-medium">JazzCash</p>
                 </div>
-                <div className="flex-1 bg-white rounded-xl p-3 text-center border border-emerald-100">
+                <div className="flex-1 bg-white rounded-xl p-3 text-center border border-brand-100">
                   <div className="text-2xl mb-1">🟠</div>
                   <p className="text-xs font-medium">Easypaisa</p>
                 </div>
-                <div className="flex-1 bg-white rounded-xl p-3 text-center border border-emerald-100">
+                <div className="flex-1 bg-white rounded-xl p-3 text-center border border-brand-100">
                   <div className="text-2xl mb-1">💳</div>
                   <p className="text-xs font-medium">Visa/MC</p>
                 </div>

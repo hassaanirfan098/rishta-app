@@ -134,7 +134,7 @@ export default function ProfileViewPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-emerald-600 animate-spin" />
+        <Loader2 className="h-8 w-8 text-brand-600 animate-spin" />
       </div>
     );
   }
@@ -146,7 +146,7 @@ export default function ProfileViewPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
       {/* Hero photo */}
-      <div className="relative h-[420px] bg-gradient-to-br from-emerald-200 to-teal-300">
+      <div className="relative h-[420px] bg-gradient-to-br from-brand-200 to-brand-300">
         {mainPhoto ? (
           <img src={mainPhoto} alt={profile.full_name} className="w-full h-full object-cover" />
         ) : (
@@ -194,7 +194,7 @@ export default function ProfileViewPage() {
       {/* Content */}
       <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
         {profile.about_me && (
-          <Section title="About" emoji="💬" bg="bg-emerald-50" border="border-emerald-100">
+          <Section title="About" emoji="💬" bg="bg-brand-50" border="border-brand-100">
             <p className="text-gray-700 text-sm leading-relaxed">"{profile.about_me}"</p>
           </Section>
         )}
@@ -251,7 +251,7 @@ export default function ProfileViewPage() {
       {/* Sticky action bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex gap-3 max-w-lg mx-auto safe-area-inset-bottom">
         {matchId ? (
-          <button onClick={() => router.push(`/chat/${matchId}`)} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors">
+          <button onClick={() => router.push(`/chat/${matchId}`)} className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors">
             <MessageCircle className="h-5 w-5" />
             Send Message
           </button>
@@ -263,7 +263,7 @@ export default function ProfileViewPage() {
             <button
               onClick={handleLike}
               disabled={likeLoading}
-              className={`flex-1 font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all ${liked ? "bg-pink-100 text-pink-600 border-2 border-pink-200" : "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md"}`}
+              className={`flex-1 font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all ${liked ? "bg-pink-100 text-pink-600 border-2 border-pink-200" : "bg-gradient-to-r from-brand-500 to-brand-500 text-white shadow-md"}`}
             >
               {likeLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Heart className={`h-5 w-5 ${liked ? "fill-pink-500" : ""}`} />}
               {liked ? "Liked" : "Like"}
@@ -287,7 +287,7 @@ export default function ProfileViewPage() {
                 <div className="text-4xl mb-3">✅</div>
                 <p className="font-semibold text-gray-800">Report submitted</p>
                 <p className="text-sm text-gray-500 mt-1">Thank you. Our team will review this profile.</p>
-                <button onClick={() => { setShowReportModal(false); setReportDone(false); setReportReason(""); }} className="mt-4 text-sm text-emerald-600 font-medium">Close</button>
+                <button onClick={() => { setShowReportModal(false); setReportDone(false); setReportReason(""); }} className="mt-4 text-sm text-brand-600 font-medium">Close</button>
               </div>
             ) : (
               <>

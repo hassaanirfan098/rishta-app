@@ -18,9 +18,9 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-white flex items-center justify-center px-5">
+    <div className="min-h-screen bg-gradient-to-b from-brand-50 via-white to-white flex items-center justify-center px-5">
       <div className="text-center max-w-sm">
-        <LogoMark className="w-20 h-20 rounded-3xl shadow-lg shadow-emerald-200 mx-auto" rounded="rounded-3xl" />
+        <LogoMark className="w-20 h-20 rounded-3xl shadow-lg shadow-brand-200 mx-auto" rounded="rounded-3xl" />
         <h1 className="mt-8 text-xl font-semibold text-gray-900">
           Something went wrong
         </h1>
@@ -30,7 +30,7 @@ export default function Error({
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors shadow-sm"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-semibold transition-colors shadow-sm"
           >
             <RefreshCw className="h-4 w-4" />
             Try again

@@ -52,7 +52,7 @@ export default function ChatListPage() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4">
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <LogoGlyph className="w-5 h-5 text-emerald-600" /> Messages
+            <LogoGlyph className="w-5 h-5 text-brand-600" /> Messages
           </h1>
         </div>
       </div>
@@ -62,12 +62,12 @@ export default function ChatListPage() {
           <ListSkeleton count={6} />
         ) : conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
-              <MessageCircle className="h-8 w-8 text-emerald-400" />
+            <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4">
+              <MessageCircle className="h-8 w-8 text-brand-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-800">No conversations</h3>
             <p className="text-sm text-gray-500 mt-1">Match with someone to start chatting</p>
-            <Link href="/discover" className="mt-4 text-sm text-emerald-600 font-medium">
+            <Link href="/discover" className="mt-4 text-sm text-brand-600 font-medium">
               Discover profiles →
             </Link>
           </div>
@@ -81,13 +81,13 @@ export default function ChatListPage() {
                 <Link
                   key={convo.id}
                   href={`/chat/${convo.id}`}
-                  className="flex items-center gap-3 bg-white rounded-2xl p-4 border border-gray-100 hover:border-emerald-200 hover:shadow-sm transition-all"
+                  className="flex items-center gap-3 bg-white rounded-2xl p-4 border border-gray-100 hover:border-brand-200 hover:shadow-sm transition-all"
                 >
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
                     {profile.avatar_url ? (
                       <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <span className="font-bold text-emerald-600">{profile.full_name?.charAt(0)}</span>
+                      <span className="font-bold text-brand-600">{profile.full_name?.charAt(0)}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

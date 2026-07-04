@@ -16,7 +16,7 @@ export default async function OgImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #064e3b 0%, #047857 55%, #0d9488 100%)",
+          background: "linear-gradient(135deg, #9d2159 0%, #7f1a47 55%, #4d0e2b 100%)",
           color: "white",
           fontFamily: "sans-serif",
           position: "relative",
@@ -61,18 +61,16 @@ export default async function OgImage() {
             boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
           }}
         >
-          <svg width="84" height="84" viewBox="0 0 512 512">
-            <mask id="og-crescent">
-              <rect width="512" height="512" fill="black" />
-              <circle cx="244" cy="256" r="150" fill="white" />
-              <circle cx="312" cy="256" r="130" fill="black" />
-            </mask>
-            <rect width="512" height="512" fill="#047857" mask="url(#og-crescent)" />
-            <path
-              transform="translate(300 198) scale(5.8)"
-              fill="#047857"
-              d="M12 21s-1-.7-2.6-2.1C6.9 16.6 3 13.2 3 8.9 3 6.2 5.1 4 7.8 4c1.6 0 3.1.8 4.2 2.1C13.1 4.8 14.6 4 16.2 4 18.9 4 21 6.2 21 8.9c0 4.3-3.9 7.7-6.4 10C13 20.3 12 21 12 21z"
-            />
+          <svg width="94" height="94" viewBox="0 0 512 512">
+            <g transform="translate(0 12)">
+              <circle cx="206" cy="228" r="80" fill="none" stroke="#c1963a" strokeWidth="30" />
+              <circle cx="300" cy="228" r="80" fill="none" stroke="#9d2159" strokeWidth="30" />
+              <path
+                transform="translate(186 246) scale(5.4)"
+                fill="#9d2159"
+                d="M12 21s-1-.7-2.6-2.1C6.9 16.6 3 13.2 3 8.9 3 6.2 5.1 4 7.8 4c1.6 0 3.1.8 4.2 2.1C13.1 4.8 14.6 4 16.2 4 18.9 4 21 6.2 21 8.9c0 4.3-3.9 7.7-6.4 10C13 20.3 12 21 12 21z"
+              />
+            </g>
           </svg>
         </div>
 

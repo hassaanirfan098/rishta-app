@@ -62,7 +62,7 @@ export default function AdminProfilesPage() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-colors ${
-                filter === f ? "bg-emerald-600 text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-emerald-300"
+                filter === f ? "bg-brand-600 text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-brand-300"
               }`}
             >
               {f}
@@ -79,7 +79,7 @@ export default function AdminProfilesPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="h-8 w-8 text-emerald-600 animate-spin" />
+          <Loader2 className="h-8 w-8 text-brand-600 animate-spin" />
         </div>
       ) : profiles.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center border border-gray-100">
@@ -96,11 +96,11 @@ export default function AdminProfilesPage() {
             return (
               <div key={profile.id} className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-5">
                 {/* Avatar */}
-                <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="w-16 h-16 rounded-2xl bg-brand-100 flex items-center justify-center shrink-0 overflow-hidden">
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-2xl font-bold text-emerald-600">
+                    <span className="text-2xl font-bold text-brand-600">
                       {profile.full_name?.charAt(0) || "?"}
                     </span>
                   )}
@@ -117,7 +117,7 @@ export default function AdminProfilesPage() {
                       {profile.gender === "male" ? "👨 Male" : "👩 Female"}
                     </span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      profile.is_approved ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                      profile.is_approved ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"
                     }`}>
                       {profile.is_approved ? "✓ Approved" : "⏳ Pending"}
                     </span>
@@ -139,7 +139,7 @@ export default function AdminProfilesPage() {
                     <button
                       onClick={() => doAction(profile.id, "approve")}
                       disabled={actionLoading === profile.id}
-                      className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors disabled:opacity-60"
+                      className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors disabled:opacity-60"
                     >
                       {actionLoading === profile.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                       Approve

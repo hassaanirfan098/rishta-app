@@ -56,7 +56,7 @@ export function PWAInstallPrompt() {
         </div>
         <button
           onClick={install}
-          className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors"
+          className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors"
         >
           <Download className="h-4 w-4" />
           Install

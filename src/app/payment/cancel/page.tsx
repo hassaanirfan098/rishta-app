@@ -15,7 +15,7 @@ export default function PaymentCancelPage() {
         <p className="text-gray-500 text-sm mb-8">No charge was made. You can try again anytime.</p>
         <button
           onClick={() => router.back()}
-          className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-2xl hover:bg-emerald-700 transition-colors"
+          className="w-full bg-brand-600 text-white font-bold py-3.5 rounded-2xl hover:bg-brand-700 transition-colors"
         >
           Go Back
         </button>

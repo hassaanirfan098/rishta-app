@@ -38,7 +38,7 @@ export function LegalPage({
           Questions? Email us at{" "}
           <a
             href="mailto:support@rishta.app"
-            className="text-emerald-600 font-medium hover:underline"
+            className="text-brand-600 font-medium hover:underline"
           >
             support@rishta.app
           </a>

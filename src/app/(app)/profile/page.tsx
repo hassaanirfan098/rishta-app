@@ -13,8 +13,8 @@ function Section({
   title,
   emoji,
   children,
-  bg = "bg-emerald-50",
-  border = "border-emerald-100",
+  bg = "bg-brand-50",
+  border = "border-brand-100",
 }: {
   title: string;
   emoji: string;
@@ -34,7 +34,7 @@ function Section({
 
 function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="px-3 py-1.5 rounded-xl border-2 border-emerald-200 bg-white text-emerald-700 text-sm font-medium">
+    <span className="px-3 py-1.5 rounded-xl border-2 border-brand-200 bg-white text-brand-700 text-sm font-medium">
       {children}
     </span>
   );
@@ -42,7 +42,7 @@ function Chip({ children }: { children: React.ReactNode }) {
 
 function StatusBadge({ label, color }: { label: string; color: string }) {
   const colors: Record<string, string> = {
-    green: "bg-green-100 text-green-800 border-green-200",
+    green: "bg-brand-100 text-brand-800 border-brand-200",
     red: "bg-red-100 text-red-800 border-red-200",
     yellow: "bg-yellow-100 text-yellow-800 border-yellow-200",
     blue: "bg-blue-100 text-blue-800 border-blue-200",
@@ -138,7 +138,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -156,7 +156,7 @@ export default function ProfilePage() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <LogoGlyph className="w-5 h-5 text-emerald-600" /> Profile
+            <LogoGlyph className="w-5 h-5 text-brand-600" /> Profile
           </h1>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" onClick={() => router.push("/settings")}>
@@ -171,7 +171,7 @@ export default function ProfilePage() {
 
       <div className="max-w-lg mx-auto pb-10">
         {/* Hero */}
-        <div className="relative h-[350px] bg-gradient-to-br from-emerald-200 to-teal-300">
+        <div className="relative h-[350px] bg-gradient-to-br from-brand-200 to-brand-300">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
@@ -229,7 +229,7 @@ export default function ProfilePage() {
           {/* About Me */}
           {profile?.about_me && (
             <Section title="About Me" emoji="✨">
-              <div className="border-l-4 border-emerald-400 pl-4">
+              <div className="border-l-4 border-brand-400 pl-4">
                 <p className="text-gray-700 text-sm leading-relaxed italic">
                   "{profile.about_me as string}"
                 </p>

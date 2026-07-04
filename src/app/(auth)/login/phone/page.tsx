@@ -58,7 +58,7 @@ export default function PhoneLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-700 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-brand-900 to-brand-700 flex flex-col">
       <div className="flex items-center px-5 pt-12 pb-4">
         <button
           onClick={() => step === "otp" ? setStep("phone") : router.push("/login")}
@@ -93,7 +93,7 @@ export default function PhoneLoginPage() {
                   className="bg-white/15 border border-white/20 text-white rounded-2xl px-3 py-3.5 text-sm focus:outline-none focus:border-white/50 w-32"
                 >
                   {COUNTRY_CODES.map((c) => (
-                    <option key={c.code} value={c.code} className="bg-emerald-900">
+                    <option key={c.code} value={c.code} className="bg-brand-900">
                       {c.flag} {c.code}
                     </option>
                   ))}
@@ -115,7 +115,7 @@ export default function PhoneLoginPage() {
               <button
                 type="submit"
                 disabled={loading || phone.length < 7}
-                className="w-full bg-white text-emerald-800 font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-50 active:scale-95 transition-all disabled:opacity-60"
+                className="w-full bg-white text-brand-800 font-bold py-4 rounded-2xl shadow-lg hover:bg-brand-50 active:scale-95 transition-all disabled:opacity-60"
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Send Code"}
               </button>
@@ -140,7 +140,7 @@ export default function PhoneLoginPage() {
               <button
                 type="submit"
                 disabled={loading || otp.length < 6}
-                className="w-full bg-white text-emerald-800 font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-50 active:scale-95 transition-all disabled:opacity-60"
+                className="w-full bg-white text-brand-800 font-bold py-4 rounded-2xl shadow-lg hover:bg-brand-50 active:scale-95 transition-all disabled:opacity-60"
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Verify"}
               </button>

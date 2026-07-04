@@ -21,7 +21,7 @@ const TOTAL_STEPS = 33; // 0-32
 
 // Single professional theme throughout
 const STEP_BG: Record<number, string> = Object.fromEntries(
-  Array.from({ length: 33 }, (_, i) => [i, "from-slate-900 via-slate-800 to-emerald-900"])
+  Array.from({ length: 33 }, (_, i) => [i, "from-slate-900 via-slate-800 to-brand-900"])
 );
 
 const SECTS = [
@@ -282,7 +282,7 @@ function TapCard({
       onClick={onClick}
       className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all active:scale-95 ${
         selected
-          ? "border-emerald-500 bg-emerald-50 shadow-md"
+          ? "border-brand-500 bg-brand-50 shadow-md"
           : "border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm"
       }`}
     >
@@ -292,7 +292,7 @@ function TapCard({
         {sublabel && <p className="text-xs text-gray-500 mt-0.5">{sublabel}</p>}
       </div>
       {selected && (
-        <div className="ml-auto w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+        <div className="ml-auto w-5 h-5 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0">
           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
@@ -324,7 +324,7 @@ function SearchableList({
           placeholder={placeholder || "Search..."}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          className="w-full pl-9 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
         />
       </div>
       <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
@@ -334,7 +334,7 @@ function SearchableList({
             onClick={() => onChange(opt)}
             className={`w-full text-left px-4 py-3 rounded-xl border transition-all text-sm ${
               value === opt
-                ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-medium"
+                ? "border-brand-500 bg-brand-50 text-brand-900 font-medium"
                 : "border-gray-100 bg-gray-50 text-gray-700 hover:bg-gray-100"
             }`}
           >
@@ -380,7 +380,7 @@ function ChipGrid({
             onClick={() => toggle(opt)}
             className={`px-3 py-1.5 rounded-xl border-2 text-sm font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
               sel
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                ? "border-brand-500 bg-brand-50 text-brand-700"
                 : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
             }`}
           >
@@ -601,7 +601,7 @@ export default function OnboardingPage() {
           <div className={`min-h-screen bg-gradient-to-br ${STEP_BG[0]} flex flex-col items-center justify-center px-6 text-center`}>
             <div className="relative mb-8">
               <div className="w-24 h-24 bg-white/15 rounded-3xl flex items-center justify-center border border-white/20 mb-6 mx-auto">
-                <LogoGlyph className="w-14 h-14 text-white" />
+                <LogoGlyph className="w-16 h-16" variant="onDark" />
               </div>
               <div className="absolute -inset-4 bg-white/5 rounded-full blur-2xl" />
             </div>
@@ -614,7 +614,7 @@ export default function OnboardingPage() {
             </p>
             <button
               onClick={next}
-              className="mt-12 w-full max-w-xs bg-white text-emerald-900 font-bold py-4 rounded-2xl text-lg shadow-xl hover:bg-emerald-50 active:scale-95 transition-all"
+              className="mt-12 w-full max-w-xs bg-white text-brand-900 font-bold py-4 rounded-2xl text-lg shadow-xl hover:bg-brand-50 active:scale-95 transition-all"
             >
               Get Started
             </button>
@@ -635,7 +635,7 @@ export default function OnboardingPage() {
                   onClick={() => autoNext("gender", val)}
                   className={`flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 transition-all active:scale-95 ${
                     form.gender === val
-                      ? "border-emerald-500 bg-emerald-50 shadow-md"
+                      ? "border-brand-500 bg-brand-50 shadow-md"
                       : "border-gray-100 bg-white hover:border-gray-200"
                   }`}
                 >
@@ -657,7 +657,7 @@ export default function OnboardingPage() {
               value={form.full_name}
               onChange={(e) => set("full_name", e.target.value)}
               autoFocus
-              className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-lg text-gray-800"
+              className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-lg text-gray-800"
             />
           </StepWrapper>
         );
@@ -674,7 +674,7 @@ export default function OnboardingPage() {
               value={form.date_of_birth}
               max={maxDate.toISOString().split("T")[0]}
               onChange={(e) => set("date_of_birth", e.target.value)}
-              className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-lg text-gray-800"
+              className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-lg text-gray-800"
             />
           </StepWrapper>
         );
@@ -752,7 +752,7 @@ export default function OnboardingPage() {
                           }}
                           className={`py-2 px-3 rounded-xl border text-sm transition-all flex items-center gap-2 ${
                             form.referral_detail === s.val
-                              ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-medium"
+                              ? "border-brand-500 bg-brand-50 text-brand-900 font-medium"
                               : "border-gray-200 bg-white text-gray-700"
                           }`}
                         >
@@ -778,13 +778,13 @@ export default function OnboardingPage() {
                 { names: "Usman & Ayesha", story: "Found their soulmate", emoji: "💍" },
                 { names: "Bilal & Zainab", story: "Married within 3 months", emoji: "🕌" },
               ].map(({ names, story, emoji }) => (
-                <div key={names} className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-2xl flex-shrink-0">
+                <div key={names} className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-brand-50 to-brand-50 border border-brand-100">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-2xl flex-shrink-0">
                     {emoji}
                   </div>
                   <div>
                     <p className="font-bold text-gray-900">{names}</p>
-                    <p className="text-sm text-emerald-700">{story}</p>
+                    <p className="text-sm text-brand-700">{story}</p>
                   </div>
                 </div>
               ))}
@@ -819,7 +819,7 @@ export default function OnboardingPage() {
                 placeholder="Search professions..."
                 value={professionSearch}
                 onChange={(e) => setProfessionSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="w-full pl-9 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
             </div>
             <div className="max-h-72 overflow-y-auto space-y-1 pr-1">
@@ -830,7 +830,7 @@ export default function OnboardingPage() {
                       onClick={() => { set("profession", p); if (p !== "Other") setProfessionSearch(""); }}
                       className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${
                         form.profession === p
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-medium"
+                          ? "border-brand-500 bg-brand-50 text-brand-900 font-medium"
                           : "border-gray-100 bg-gray-50 text-gray-700 hover:bg-gray-100"
                       }`}
                     >
@@ -846,7 +846,7 @@ export default function OnboardingPage() {
                           onClick={() => set("profession", p)}
                           className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all mb-1 ${
                             form.profession === p
-                              ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-medium"
+                              ? "border-brand-500 bg-brand-50 text-brand-900 font-medium"
                               : "border-gray-100 bg-gray-50 text-gray-700 hover:bg-gray-100"
                           }`}
                         >
@@ -862,7 +862,7 @@ export default function OnboardingPage() {
                 placeholder="Enter your profession"
                 value={form.profession_other}
                 onChange={(e) => set("profession_other", e.target.value)}
-                className="mt-3 w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-sm"
+                className="mt-3 w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-sm"
               />
             )}
           </StepWrapper>
@@ -884,7 +884,7 @@ export default function OnboardingPage() {
                 placeholder="Your education"
                 value={form.education_other}
                 onChange={(ev) => set("education_other", ev.target.value)}
-                className="mt-3 w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-sm"
+                className="mt-3 w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-sm"
               />
             )}
           </StepWrapper>
@@ -989,7 +989,7 @@ export default function OnboardingPage() {
                 <select
                   value={form.height_ft}
                   onChange={(e) => set("height_ft", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-gray-800"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-gray-800"
                 >
                   {[4, 5, 6, 7].map((f) => (
                     <option key={f} value={String(f)}>{f} ft</option>
@@ -1001,7 +1001,7 @@ export default function OnboardingPage() {
                 <select
                   value={form.height_in}
                   onChange={(e) => set("height_in", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-gray-800"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-gray-800"
                 >
                   {Array.from({ length: 12 }, (_, i) => i).map((i) => (
                     <option key={i} value={String(i)}>{i} in</option>
@@ -1119,7 +1119,7 @@ export default function OnboardingPage() {
                           }}
                           className={`px-3 py-2 rounded-xl border-2 text-sm font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
                             sel
-                              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                              ? "border-brand-500 bg-brand-50 text-brand-700"
                               : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
                           }`}
                         >
@@ -1332,7 +1332,7 @@ export default function OnboardingPage() {
                   onChange={(e) => set("about_me", e.target.value.slice(0, 500))}
                   placeholder="Tell potential matches about yourself..."
                   rows={5}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-sm resize-none"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-sm resize-none"
                 />
                 <span className="absolute bottom-3 right-3 text-xs text-gray-400">{form.about_me.length}/500</span>
               </div>
@@ -1346,7 +1346,7 @@ export default function OnboardingPage() {
                       const next_val = (form.about_me + sep + hint).slice(0, 500);
                       set("about_me", next_val);
                     }}
-                    className="px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs hover:bg-emerald-100 transition-all active:scale-95"
+                    className="px-3 py-1.5 rounded-full border border-brand-200 bg-brand-50 text-brand-700 text-xs hover:bg-brand-100 transition-all active:scale-95"
                   >
                     + {hint}
                   </button>
@@ -1389,7 +1389,7 @@ export default function OnboardingPage() {
                       <div
                         className={`w-full h-full rounded-2xl border-2 flex items-center justify-center overflow-hidden transition-all ${
                           url
-                            ? "border-emerald-400"
+                            ? "border-brand-400"
                             : required
                             ? "border-dashed border-red-300 bg-red-50"
                             : "border-dashed border-gray-200 bg-gray-50"
@@ -1408,12 +1408,12 @@ export default function OnboardingPage() {
                     </label>
                     {status === "checking" && (
                       <div className="absolute inset-0 bg-white/80 rounded-2xl flex flex-col items-center justify-center gap-1">
-                        <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
+                        <Loader2 className="h-5 w-5 animate-spin text-brand-600" />
                         <span className="text-xs text-gray-500">Checking...</span>
                       </div>
                     )}
                     {status === "ok" && (
-                      <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                      <div className="absolute bottom-1 right-1 w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center">
                         <Check className="h-3 w-3 text-white" />
                       </div>
                     )}
@@ -1431,7 +1431,7 @@ export default function OnboardingPage() {
                               if (file) handlePhotoUpload(i, file);
                             }}
                           />
-                          <span className="text-xs text-emerald-600 underline">Retry</span>
+                          <span className="text-xs text-brand-600 underline">Retry</span>
                         </label>
                       </div>
                     )}
@@ -1456,7 +1456,7 @@ export default function OnboardingPage() {
               <select
                 value={form.country_code}
                 onChange={(e) => set("country_code", e.target.value)}
-                className="px-3 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-sm flex-shrink-0"
+                className="px-3 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-sm flex-shrink-0"
               >
                 {COUNTRY_CODES.map(({ code, label }) => (
                   <option key={code} value={code}>{label}</option>
@@ -1467,7 +1467,7 @@ export default function OnboardingPage() {
                 placeholder="3001234567"
                 value={form.phone}
                 onChange={(e) => set("phone", e.target.value.replace(/[^\d]/g, ""))}
-                className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:outline-none text-base"
+                className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-500 focus:outline-none text-base"
               />
             </div>
             <p className="text-xs text-gray-400 mt-2">We'll send a verification code to this number</p>
@@ -1499,19 +1499,19 @@ export default function OnboardingPage() {
             {!cameraStream && !selfieData && !form.face_verified && (
               <button
                 onClick={openCamera}
-                className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 active:scale-95 transition-all"
+                className="w-full flex items-center justify-center gap-2 bg-brand-600 text-white py-4 rounded-2xl font-bold hover:bg-brand-700 active:scale-95 transition-all"
               >
                 <Camera className="h-5 w-5" /> Open Camera
               </button>
             )}
             {cameraStream && (
               <div className="flex flex-col items-center gap-4">
-                <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-emerald-500">
+                <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-brand-500">
                   <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
                 </div>
                 <button
                   onClick={takeSelfie}
-                  className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 active:scale-95 transition-all"
+                  className="w-full bg-brand-600 text-white py-4 rounded-2xl font-bold hover:bg-brand-700 active:scale-95 transition-all"
                 >
                   Take Selfie
                 </button>
@@ -1519,12 +1519,12 @@ export default function OnboardingPage() {
             )}
             {selfieData && !form.face_verified && (
               <div className="flex flex-col items-center gap-4">
-                <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-emerald-500">
+                <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-brand-500">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={selfieData} alt="selfie" className="w-full h-full object-cover" />
                 </div>
                 {verifyingFace && (
-                  <div className="flex items-center gap-2 text-emerald-700">
+                  <div className="flex items-center gap-2 text-brand-700">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span className="text-sm font-medium">Comparing with your photos...</span>
                   </div>
@@ -1533,14 +1533,14 @@ export default function OnboardingPage() {
             )}
             {form.face_verified && (
               <div className="flex flex-col items-center gap-4">
-                <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <Check className="h-12 w-12 text-emerald-600" />
+                <div className="w-24 h-24 rounded-full bg-brand-100 flex items-center justify-center">
+                  <Check className="h-12 w-12 text-brand-600" />
                 </div>
-                <p className="text-xl font-bold text-emerald-700">Identity Verified!</p>
+                <p className="text-xl font-bold text-brand-700">Identity Verified!</p>
                 <p className="text-sm text-gray-500 text-center">Your identity has been confirmed. Complete your profile now.</p>
                 <button
                   onClick={next}
-                  className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 active:scale-95 transition-all"
+                  className="w-full bg-brand-600 text-white py-4 rounded-2xl font-bold hover:bg-brand-700 active:scale-95 transition-all"
                 >
                   Complete Profile
                 </button>
@@ -1552,9 +1552,9 @@ export default function OnboardingPage() {
       // ── Step 32: Done ────────────────────────────────────────────────────────
       case 32:
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 text-center">
-            <div className="w-28 h-28 rounded-full bg-emerald-500/30 border-2 border-emerald-400/50 flex items-center justify-center mb-8 shadow-xl">
-              <Check className="h-14 w-14 text-emerald-400" />
+          <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 text-center">
+            <div className="w-28 h-28 rounded-full bg-brand-500/30 border-2 border-brand-400/50 flex items-center justify-center mb-8 shadow-xl">
+              <Check className="h-14 w-14 text-brand-400" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Profile Complete! 🎉</h1>
             <p className="text-white/60 text-sm mb-2 max-w-xs leading-relaxed">
@@ -1566,7 +1566,7 @@ export default function OnboardingPage() {
             <button
               onClick={saveProfile}
               disabled={saving}
-              className="w-full max-w-sm bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
+              className="w-full max-w-sm bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
             >
               {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start Exploring →"}
             </button>
@@ -1626,7 +1626,7 @@ function StepWrapper({
   bgClass?: string;
 }) {
   return (
-    <div className={`min-h-screen flex flex-col bg-gradient-to-br ${bgClass || "from-emerald-600 to-teal-700"}`}>
+    <div className={`min-h-screen flex flex-col bg-gradient-to-br ${bgClass || "from-brand-600 to-brand-700"}`}>
       <ProgressBar step={step} total={total} />
 
       {/* Header */}
@@ -1661,7 +1661,7 @@ function StepWrapper({
           <button
             onClick={onContinue}
             disabled={continueDisabled}
-            className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+            className="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
           >
             Continue →
           </button>

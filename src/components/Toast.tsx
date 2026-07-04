@@ -41,7 +41,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={t.id}
             className="animate-slide-up pointer-events-auto flex items-start gap-3 bg-white rounded-2xl shadow-lg border border-gray-100 px-4 py-3"
           >
-            {t.type === "success" && <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />}
+            {t.type === "success" && <CheckCircle2 className="h-5 w-5 text-brand-500 shrink-0 mt-0.5" />}
             {t.type === "error" && <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />}
             {t.type === "info" && <Info className="h-5 w-5 text-sky-500 shrink-0 mt-0.5" />}
             <p className="text-sm text-gray-800 flex-1 leading-snug">{t.message}</p>

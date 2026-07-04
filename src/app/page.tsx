@@ -120,7 +120,7 @@ export default async function Home() {
             </Link>
             <Link
               href="/signup"
-              className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full transition-colors shadow-sm"
+              className="px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full transition-colors shadow-sm"
             >
               Get started
             </Link>
@@ -130,22 +130,22 @@ export default async function Home() {
 
       {/* ── Hero ───────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-50 via-white to-white" />
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-white" />
         <div
           className="absolute inset-0 opacity-[0.4]"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 20%, rgba(16,185,129,0.08) 0, transparent 40%), radial-gradient(circle at 80% 0%, rgba(13,148,136,0.08) 0, transparent 40%)",
+              "radial-gradient(circle at 20% 20%, rgba(157,33,89,0.08) 0, transparent 40%), radial-gradient(circle at 80% 0%, rgba(193,150,58,0.10) 0, transparent 40%)",
           }}
         />
         <div className="relative max-w-6xl mx-auto px-5 pt-16 pb-20 sm:pt-24 sm:pb-28 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100/70 border border-emerald-200 text-emerald-700 text-xs font-medium mb-6 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-100/70 border border-brand-200 text-brand-700 text-xs font-medium mb-6 animate-fade-in">
             <Sparkles className="h-3.5 w-3.5" />
             For practising Muslims who are serious about marriage
           </div>
           <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05] max-w-3xl mx-auto animate-slide-up">
             Find your{" "}
-            <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
               rishta
             </span>{" "}
             the halal way
@@ -158,7 +158,7 @@ export default async function Home() {
           <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center animate-slide-up [animation-delay:160ms]">
             <Link
               href="/signup"
-              className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-lg shadow-emerald-200 transition-all hover:shadow-xl hover:-translate-y-0.5"
+              className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-lg shadow-brand-200 transition-all hover:shadow-xl hover:-translate-y-0.5"
             >
               Create your profile
               <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -174,15 +174,15 @@ export default async function Home() {
           {/* Trust bar */}
           <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-500">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+              <ShieldCheck className="h-4 w-4 text-brand-600" />
               100% verified profiles
             </div>
             <div className="flex items-center gap-2">
-              <Lock className="h-4 w-4 text-emerald-600" />
+              <Lock className="h-4 w-4 text-brand-600" />
               Private by design
             </div>
             <div className="flex items-center gap-2">
-              <Heart className="h-4 w-4 text-emerald-600" />
+              <Heart className="h-4 w-4 text-brand-600" />
               Marriage, not dating
             </div>
           </div>
@@ -220,10 +220,10 @@ export default async function Home() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="group p-7 rounded-3xl border border-gray-100 bg-white hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-50 transition-all"
+              className="group p-7 rounded-3xl border border-gray-100 bg-white hover:border-brand-200 hover:shadow-lg hover:shadow-brand-50 transition-all"
             >
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <f.icon className="h-6 w-6 text-emerald-600" />
+              <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <f.icon className="h-6 w-6 text-brand-600" />
               </div>
               <h3 className="text-lg font-bold mb-2">{f.title}</h3>
               <p className="text-gray-600 text-sm leading-relaxed">{f.desc}</p>
@@ -233,7 +233,7 @@ export default async function Home() {
       </section>
 
       {/* ── How it works ───────────────────────────────────── */}
-      <section className="bg-gradient-to-b from-slate-900 via-slate-900 to-emerald-950 text-white">
+      <section className="bg-gradient-to-b from-slate-900 via-slate-900 to-brand-950 text-white">
         <div className="max-w-6xl mx-auto px-5 py-20 sm:py-24">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -250,8 +250,8 @@ export default async function Home() {
                   {s.step}
                 </div>
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center mb-5">
-                    <s.icon className="h-6 w-6 text-emerald-400" />
+                  <div className="w-12 h-12 rounded-2xl bg-brand-500/20 border border-brand-400/30 flex items-center justify-center mb-5">
+                    <s.icon className="h-6 w-6 text-brand-400" />
                   </div>
                   <h3 className="text-xl font-bold mb-2">{s.title}</h3>
                   <p className="text-white/60 text-sm leading-relaxed">{s.desc}</p>
@@ -266,7 +266,7 @@ export default async function Home() {
       <section className="max-w-6xl mx-auto px-5 py-20 sm:py-24">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium mb-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-medium mb-5">
               <ShieldCheck className="h-3.5 w-3.5" />
               Trust & Safety
             </div>
@@ -281,8 +281,8 @@ export default async function Home() {
             <div className="mt-8 grid sm:grid-cols-2 gap-4">
               {VALUES.map((v) => (
                 <div key={v.label} className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                    <v.icon className="h-4.5 w-4.5 text-emerald-600" />
+                  <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
+                    <v.icon className="h-4.5 w-4.5 text-brand-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">{v.label}</span>
                 </div>
@@ -290,12 +290,12 @@ export default async function Home() {
             </div>
           </div>
           <div className="relative">
-            <div className="aspect-square rounded-[2rem] bg-gradient-to-br from-emerald-100 via-teal-50 to-white border border-emerald-100 p-8 flex items-center justify-center">
+            <div className="aspect-square rounded-[2rem] bg-gradient-to-br from-brand-100 via-brand-50 to-white border border-brand-100 p-8 flex items-center justify-center">
               <div className="text-center">
-                <LogoMark className="w-24 h-24 rounded-3xl shadow-xl shadow-emerald-200 mx-auto" rounded="rounded-3xl" />
+                <LogoMark className="w-24 h-24 rounded-3xl shadow-xl shadow-brand-200 mx-auto" rounded="rounded-3xl" />
                 <p className="mt-6 text-2xl font-bold text-gray-900">Rishta</p>
                 <p className="text-gray-500 text-sm mt-1">رشتہ — a bond for life</p>
-                <div className="mt-6 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-emerald-100 text-emerald-700 text-xs font-medium shadow-sm">
+                <div className="mt-6 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-brand-100 text-brand-700 text-xs font-medium shadow-sm">
                   <BadgeCheck className="h-3.5 w-3.5" />
                   Every profile verified
                 </div>
@@ -328,7 +328,7 @@ export default async function Home() {
                 {["Create a verified profile", "Browse & filter matches", "Like and match", "Chat with your matches"].map(
                   (item) => (
                     <li key={item} className="flex items-center gap-2.5">
-                      <Heart className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <Heart className="h-4 w-4 text-brand-500 shrink-0" />
                       {item}
                     </li>
                   )
@@ -397,7 +397,7 @@ export default async function Home() {
               </div>
               <p className="text-gray-700 text-sm leading-relaxed">"{t.quote}"</p>
               <div className="mt-5 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
+                <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
                   {t.name.charAt(0)}
                 </div>
                 <div>
@@ -412,7 +412,7 @@ export default async function Home() {
 
       {/* ── Final CTA ──────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-5 pb-24">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-700 px-8 py-16 sm:py-20 text-center text-white">
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-brand-600 via-brand-600 to-brand-700 px-8 py-16 sm:py-20 text-center text-white">
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -430,7 +430,7 @@ export default async function Home() {
             </p>
             <Link
               href="/signup"
-              className="mt-8 inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white text-emerald-700 font-semibold hover:bg-emerald-50 transition-colors shadow-lg"
+              className="mt-8 inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white text-brand-700 font-semibold hover:bg-brand-50 transition-colors shadow-lg"
             >
               Create your free profile
               <ArrowRight className="h-4 w-4" />

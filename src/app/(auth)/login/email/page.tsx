@@ -53,7 +53,7 @@ export default function EmailLoginPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-700 flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-gradient-to-b from-brand-900 to-brand-700 flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-3xl mb-6">
             <span className="text-white text-4xl">✉️</span>
@@ -62,7 +62,7 @@ export default function EmailLoginPage() {
           <p className="text-white/70 text-sm mb-8">
             We sent a confirmation link to <span className="font-semibold text-white">{email}</span>. Click it to activate your account.
           </p>
-          <Link href="/login" className="text-emerald-200 text-sm underline underline-offset-2">
+          <Link href="/login" className="text-brand-200 text-sm underline underline-offset-2">
             Back to login
           </Link>
         </div>
@@ -71,7 +71,7 @@ export default function EmailLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-700 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-brand-900 to-brand-700 flex flex-col">
       {/* Header */}
       <div className="flex items-center px-5 pt-12 pb-4">
         <Link href="/login" className="text-white/70 hover:text-white transition-colors">
@@ -94,7 +94,7 @@ export default function EmailLoginPage() {
             <button
               onClick={() => { setMode("signin"); setError(""); }}
               className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                mode === "signin" ? "bg-white text-emerald-800" : "text-white/70"
+                mode === "signin" ? "bg-white text-brand-800" : "text-white/70"
               }`}
             >
               Sign In
@@ -102,7 +102,7 @@ export default function EmailLoginPage() {
             <button
               onClick={() => { setMode("signup"); setError(""); }}
               className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                mode === "signup" ? "bg-white text-emerald-800" : "text-white/70"
+                mode === "signup" ? "bg-white text-brand-800" : "text-white/70"
               }`}
             >
               Create Account
@@ -151,7 +151,7 @@ export default function EmailLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-emerald-800 font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-50 active:scale-95 transition-all disabled:opacity-60 mt-2"
+              className="w-full bg-white text-brand-800 font-bold py-4 rounded-2xl shadow-lg hover:bg-brand-50 active:scale-95 transition-all disabled:opacity-60 mt-2"
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin mx-auto" />

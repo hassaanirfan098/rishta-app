@@ -36,7 +36,7 @@ export default function AdminReportsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : reports.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">

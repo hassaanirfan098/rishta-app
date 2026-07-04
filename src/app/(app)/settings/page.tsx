@@ -156,7 +156,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-emerald-600 animate-spin" />
+        <Loader2 className="h-8 w-8 text-brand-600 animate-spin" />
       </div>
     );
   }
@@ -170,7 +170,7 @@ export default function SettingsPage() {
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </button>
           <h1 className="text-lg font-bold text-gray-900 flex-1">Settings</h1>
-          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-brand-600 hover:bg-brand-700">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? "Saved ✓" : <><Save className="h-4 w-4 mr-1" />Save</>}
           </Button>
         </div>
@@ -191,7 +191,7 @@ export default function SettingsPage() {
                   <Trash2 className="h-3 w-3 text-white" />
                 </button>
                 {photo.url === profile.avatar_url && (
-                  <div className="absolute bottom-1 left-1 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">Main</div>
+                  <div className="absolute bottom-1 left-1 bg-brand-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">Main</div>
                 )}
               </div>
             ))}
@@ -199,9 +199,9 @@ export default function SettingsPage() {
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploadingPhoto}
-                className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-emerald-400 hover:bg-emerald-50 transition-colors"
+                className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-brand-400 hover:bg-brand-50 transition-colors"
               >
-                {uploadingPhoto ? <Loader2 className="h-5 w-5 text-emerald-500 animate-spin" /> : <Camera className="h-5 w-5 text-gray-400" />}
+                {uploadingPhoto ? <Loader2 className="h-5 w-5 text-brand-500 animate-spin" /> : <Camera className="h-5 w-5 text-gray-400" />}
                 <span className="text-xs text-gray-400">Add photo</span>
               </button>
             )}
@@ -284,13 +284,13 @@ export default function SettingsPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setLang("en")}
-              className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${lang === "en" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 text-gray-500"}`}
+              className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${lang === "en" ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-500"}`}
             >
               English
             </button>
             <button
               onClick={() => setLang("ur")}
-              className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${lang === "ur" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 text-gray-500"}`}
+              className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${lang === "ur" ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-500"}`}
             >
               اردو
             </button>
@@ -307,7 +307,7 @@ export default function SettingsPage() {
               placeholder="Min. 8 characters"
             />
           </Field>
-          {pwMsg && <p className={`text-sm ${pwMsg.includes("updated") ? "text-emerald-600" : "text-red-500"}`}>{pwMsg}</p>}
+          {pwMsg && <p className={`text-sm ${pwMsg.includes("updated") ? "text-brand-600" : "text-red-500"}`}>{pwMsg}</p>}
           <Button onClick={handleChangePassword} disabled={pwLoading || !newPassword} variant="outline" className="w-full">
             {pwLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
             Update Password
@@ -315,7 +315,7 @@ export default function SettingsPage() {
         </SectionCard>
 
         {/* Save */}
-        <Button onClick={handleSave} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={handleSave} disabled={saving} className="w-full bg-brand-600 hover:bg-brand-700">
           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
           Save Changes
         </Button>

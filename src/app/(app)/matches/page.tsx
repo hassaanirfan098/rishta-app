@@ -78,7 +78,7 @@ export default function MatchesPage() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4">
           <h1 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <LogoGlyph className="w-5 h-5 text-emerald-600" /> Matches
+            <LogoGlyph className="w-5 h-5 text-brand-600" /> Matches
           </h1>
           <div className="flex bg-gray-100 rounded-xl p-1">
             <button
@@ -109,7 +109,7 @@ export default function MatchesPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-800">No matches yet</h3>
               <p className="text-sm text-gray-500 mt-2 max-w-xs">When you and someone both like each other, they will appear here</p>
-              <Link href="/discover" className="mt-4 bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
+              <Link href="/discover" className="mt-4 bg-brand-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
                 Start Discovering
               </Link>
             </div>
@@ -121,10 +121,10 @@ export default function MatchesPage() {
                 const age = profile.date_of_birth ? calculateAge(profile.date_of_birth) : null;
                 return (
                   <div key={match.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                    <div className="w-14 h-14 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
                       {profile.avatar_url
                         ? <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full rounded-full object-cover" />
-                        : <span className="text-xl font-bold text-emerald-600">{profile.full_name?.charAt(0)}</span>}
+                        : <span className="text-xl font-bold text-brand-600">{profile.full_name?.charAt(0)}</span>}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 truncate">
@@ -133,8 +133,8 @@ export default function MatchesPage() {
                       {profile.city && <p className="text-xs text-gray-500 truncate">{profile.city}</p>}
                       {profile.profession && <p className="text-xs text-gray-400 truncate">{profile.profession}</p>}
                     </div>
-                    <Link href={`/chat/${match.id}`} className="shrink-0 w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center hover:bg-emerald-200 transition-colors">
-                      <MessageCircle className="h-5 w-5 text-emerald-600" />
+                    <Link href={`/chat/${match.id}`} className="shrink-0 w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center hover:bg-brand-200 transition-colors">
+                      <MessageCircle className="h-5 w-5 text-brand-600" />
                     </Link>
                   </div>
                 );

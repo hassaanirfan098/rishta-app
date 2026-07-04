@@ -70,7 +70,7 @@ export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className 
       {/* Info pills row */}
       <div className="px-4 py-3 flex flex-wrap gap-2">
         {profile.sect && (
-          <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">
+          <span className="bg-brand-50 text-brand-700 px-3 py-1 rounded-full text-xs font-medium">
             🕌 {profile.sect}
           </span>
         )}
@@ -106,9 +106,9 @@ export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className 
       {/* Contact/Unlock */}
       <div className="px-4 pb-4">
         {isUnlocked && phone ? (
-          <div className="flex items-center gap-2 bg-emerald-50 rounded-2xl p-3">
-            <Phone className="h-4 w-4 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-700">{phone}</span>
+          <div className="flex items-center gap-2 bg-brand-50 rounded-2xl p-3">
+            <Phone className="h-4 w-4 text-brand-600" />
+            <span className="text-sm font-medium text-brand-700">{phone}</span>
           </div>
         ) : (
           <Button

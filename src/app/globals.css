@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+/* ── Brand theme: burgundy + gold ─────────────────────── */
+@theme {
+  --color-brand-50: #fdf2f7;
+  --color-brand-100: #fce7f0;
+  --color-brand-200: #f9cfe0;
+  --color-brand-300: #f2a6c6;
+  --color-brand-400: #e06fa1;
+  --color-brand-500: #c74d80;
+  --color-brand-600: #9d2159;
+  --color-brand-700: #7f1a47;
+  --color-brand-800: #66143a;
+  --color-brand-900: #4d0e2b;
+  --color-brand-950: #380a20;
+
+  --color-gold-50: #fbf7ec;
+  --color-gold-100: #f6eccf;
+  --color-gold-200: #edd79c;
+  --color-gold-300: #e2c16a;
+  --color-gold-400: #d3ad50;
+  --color-gold-500: #c1963a;
+  --color-gold-600: #a67c2c;
+  --color-gold-700: #855f24;
+  --color-gold-800: #6a4b22;
+  --color-gold-900: #5a3f20;
+}
+
 :root {
   --background: #f9fafb;
   --foreground: #111827;
@@ -34,7 +60,7 @@ body {
 
 /* Focus ring color */
 :focus-visible {
-  outline-color: #059669;
+  outline-color: #9d2159;
 }
 
 /* Custom scrollbar */
@@ -48,12 +74,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1fae5;
+  background: #f9cfe0;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6ee7b7;
+  background: #e06fa1;
 }
 
 /* ── Animations ───────────────────────────────────────── */
@@ -75,6 +101,32 @@ body {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+/* Logo heart — a gentle heartbeat */
+@keyframes heartbeat {
+  0%, 40%, 100% { transform: scale(1); }
+  10% { transform: scale(1.18); }
+  20% { transform: scale(1); }
+  30% { transform: scale(1.12); }
+}
+
+.animate-heartbeat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: heartbeat 1.8s ease-in-out infinite;
+}
+
+/* Logo rings — a slow, subtle draw/rotate for the splash */
+@keyframes ring-pulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+.animate-ring-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ring-pulse 2.4s ease-in-out infinite;
 }
 
 .animate-fade-in {
@@ -100,6 +152,8 @@ body {
   .animate-fade-in,
   .animate-slide-up,
   .animate-scale-in,
+  .animate-heartbeat,
+  .animate-ring-pulse,
   .skeleton {
     animation: none;
   }

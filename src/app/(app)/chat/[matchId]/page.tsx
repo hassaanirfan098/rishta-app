@@ -104,16 +104,16 @@ export default function ChatRoomPage() {
         </button>
         {otherProfile && (
           <>
-            <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center">
               {otherProfile.avatar_url ? (
                 <img src={otherProfile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
               ) : (
-                <span className="font-bold text-emerald-600 text-sm">{otherProfile.full_name?.charAt(0)}</span>
+                <span className="font-bold text-brand-600 text-sm">{otherProfile.full_name?.charAt(0)}</span>
               )}
             </div>
             <div>
               <h2 className="font-semibold text-gray-900 text-sm">{otherProfile.full_name}</h2>
-              <p className="text-xs text-emerald-500">Matched</p>
+              <p className="text-xs text-brand-500">Matched</p>
             </div>
           </>
         )}
@@ -123,7 +123,7 @@ export default function ChatRoomPage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {loading ? (
           <div className="flex items-center justify-center py-10">
-            <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -136,14 +136,14 @@ export default function ChatRoomPage() {
             const showSeen = isOwn && msg.id === lastReadOwnMsgId;
             return (
               <div key={msg.id} className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
-                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isOwn ? "bg-emerald-600 text-white rounded-br-sm" : "bg-white text-gray-900 border border-gray-100 rounded-bl-sm"}`}>
+                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isOwn ? "bg-brand-600 text-white rounded-br-sm" : "bg-white text-gray-900 border border-gray-100 rounded-bl-sm"}`}>
                   <p className="text-sm leading-relaxed">{msg.content}</p>
-                  <p className={`text-[10px] mt-1 ${isOwn ? "text-emerald-200" : "text-gray-400"} text-right`}>{formatTime(msg.created_at)}</p>
+                  <p className={`text-[10px] mt-1 ${isOwn ? "text-brand-200" : "text-gray-400"} text-right`}>{formatTime(msg.created_at)}</p>
                 </div>
                 {showSeen && (
                   <div className="flex items-center gap-1 mt-0.5 mr-1">
-                    <CheckCheck className="h-3 w-3 text-emerald-500" />
-                    <span className="text-[10px] text-emerald-500">Seen</span>
+                    <CheckCheck className="h-3 w-3 text-brand-500" />
+                    <span className="text-[10px] text-brand-500">Seen</span>
                   </div>
                 )}
               </div>
@@ -168,7 +168,7 @@ export default function ChatRoomPage() {
         <button
           onClick={sendMessage}
           disabled={!newMessage.trim() || sending}
-          className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center disabled:opacity-50 hover:bg-emerald-700 transition-colors shrink-0"
+          className="w-10 h-10 bg-brand-600 rounded-full flex items-center justify-center disabled:opacity-50 hover:bg-brand-700 transition-colors shrink-0"
         >
           <Send className="h-4 w-4 text-white" />
         </button>

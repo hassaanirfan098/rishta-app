@@ -1,17 +1,17 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#10b981"/>
-      <stop offset="1" stop-color="#0d9488"/>
+      <stop offset="0" stop-color="#9d2159"/>
+      <stop offset="1" stop-color="#66143a"/>
     </linearGradient>
-    <mask id="crescent">
-      <rect width="512" height="512" fill="black"/>
-      <circle cx="244" cy="256" r="150" fill="white"/>
-      <circle cx="312" cy="256" r="130" fill="black"/>
-    </mask>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <rect width="512" height="512" fill="white" mask="url(#crescent)"/>
-  <path transform="translate(300 198) scale(5.8)" fill="white"
-    d="M12 21s-1-.7-2.6-2.1C6.9 16.6 3 13.2 3 8.9 3 6.2 5.1 4 7.8 4c1.6 0 3.1.8 4.2 2.1C13.1 4.8 14.6 4 16.2 4 18.9 4 21 6.2 21 8.9c0 4.3-3.9 7.7-6.4 10C13 20.3 12 21 12 21z"/>
+  <rect x="34" y="34" width="444" height="444" rx="88" fill="none" stroke="#c1963a" stroke-width="5" opacity="0.5"/>
+  <g transform="translate(0 12)">
+    <circle cx="206" cy="228" r="80" fill="none" stroke="#cba14a" stroke-width="30"/>
+    <circle cx="300" cy="228" r="80" fill="none" stroke="#ffffff" stroke-width="30"/>
+    <g transform="translate(186 246) scale(5.4)">
+      <path fill="#cba14a" d="M12 21s-1-.7-2.6-2.1C6.9 16.6 3 13.2 3 8.9 3 6.2 5.1 4 7.8 4c1.6 0 3.1.8 4.2 2.1C13.1 4.8 14.6 4 16.2 4 18.9 4 21 6.2 21 8.9c0 4.3-3.9 7.7-6.4 10C13 20.3 12 21 12 21z"/>
+    </g>
+  </g>
 </svg>

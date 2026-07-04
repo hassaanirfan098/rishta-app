@@ -4,8 +4,8 @@
   "description": "Muslim matrimonial — find your perfect match the halal way",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#064e3b",
-  "theme_color": "#059669",
+  "background_color": "#4d0e2b",
+  "theme_color": "#9d2159",
   "orientation": "portrait",
   "categories": ["lifestyle", "social"],
   "icons": [

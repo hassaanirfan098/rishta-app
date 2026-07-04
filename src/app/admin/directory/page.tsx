@@ -134,7 +134,7 @@ export default function AdminDirectoryPage() {
         <p className="text-xs text-gray-500 mb-1">Required headers: <code className="bg-gray-100 px-1 rounded">full_name,phone,age,city,country,sect,profession,education</code></p>
         <p className="text-xs text-gray-400 mb-3">Example: <code className="bg-gray-100 px-1 rounded">Ahmed Raza,+923001234567,31,Lahore,Pakistan,Sunni,Engineer,BSc</code></p>
         <textarea
-          className="w-full h-28 border border-gray-200 rounded-xl p-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="w-full h-28 border border-gray-200 rounded-xl p-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
           placeholder={"full_name,phone,age,city,country,sect,profession,education\nAhmed Raza,+923001234567,31,Lahore,Pakistan,Sunni,Engineer,BSc"}
           value={csvText}
           onChange={(e) => setCsvText(e.target.value)}
@@ -147,7 +147,7 @@ export default function AdminDirectoryPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -171,13 +171,13 @@ export default function AdminDirectoryPage() {
                   <td className="px-5 py-3 text-sm text-gray-600">{[p.city, p.country].filter(Boolean).join(", ")}</td>
                   <td className="px-5 py-3 text-sm text-gray-600">{p.profession || "—"}</td>
                   <td className="px-5 py-3">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${p.is_active ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-600"}`}>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${p.is_active ? "bg-brand-100 text-brand-800" : "bg-gray-100 text-gray-600"}`}>
                       {p.is_active ? "Active" : "Hidden"}
                     </span>
                   </td>
                   <td className="px-5 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => toggleActive(p.id, p.is_active)} className="text-xs text-gray-500 hover:text-emerald-600 underline">
+                      <button onClick={() => toggleActive(p.id, p.is_active)} className="text-xs text-gray-500 hover:text-brand-600 underline">
                         {p.is_active ? "Hide" : "Show"}
                       </button>
                       <button onClick={() => deleteProfile(p.id)} className="text-red-400 hover:text-red-600">

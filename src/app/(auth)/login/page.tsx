@@ -8,10 +8,10 @@ import { createClient } from "@/lib/supabase/client";
 import { LogoGlyph } from "@/components/Logo";
 
 const GRADIENTS = [
-  "from-emerald-900 via-teal-800 to-emerald-700",
-  "from-teal-900 via-emerald-800 to-cyan-700",
-  "from-emerald-800 via-green-900 to-teal-800",
-  "from-cyan-900 via-teal-800 to-emerald-900",
+  "from-brand-900 via-brand-800 to-brand-700",
+  "from-brand-900 via-brand-800 to-brand-700",
+  "from-brand-800 via-brand-900 to-brand-800",
+  "from-brand-900 via-brand-800 to-brand-900",
 ];
 
 const PATTERN_SVGS = [
@@ -88,7 +88,7 @@ export default function LoginPage() {
       {/* Logo centered top area */}
       <div className="absolute top-0 left-0 right-0 flex flex-col items-center justify-center pt-20 pb-10">
         <div className="flex items-center justify-center w-24 h-24 bg-white/15 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl mb-5">
-          <LogoGlyph className="w-14 h-14 text-white" />
+          <LogoGlyph className="w-16 h-16" variant="onDark" />
         </div>
         <h1 className="text-white text-4xl font-bold tracking-tight">Rishta</h1>
         <p className="text-white/70 text-sm mt-1 tracking-widest uppercase">Muslim Matrimonial</p>
@@ -154,7 +154,7 @@ export default function LoginPage() {
 
         <p className="text-white/40 text-xs text-center mt-4">
           Already have an account?{" "}
-          <Link href="/signup" className="text-emerald-300 font-medium">Sign up instead</Link>
+          <Link href="/signup" className="text-brand-300 font-medium">Sign up instead</Link>
         </p>
       </div>
     </div>

@@ -45,17 +45,17 @@ export default function SignupPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-600 rounded-3xl shadow-lg mb-6">
-            <LogoGlyph className="w-11 h-11 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-600 rounded-3xl shadow-lg mb-6">
+            <LogoGlyph className="w-12 h-12" variant="onDark" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
           <p className="text-gray-500 text-sm mb-6">
             We sent a confirmation link to <span className="font-medium text-gray-700">{email}</span>. Click it to activate your account, then come back to sign in.
           </p>
           <Link href="/login">
-            <Button className="w-full bg-emerald-600 hover:bg-emerald-700">Go to Sign In</Button>
+            <Button className="w-full bg-brand-600 hover:bg-brand-700">Go to Sign In</Button>
           </Link>
         </div>
       </div>
@@ -63,14 +63,14 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-600 rounded-3xl shadow-lg mb-4">
-            <LogoGlyph className="w-11 h-11 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-600 rounded-3xl shadow-lg mb-4">
+            <LogoGlyph className="w-12 h-12" variant="onDark" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mt-2">
-            <span className="text-emerald-600">Rishta</span>
+            <span className="text-brand-600">Rishta</span>
           </h1>
           <p className="text-gray-500 mt-1 text-sm">رشتہ — Muslim Matrimonial</p>
         </div>
@@ -120,7 +120,7 @@ export default function SignupPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
+              <Button type="submit" className="w-full bg-brand-600 hover:bg-brand-700" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
                 Create Account
               </Button>
@@ -129,7 +129,7 @@ export default function SignupPage() {
 
           <p className="text-center text-xs text-gray-400 mt-5">
             Already have an account?{" "}
-            <Link href="/login" className="text-emerald-600 font-medium">
+            <Link href="/login" className="text-brand-600 font-medium">
               Sign in
             </Link>
           </p>

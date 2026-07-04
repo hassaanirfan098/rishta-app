@@ -33,8 +33,8 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
       >
         <div className="p-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-              <LogoGlyph className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+              <LogoGlyph className="w-6 h-6" variant="onDark" />
             </div>
             <div>
               <p className="font-bold text-gray-900 text-sm">Rishta</p>
@@ -51,7 +51,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
               key={href}
               href={href}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors mb-1"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition-colors mb-1"
             >
               <Icon className="h-4 w-4" />
               {label}
@@ -68,8 +68,8 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
             <Menu className="h-5 w-5 text-gray-600" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-emerald-600 rounded-md flex items-center justify-center">
-              <LogoGlyph className="w-4 h-4 text-white" />
+            <div className="w-6 h-6 bg-brand-600 rounded-md flex items-center justify-center">
+              <LogoGlyph className="w-5 h-5" variant="onDark" />
             </div>
             <span className="font-bold text-gray-900 text-sm">Admin Panel</span>
           </div>

@@ -79,7 +79,7 @@ export default function DirectoryPage() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 pt-4 pb-3">
           <h1 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <LogoGlyph className="w-5 h-5 text-emerald-600" /> Directory
+            <LogoGlyph className="w-5 h-5 text-brand-600" /> Directory
           </h1>
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -88,7 +88,7 @@ export default function DirectoryPage() {
               placeholder="Search by name, city, profession..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+              className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-gray-50"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3.5 top-1/2 -translate-y-1/2">
@@ -101,14 +101,14 @@ export default function DirectoryPage() {
         <div className="max-w-lg mx-auto px-4 pb-3">
           <button
             onClick={() => { setUnlockTarget(null); setShowUnlockModal(true); }}
-            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-4 flex items-center gap-3"
+            className="w-full bg-gradient-to-r from-brand-600 to-brand-700 rounded-2xl p-4 flex items-center gap-3"
           >
-            <Package className="h-8 w-8 text-emerald-100 shrink-0" />
+            <Package className="h-8 w-8 text-brand-100 shrink-0" />
             <div className="flex-1 min-w-0 text-left">
               <p className="text-white font-semibold text-sm">30 Contacts Bundle</p>
-              <p className="text-emerald-100 text-xs">Rs 5,000 — save Rs 10,000</p>
+              <p className="text-brand-100 text-xs">Rs 5,000 — save Rs 10,000</p>
             </div>
-            <span className="bg-white text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-xl shrink-0">Buy Bundle</span>
+            <span className="bg-white text-brand-700 text-xs font-bold px-3 py-1.5 rounded-xl shrink-0">Buy Bundle</span>
           </button>
         </div>
       </div>
@@ -116,7 +116,7 @@ export default function DirectoryPage() {
       <div className="max-w-lg mx-auto px-4 py-4">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-10 h-10 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
@@ -154,11 +154,11 @@ export default function DirectoryPage() {
               }
             </p>
 
-            <div className="bg-emerald-50 rounded-2xl p-3 mb-5">
-              <p className="text-xs font-medium text-emerald-800 mb-2">Accepted payments</p>
+            <div className="bg-brand-50 rounded-2xl p-3 mb-5">
+              <p className="text-xs font-medium text-brand-800 mb-2">Accepted payments</p>
               <div className="flex gap-2">
                 {[{ icon: "💚", name: "JazzCash" }, { icon: "🟠", name: "Easypaisa" }, { icon: "💳", name: "Visa/MC" }].map((m) => (
-                  <div key={m.name} className="flex-1 bg-white rounded-xl p-2 text-center border border-emerald-100">
+                  <div key={m.name} className="flex-1 bg-white rounded-xl p-2 text-center border border-brand-100">
                     <div className="text-xl mb-0.5">{m.icon}</div>
                     <p className="text-[10px] font-medium">{m.name}</p>
                   </div>
@@ -172,7 +172,7 @@ export default function DirectoryPage() {
                 Pay Rs 500 — Unlock Contact
               </Button>
             )}
-            <Button variant="outline" className="w-full border-emerald-300 text-emerald-700 hover:bg-emerald-50" disabled={paymentLoading} onClick={() => startPayment("bundle")}>
+            <Button variant="outline" className="w-full border-brand-300 text-brand-700 hover:bg-brand-50" disabled={paymentLoading} onClick={() => startPayment("bundle")}>
               {paymentLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Buy 30 Contacts — Rs 5,000
             </Button>
