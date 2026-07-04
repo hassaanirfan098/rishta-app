@@ -204,11 +204,12 @@ export default function DiscoverPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <LogoGlyph className="w-5 h-5 text-brand-600" /> Discover
-            </h1>
-            <p className="text-xs text-gray-400">Find your match</p>
+          <div className="flex items-center gap-2.5">
+            <LogoGlyph className="w-7 h-7" />
+            <div>
+              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight leading-none">Discover</h1>
+              <p className="text-xs text-gray-400 mt-0.5">Find your match</p>
+            </div>
           </div>
           <Button
             variant="ghost"
@@ -307,7 +308,7 @@ export default function DiscoverPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-6">
             {combined.map((item, idx) =>
               item.type === "member" ? (
                 <ProfileCard

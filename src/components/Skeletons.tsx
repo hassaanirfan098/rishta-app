@@ -1,27 +1,25 @@
 export function ProfileCardSkeleton() {
   return (
-    <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-50">
-      <div className="h-72 skeleton" />
-      <div className="px-4 py-3 flex flex-wrap gap-2">
-        <div className="h-6 w-20 rounded-full skeleton" />
-        <div className="h-6 w-24 rounded-full skeleton" />
-        <div className="h-6 w-16 rounded-full skeleton" />
-      </div>
-      <div className="px-4 pb-3 space-y-2">
-        <div className="h-3 w-full rounded skeleton" />
-        <div className="h-3 w-2/3 rounded skeleton" />
-      </div>
-      <div className="px-4 pb-4 flex gap-3">
-        <div className="h-12 flex-1 rounded-2xl skeleton" />
-        <div className="h-12 flex-1 rounded-2xl skeleton" />
+    <div className="relative rounded-[28px] overflow-hidden h-[72vh] min-h-[460px] max-h-[640px] skeleton">
+      <div className="absolute inset-x-0 bottom-0 p-5 space-y-3">
+        <div className="h-8 w-2/3 rounded-lg bg-white/40" />
+        <div className="h-4 w-1/3 rounded bg-white/30" />
+        <div className="flex gap-2">
+          <div className="h-8 w-20 rounded-full bg-white/25" />
+          <div className="h-8 w-24 rounded-full bg-white/25" />
+        </div>
+        <div className="flex justify-center gap-5 pt-2">
+          <div className="w-16 h-16 rounded-full bg-white/40" />
+          <div className="w-20 h-20 rounded-full bg-white/50" />
+        </div>
       </div>
     </div>
   );
 }
 
-export function ProfileGridSkeleton({ count = 4 }: { count?: number }) {
+export function ProfileGridSkeleton({ count = 2 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="flex flex-col gap-6">
       {Array.from({ length: count }).map((_, i) => (
         <ProfileCardSkeleton key={i} />
       ))}
