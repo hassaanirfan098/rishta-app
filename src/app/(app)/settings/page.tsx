@@ -18,8 +18,8 @@ const MARITAL = ["Never married", "Divorced", "Widowed"];
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-4">
-      <h3 className="font-semibold text-gray-800">{title}</h3>
+    <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4">
+      <h3 className="font-extrabold text-gray-900 text-lg">{title}</h3>
       {children}
     </div>
   );
@@ -169,8 +169,8 @@ export default function SettingsPage() {
           <button aria-label="Go back" onClick={() => router.back()}>
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </button>
-          <h1 className="text-lg font-bold text-gray-900 flex-1">Settings</h1>
-          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-brand-600 hover:bg-brand-700">
+          <h1 className="text-xl font-extrabold text-gray-900 flex-1 tracking-tight">Settings</h1>
+          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-brand-600 hover:bg-brand-700 rounded-full">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? "Saved ✓" : <><Save className="h-4 w-4 mr-1" />Save</>}
           </Button>
         </div>
