@@ -5,7 +5,6 @@ import Link from "next/link";
 import { MessageCircle, Heart, Lock, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
-import { ListSkeleton } from "@/components/Skeletons";
 import { LogoGlyph } from "@/components/Logo";
 
 export default function MatchesPage() {
@@ -77,19 +76,20 @@ export default function MatchesPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <LogoGlyph className="w-5 h-5 text-brand-600" /> Matches
-          </h1>
-          <div className="flex bg-gray-100 rounded-xl p-1">
+          <div className="flex items-center gap-2.5 mb-4">
+            <LogoGlyph className="w-7 h-7" />
+            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Matches</h1>
+          </div>
+          <div className="flex bg-gray-100 rounded-full p-1">
             <button
               onClick={() => setTab("matches")}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${tab === "matches" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all ${tab === "matches" ? "bg-brand-600 text-white shadow-sm" : "text-gray-500"}`}
             >
               Matches {matches.length > 0 && `(${matches.length})`}
             </button>
             <button
               onClick={() => setTab("liked")}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${tab === "liked" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${tab === "liked" ? "bg-brand-600 text-white shadow-sm" : "text-gray-500"}`}
             >
               {!isGold && <Lock className="h-3.5 w-3.5" />}
               Liked You {likes.length > 0 && `(${likes.length})`}
@@ -100,7 +100,11 @@ export default function MatchesPage() {
 
       <div className="max-w-lg mx-auto px-4 py-5">
         {loading ? (
-          <ListSkeleton count={5} />
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4] rounded-3xl skeleton" />
+            ))}
+          </div>
         ) : tab === "matches" ? (
           matches.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -114,29 +118,35 @@ export default function MatchesPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               {matches.map((match) => {
                 const profile = match.otherProfile;
                 if (!profile) return null;
                 const age = profile.date_of_birth ? calculateAge(profile.date_of_birth) : null;
                 return (
-                  <div key={match.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
-                      {profile.avatar_url
-                        ? <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full rounded-full object-cover" />
-                        : <span className="text-xl font-bold text-brand-600">{profile.full_name?.charAt(0)}</span>}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 truncate">
-                        {profile.full_name}{age && <span className="text-gray-500 font-normal">, {age}</span>}
+                  <Link
+                    key={match.id}
+                    href={`/chat/${match.id}`}
+                    className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-md bg-brand-900 group"
+                  >
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-400 to-brand-700 text-6xl">
+                        {profile.full_name?.charAt(0) || "👤"}
+                      </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-white font-bold text-base truncate drop-shadow">
+                        {profile.full_name}{age && <span className="font-medium">, {age}</span>}
                       </h3>
-                      {profile.city && <p className="text-xs text-gray-500 truncate">{profile.city}</p>}
-                      {profile.profession && <p className="text-xs text-gray-400 truncate">{profile.profession}</p>}
+                      {profile.city && <p className="text-white/80 text-xs truncate">{profile.city}</p>}
                     </div>
-                    <Link href={`/chat/${match.id}`} className="shrink-0 w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center hover:bg-brand-200 transition-colors">
-                      <MessageCircle className="h-5 w-5 text-brand-600" />
-                    </Link>
-                  </div>
+                    <div className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-sm group-active:scale-90 transition-transform">
+                      <MessageCircle className="h-4.5 w-4.5 text-brand-600" />
+                    </div>
+                  </Link>
                 );
               })}
             </div>
@@ -175,26 +185,35 @@ export default function MatchesPage() {
             <p className="text-sm text-gray-500 mt-2">Complete your profile to get more visibility</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             {likes.map((like) => {
               const profile = like.profile;
               if (!profile) return null;
               const age = profile.date_of_birth ? calculateAge(profile.date_of_birth) : null;
               return (
-                <div key={like.liker_id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
-                    {profile.avatar_url
-                      ? <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full rounded-full object-cover" />
-                      : <span className="text-xl font-bold text-pink-500">{profile.full_name?.charAt(0)}</span>}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">
-                      {profile.full_name}{age && <span className="text-gray-500 font-normal">, {age}</span>}
+                <Link
+                  key={like.liker_id}
+                  href={`/profile/${profile.id}`}
+                  className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-md bg-brand-900 group"
+                >
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-400 to-brand-700 text-6xl">
+                      {profile.full_name?.charAt(0) || "👤"}
+                    </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <h3 className="text-white font-bold text-base truncate drop-shadow">
+                      {profile.full_name}{age && <span className="font-medium">, {age}</span>}
                     </h3>
-                    {profile.city && <p className="text-xs text-gray-500 truncate">{profile.city}</p>}
+                    {profile.city && <p className="text-white/80 text-xs truncate">{profile.city}</p>}
                   </div>
-                  <Heart className="h-5 w-5 text-pink-400 shrink-0 fill-pink-400" />
-                </div>
+                  <div className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-sm">
+                    <Heart className="h-4.5 w-4.5 text-brand-500 fill-brand-500" />
+                  </div>
+                </Link>
               );
             })}
           </div>
