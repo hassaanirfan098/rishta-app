@@ -366,11 +366,6 @@ function crestSVG(px, uid){
       transform="rotate(-90 200 200)"/>
     <circle class="crest-ring2" cx="200" cy="200" r="163" fill="none"
       stroke="rgba(212,175,97,.55)" stroke-width="1.5"/>
-    <path id="arc${uid}" d="M 78 234 A 126 126 0 0 1 322 234" fill="none"/>
-    <text class="crest-arc" font-family="Georgia,serif" font-size="20.5"
-      fill="#D4AF61" letter-spacing="3.6">
-      <textPath href="#arc${uid}" startOffset="50%" text-anchor="middle">CITY MARRIAGE BUREAU</textPath>
-    </text>
     <text class="crest-mono" x="200" y="235" text-anchor="middle"
       font-family="Georgia,serif" font-size="98" letter-spacing="6"
       fill="url(#cg${uid})">CMB</text>
@@ -691,7 +686,6 @@ function s1(t){
   const mp=eo5(seg(t,1.25,2.3));
   mono.style.opacity=mp;
   mono.setAttribute('transform',`translate(0 ${(1-mp)*26})`);
-  $('#s1 .crest-arc').style.opacity=eo(seg(t,1.9,2.8));
   $('#s1 .crest-heart').style.opacity=eo(seg(t,2.2,3.0));
   const sh=$('#s1 .crest-shine rect');
   const sp=seg(t,2.7,3.7);
