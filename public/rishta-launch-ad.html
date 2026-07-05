@@ -335,6 +335,7 @@ let startMs = performance.now();
 const now = () => FROZEN ? clamp(t0,0,DUR-0.001)
                          : (t0 + (performance.now()-startMs)/1000) % DUR;
 addEventListener('pointerdown', () => { t0 = 0; startMs = performance.now(); });
+window.__seek = s => { t0 = s; };   // frame-exact seek in freeze mode (used for video export)
 
 /* ---------- stage scaling ---------- */
 function fit(){
