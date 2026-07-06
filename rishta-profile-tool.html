@@ -255,6 +255,18 @@
         <span id="save-status" style="font-size:13px; color:#2E7D32; font-weight:600;"></span>
       </div>
     </div>
+
+    <!-- live instant card preview -->
+    <div class="panel" id="live-panel">
+      <h2>Instant card preview</h2>
+      <p style="font-size:12.5px;color:#7a6a55;margin-bottom:14px;">The branded card builds itself as you fill the details above — you can download it right away, even before saving.</p>
+      <div class="prevwrap">
+        <div id="live-card-holder"></div>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn gold" id="live-dl-btn" onclick="downloadLiveCard()">⬇️ Download this card</button>
+      </div>
+    </div>
   </section>
 
   <!-- ============================== TAB: MATCHING SPACE ============================== -->
@@ -540,6 +552,7 @@ function showMode(mode){
   $('mode-photo').style.display   = mode === 'photo'   ? '' : 'none';
   // In form mode the review card IS the form; in extract modes it appears after extraction.
   $('review-panel').style.display = mode === 'form' ? '' : 'none';
+  $('live-panel').style.display = mode === 'form' ? '' : 'none';
   hideBanner('review-banner');
   $('review-title').textContent = 'Profile details';
 }
@@ -610,6 +623,8 @@ function populateForm(d, sourceType){
   banner('review-banner','info','✅ Extracted from your ' + (sourceType === 'photo' ? 'photo' : 'message') + ' — review below, correct anything inline, then <b>Save Profile</b>.' + (d.raw_note ? ' Uncertain bits are preserved under <b>Raw notes</b>.' : ''));
   $('review-banner').className = 'banner show info';
   $('review-title').textContent = 'Review extracted profile';
+  $('live-panel').style.display = '';
+  renderLiveCard();
   $('review-panel').scrollIntoView({ behavior:'smooth' });
 }
 
@@ -622,28 +637,25 @@ function clearForm(keepHidden){
   $('rawnote-wrap').style.display = 'none';
   $('save-status').textContent = '';
   if (!keepHidden) hideBanner('review-banner');
+  if (typeof renderLiveCard === 'function') renderLiveCard();
 }
 
 /* ============================================================ SAVE ============================================================ */
-async function saveProfile(){
-  const name = $('f-name').value.trim();
-  const gender = $('f-gender').value;
-  if (!name || !gender) { banner('global-banner','error','Name and gender are required before saving.'); window.scrollTo({top:0,behavior:'smooth'}); return; }
-  hideBanner('global-banner');
-
+// Reads the current form into a profile object WITHOUT saving — used by the
+// live instant-card preview, the pre-save download, and saveProfile itself.
+function buildDraftProfile(){
   const ft = $('f-feet').value, inch = $('f-inches').value;
   const heightInches = ft !== '' ? (parseInt(ft,10)*12 + (inch !== '' ? parseInt(inch,10) : 0)) : null;
-  const g = gender === 'male' ? 'm' : 'f';
-  counters[g] += 1;
-  const catalogId = g.toUpperCase() + '-' + String(counters[g]).padStart(2,'0');
-
-  const profile = {
-    id: catalogId.toLowerCase(),
-    catalogId,
-    createdAt: new Date().toISOString(),
+  const gender = $('f-gender').value || null;
+  const g = gender === 'male' ? 'm' : gender === 'female' ? 'f' : null;
+  return {
+    id: null,
+    catalogId: g ? g.toUpperCase() + '-' + String(counters[g] + 1).padStart(2,'0') : 'NEW',
+    createdAt: null,
     sourceType: $('review-panel').dataset.source || 'form',
     photo: pendingPersonPhoto,
-    name, gender,
+    name: $('f-name').value.trim(),
+    gender,
     age: $('f-age').value ? parseInt($('f-age').value,10) : null,
     heightInches,
     heightDisplay: heightDisplay(heightInches),
@@ -673,6 +685,18 @@ async function saveProfile(){
     },
     raw_note: $('f-rawnote').value.trim() || null
   };
+}
+
+async function saveProfile(){
+  const profile = buildDraftProfile();
+  if (!profile.name || !profile.gender) { banner('global-banner','error','Name and gender are required before saving.'); window.scrollTo({top:0,behavior:'smooth'}); return; }
+  hideBanner('global-banner');
+
+  const g = profile.gender === 'male' ? 'm' : 'f';
+  counters[g] += 1;
+  profile.catalogId = g.toUpperCase() + '-' + String(counters[g]).padStart(2,'0');
+  profile.id = profile.catalogId.toLowerCase();
+  profile.createdAt = new Date().toISOString();
 
   try {
     await store.set('profiles:' + profile.id, profile);
@@ -686,11 +710,12 @@ async function saveProfile(){
     return;
   }
   profiles.push(profile);
-  $('save-status').textContent = '✓ Saved as ' + catalogId + ' (auto-approved)';
-  banner('global-banner','success','✅ <b>' + esc(name) + '</b> saved as <b>' + catalogId + '</b>. Find them in the Matching Space, or download their card from Profile Preview.');
+  $('save-status').textContent = '✓ Saved as ' + profile.catalogId + ' (auto-approved)';
+  banner('global-banner','success','✅ <b>' + esc(profile.name) + '</b> saved as <b>' + profile.catalogId + '</b>. Find them in the Matching Space, or download their card from Profile Preview.');
   clearForm();
   $('msg-input').value = '';
   resetPhotoMode();
+  renderLiveCard();
 }
 
 async function deleteProfile(id){
@@ -895,7 +920,28 @@ function renderPreview(){
   $('dl-btn').style.display = p ? '' : 'none';
   $('prev-select').parentElement.style.display = profiles.length ? '' : 'none';
   if (!p) { $('vcard-holder').innerHTML = ''; return; }
-  const heShe = p.gender === 'male' ? "What He's Looking For" : "What She's Looking For";
+  $('vcard-holder').innerHTML = vcardHTML(p, 'vcard');
+}
+
+/* Live instant card in the New Profile tab — re-renders as the form is typed into */
+let liveTimer = null;
+function scheduleLiveCard(){ clearTimeout(liveTimer); liveTimer = setTimeout(renderLiveCard, 250); }
+function renderLiveCard(){
+  const holder = $('live-card-holder');
+  if (!holder) return;
+  const p = buildDraftProfile();
+  const hasAny = p.name || p.age != null || p.photo || p.caste || p.city || p.education;
+  if (!hasAny) {
+    holder.innerHTML = '<div class="empty" style="width:420px;max-width:100%"><b>Your card appears here instantly</b>Start filling the details above — the branded profile card builds itself as you type.</div>';
+    $('live-dl-btn').disabled = true;
+    return;
+  }
+  $('live-dl-btn').disabled = false;
+  holder.innerHTML = vcardHTML(p, 'vcard-live');
+}
+
+function vcardHTML(p, domId){
+  const heShe = p.gender === 'female' ? "What She's Looking For" : "What He's Looking For";
   const req = requirementLines(p);
   const details = [
     ['Education', p.education], ['Profession', p.profession],
@@ -906,13 +952,13 @@ function renderPreview(){
     ['Father', p.father], ['Mother', p.mother],
     ['Siblings', p.siblings]
   ].filter(([,v]) => v);
-  $('vcard-holder').innerHTML = `
-    <div class="vcard" id="vcard">
+  return `
+    <div class="vcard" id="${domId}">
       <div class="band">
         <div class="brand">City Marriage Bureau<small>Trusted Rishta Service</small></div>
       </div>
       <div class="photo">${p.photo ? `<img src="${p.photo}">` : '👤'}</div>
-      <div class="name">${esc(p.name)}</div>
+      <div class="name">${esc(p.name || 'New Profile')}</div>
       <div class="cid"><span>${p.catalogId}</span></div>
       <div class="stats">
         <div class="stat"><div class="l">Age</div><div class="v">${p.age != null ? p.age + ' yrs' : '—'}</div></div>
@@ -960,7 +1006,12 @@ function loadImg(src){
 async function downloadCard(){
   const id = $('prev-select').value;
   const p = profiles.find(x => x.id === id);
-  if (!p) return;
+  if (p) await downloadCardFor(p);
+}
+async function downloadLiveCard(){
+  await downloadCardFor(buildDraftProfile());
+}
+async function downloadCardFor(p){
   try { await document.fonts.load('800 56px Poppins'); await document.fonts.load('700 30px Poppins'); await document.fonts.load('500 26px Poppins'); } catch {}
   const W = 1080, cnv = $('dlcanvas');
   const ctx = cnv.getContext('2d');
@@ -1016,7 +1067,7 @@ async function downloadCard(){
 
   // Name + ID
   ctx.fillStyle = PLUM; ctx.font = F('800 58px');
-  ctx.fillText(p.name, W/2, cy + R + 92);
+  ctx.fillText(p.name || 'New Profile', W/2, cy + R + 92);
   const idText = p.catalogId;
   ctx.font = F('700 28px');
   const idW = ctx.measureText(idText).width + 56;
@@ -1139,7 +1190,12 @@ async function init(){
     if (!f) return;
     pendingPersonPhoto = await resizeImage(f, 512);
     $('pphoto-circ').innerHTML = `<img src="${pendingPersonPhoto}">`;
+    renderLiveCard();
   });
+  // live instant card: re-render as the form is typed into
+  $('review-panel').addEventListener('input', scheduleLiveCard);
+  $('review-panel').addEventListener('change', scheduleLiveCard);
+  renderLiveCard();
   // card photo input + drag/drop
   $('photo-input').addEventListener('change', e => acceptCardPhoto(e.target.files[0]));
   const drop = $('photodrop');
