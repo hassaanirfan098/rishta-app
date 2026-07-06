@@ -282,7 +282,7 @@ function TapCard({
       onClick={onClick}
       className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all active:scale-95 ${
         selected
-          ? "border-brand-500 bg-brand-50 shadow-md"
+          ? "border-brand-600 bg-brand-50 shadow-md"
           : "border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm"
       }`}
     >
@@ -608,13 +608,13 @@ export default function OnboardingPage() {
             <p className="text-white/90 text-4xl font-bold mb-3" style={{ fontFamily: "serif" }}>
               السلام عليكم
             </p>
-            <h1 className="text-white text-2xl font-bold mb-3">Welcome to Rishta</h1>
+            <h1 className="text-white text-3xl font-extrabold tracking-tight mb-3">Welcome to Rishta</h1>
             <p className="text-white/70 text-sm leading-relaxed max-w-xs">
               Tell us about yourself and we'll show you great profiles nearby
             </p>
             <button
               onClick={next}
-              className="mt-12 w-full max-w-xs bg-white text-brand-900 font-bold py-4 rounded-2xl text-lg shadow-xl hover:bg-brand-50 active:scale-95 transition-all"
+              className="mt-12 w-full max-w-xs bg-white text-brand-900 font-bold py-4 rounded-full text-lg shadow-xl hover:bg-brand-50 active:scale-95 transition-all"
             >
               Get Started
             </button>
@@ -905,7 +905,7 @@ export default function OnboardingPage() {
             <div className="w-full max-w-sm space-y-4">
               <button
                 onClick={() => { set("notifications_enabled", true); next(); }}
-                className="w-full bg-white text-violet-700 font-bold py-4 rounded-2xl text-base hover:bg-violet-50 active:scale-95 transition-all shadow-lg"
+                className="w-full bg-white text-brand-700 font-bold py-4 rounded-full text-base hover:bg-brand-50 active:scale-95 transition-all shadow-lg"
               >
                 🔔 Turn on Notifications
               </button>
@@ -1499,7 +1499,7 @@ export default function OnboardingPage() {
             {!cameraStream && !selfieData && !form.face_verified && (
               <button
                 onClick={openCamera}
-                className="w-full flex items-center justify-center gap-2 bg-brand-600 text-white py-4 rounded-2xl font-bold hover:bg-brand-700 active:scale-95 transition-all"
+                className="w-full flex items-center justify-center gap-2 bg-brand-600 text-white py-4 rounded-full font-bold hover:bg-brand-700 active:scale-95 transition-all"
               >
                 <Camera className="h-5 w-5" /> Open Camera
               </button>
@@ -1511,7 +1511,7 @@ export default function OnboardingPage() {
                 </div>
                 <button
                   onClick={takeSelfie}
-                  className="w-full bg-brand-600 text-white py-4 rounded-2xl font-bold hover:bg-brand-700 active:scale-95 transition-all"
+                  className="w-full bg-brand-600 text-white py-4 rounded-full font-bold hover:bg-brand-700 active:scale-95 transition-all"
                 >
                   Take Selfie
                 </button>
@@ -1540,7 +1540,7 @@ export default function OnboardingPage() {
                 <p className="text-sm text-gray-500 text-center">Your identity has been confirmed. Complete your profile now.</p>
                 <button
                   onClick={next}
-                  className="w-full bg-brand-600 text-white py-4 rounded-2xl font-bold hover:bg-brand-700 active:scale-95 transition-all"
+                  className="w-full bg-brand-600 text-white py-4 rounded-full font-bold hover:bg-brand-700 active:scale-95 transition-all"
                 >
                   Complete Profile
                 </button>
@@ -1566,7 +1566,7 @@ export default function OnboardingPage() {
             <button
               onClick={saveProfile}
               disabled={saving}
-              className="w-full max-w-sm bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
+              className="w-full max-w-sm bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-full text-base active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
             >
               {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start Exploring →"}
             </button>
@@ -1595,7 +1595,7 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
   return (
     <div className="fixed top-0 left-0 right-0 h-1 bg-white/20 z-50">
       <div
-        className="h-full bg-white transition-all duration-300"
+        className="h-full bg-gold-400 transition-all duration-300"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -1633,6 +1633,7 @@ function StepWrapper({
       <div className="flex items-center gap-3 px-4 pt-6 pb-2">
         <button
           onClick={onBack}
+          aria-label="Go back"
           className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
         >
           <ArrowLeft className="h-5 w-5 text-white" />
@@ -1644,7 +1645,7 @@ function StepWrapper({
 
       {/* Step title */}
       <div className="px-5 pt-3 pb-4">
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
+        <h2 className="text-3xl font-extrabold tracking-tight text-white">{title}</h2>
         {subtitle && <p className="text-sm text-white/70 mt-1">{subtitle}</p>}
       </div>
 
@@ -1661,9 +1662,9 @@ function StepWrapper({
           <button
             onClick={onContinue}
             disabled={continueDisabled}
-            className="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+            className="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-full text-base active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
           >
-            Continue →
+            Continue
           </button>
         </div>
       )}
