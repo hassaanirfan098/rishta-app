@@ -9,7 +9,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <input
         type={type}
         className={cn(
-          "flex h-11 w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-900 ring-offset-background placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 transition-colors",
+          // Airbnb-style: hairline outline, 8px radius; on focus the border
+          // thickens to 2px ink — no glow ring.
+          "flex h-12 w-full rounded-lg border border-hairline bg-white px-4 py-2 text-base text-ink placeholder:text-muted focus-visible:outline-none focus-visible:border-2 focus-visible:border-ink disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-surface-soft transition-colors",
           className
         )}
         ref={ref}
