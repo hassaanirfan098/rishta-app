@@ -17,6 +17,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [resendMsg, setResendMsg] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
   const router = useRouter();
   const supabase = createClient();
 
@@ -28,7 +30,7 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback` },
@@ -40,7 +42,37 @@ export default function SignupPage() {
       setLoading(false);
       return;
     }
+    // If email confirmation is OFF in Supabase, signUp returns an active
+    // session — send the user straight into onboarding instead of asking
+    // them to check an email that will never come.
+    if (data.session) {
+      router.push("/onboarding");
+      router.refresh();
+      return;
+    }
+    setLoading(false);
     setDone(true);
+  };
+
+  const handleResend = async () => {
+    setResendMsg("");
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback` },
+    });
+    if (error) {
+      setResendMsg(error.message);
+      return;
+    }
+    setResendMsg("Sent again — check your inbox and spam folder.");
+    setResendCooldown(30);
+    const timer = setInterval(() => {
+      setResendCooldown((c) => {
+        if (c <= 1) { clearInterval(timer); return 0; }
+        return c - 1;
+      });
+    }, 1000);
   };
 
   if (done) {
@@ -52,11 +84,23 @@ export default function SignupPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
           <p className="text-gray-500 text-sm mb-6">
-            We sent a confirmation link to <span className="font-medium text-gray-700">{email}</span>. Click it to activate your account, then come back to sign in.
+            We sent a confirmation link to <span className="font-medium text-gray-700">{email}</span>. Click it to activate your account, then come back to sign in. If it&apos;s not there in a minute, check your spam folder.
           </p>
-          <Link href="/login">
-            <Button className="w-full bg-brand-600 hover:bg-brand-700">Go to Sign In</Button>
-          </Link>
+          {resendMsg && (
+            <p className={`text-sm mb-4 ${resendMsg.startsWith("Sent") ? "text-brand-600" : "text-red-500"}`}>{resendMsg}</p>
+          )}
+          <div className="space-y-3">
+            <Link href="/login">
+              <Button className="w-full bg-brand-600 hover:bg-brand-700">Go to Sign In</Button>
+            </Link>
+            <button
+              onClick={handleResend}
+              disabled={resendCooldown > 0}
+              className="w-full text-sm text-gray-500 hover:text-gray-700 disabled:text-gray-300 font-medium"
+            >
+              {resendCooldown > 0 ? `Resend email in ${resendCooldown}s` : "Didn't get it? Resend email"}
+            </button>
+          </div>
         </div>
       </div>
     );
