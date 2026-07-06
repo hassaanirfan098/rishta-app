@@ -124,6 +124,21 @@
   .vcard .looking .t{font-size:10.5px; text-transform:uppercase; letter-spacing:2px; color:var(--gold2); font-weight:700; margin-bottom:6px;}
   .vcard .looking .hl{font-weight:800; color:var(--gold2); font-size:13.5px; line-height:1.5;}
   .vcard .looking .rest{font-size:11.5px; line-height:1.6; margin-top:5px;}
+  .vcard .looking .rgrid{display:grid; grid-template-columns:1fr 1fr; gap:9px 14px;}
+  .vcard .looking .rl{font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:#E4C98F; font-weight:700;}
+  .vcard .looking .rv{font-size:13px; font-weight:700; color:#fff; margin-top:1px;}
+  .vcard .looking .other{margin-top:10px;}
+  .vcard .looking .other .rv{font-size:11.5px; font-weight:400; line-height:1.55; color:#F5E8D0;}
+  .vcard .cta{display:flex; align-items:center; justify-content:center; gap:11px; padding:13px 18px; border-top:1px solid #EADFC9; background:#fff;}
+  .vcard .cta svg{width:34px; height:34px; flex-shrink:0;}
+  .vcard .cta .l1{font-size:10.5px; color:#5d4a34;}
+  .vcard .cta .l2{font-size:16px; font-weight:800; color:var(--plum); letter-spacing:.4px;}
+
+  /* square card variant (on-screen preview mirrors the 1:1 download) */
+  .squareimg{width:420px; max-width:100%; border-radius:20px; box-shadow:0 12px 40px rgba(58,18,32,.22); display:block; background:var(--cream);}
+  .cardlabel{font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px;}
+  .dlrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;}
+  .prevwrap > div{max-width:100%;}
   .vcard .foot{border-top:1px solid #EADFC9; padding:10px; text-align:center; font-size:10px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; font-weight:600;}
   @media (max-width:640px){ .vcard .stats{grid-template-columns:repeat(2,1fr);} }
 </style>
@@ -151,6 +166,13 @@
     <input type="password" id="apikey" placeholder="sk-ant-..." autocomplete="off">
     <button class="btn sm gold" onclick="saveApiKey()">Save key</button>
     <span class="status" id="keystatus">Needed for Message &amp; Photo extraction. Stored only on this device.</span>
+  </div>
+
+  <div class="keyrow" id="contactrow">
+    <label for="contact">Bureau WhatsApp no.</label>
+    <input type="text" id="contact" placeholder="+92 321 2266621" autocomplete="off">
+    <button class="btn sm gold" onclick="saveContact()">Save number</button>
+    <span class="status" id="contactstatus">Shown on every card's "DM if interested" footer.</span>
   </div>
 
   <!-- ============================== TAB: NEW PROFILE ============================== -->
@@ -259,12 +281,21 @@
     <!-- live instant card preview -->
     <div class="panel" id="live-panel">
       <h2>Instant card preview</h2>
-      <p style="font-size:12.5px;color:#7a6a55;margin-bottom:14px;">The branded card builds itself as you fill the details above — you can download it right away, even before saving.</p>
+      <p style="font-size:12.5px;color:#7a6a55;margin-bottom:14px;">Two branded cards build themselves as you fill the details above — a tall portrait card and a 1:1 square card. Download whichever you like, even before saving.</p>
       <div class="prevwrap">
-        <div id="live-card-holder"></div>
+        <div>
+          <div class="cardlabel">📱 Portrait card</div>
+          <div id="live-card-holder"></div>
+        </div>
+        <div>
+          <div class="cardlabel">⬜ Square card (1:1)</div>
+          <img id="live-square-img" class="squareimg" alt="Square card preview">
+        </div>
       </div>
-      <div style="margin-top:14px;">
-        <button class="btn gold" id="live-dl-btn" onclick="downloadLiveCard()">⬇️ Download this card</button>
+      <div class="dlrow">
+        <button class="btn gold" id="live-dl-portrait" onclick="downloadLive('portrait')">⬇️ Portrait</button>
+        <button class="btn gold" id="live-dl-square" onclick="downloadLive('square')">⬇️ Square</button>
+        <button class="btn" id="live-dl-both" onclick="downloadLive('both')">⬇️ Download both</button>
       </div>
     </div>
   </section>
@@ -307,14 +338,25 @@
       <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:18px;">
         <div style="min-width:260px;"><label class="fld">Choose profile</label>
           <select id="prev-select" onchange="renderPreview()"></select></div>
-        <button class="btn gold" id="dl-btn" onclick="downloadCard()">⬇️ Download as image</button>
+        <div class="dlrow" id="prev-dl-row" style="margin-top:0;">
+          <button class="btn gold" onclick="downloadSel('portrait')">⬇️ Portrait</button>
+          <button class="btn gold" onclick="downloadSel('square')">⬇️ Square</button>
+          <button class="btn" onclick="downloadSel('both')">⬇️ Download both</button>
+        </div>
       </div>
       <div id="prev-empty" class="empty" style="display:none">
         <b>Nothing to preview yet</b>
         Save a profile first from the <a href="#" onclick="showTab('new');return false;">New Profile</a> tab, then come back here to see and download its branded card.
       </div>
       <div class="prevwrap">
-        <div id="vcard-holder"></div>
+        <div>
+          <div class="cardlabel">📱 Portrait card</div>
+          <div id="vcard-holder"></div>
+        </div>
+        <div id="prev-square-wrap">
+          <div class="cardlabel">⬜ Square card (1:1)</div>
+          <img id="prev-square-img" class="squareimg" alt="Square card preview">
+        </div>
       </div>
     </div>
   </section>
@@ -388,6 +430,7 @@ const MODEL = 'claude-sonnet-4-6';
 let profiles = [];              // loaded profile objects
 let counters = { m: 0, f: 0 };  // catalog id counters
 let apiKey = '';
+let contactNo = '+92 321 2266621';
 let keylessMode = false;        // claude.ai artifact runtime → no key needed
 let pendingPersonPhoto = null;  // dataURL for person photo in review card
 let pendingCardPhoto = null;    // {dataUrl, mediaType} for photo-mode extraction
@@ -535,6 +578,13 @@ async function saveApiKey(){
   apiKey = $('apikey').value.trim();
   await store.set('settings:apikey', apiKey);
   $('keystatus').textContent = apiKey ? '✓ Key saved on this device.' : 'Key cleared.';
+}
+async function saveContact(){
+  contactNo = $('contact').value.trim() || '+92 321 2266621';
+  await store.set('settings:contact', contactNo);
+  $('contactstatus').textContent = '✓ Number saved — it now appears on every card.';
+  renderLiveCard();
+  if ($('tab-preview').classList.contains('active')) renderPreview();
 }
 
 /* ============================================================ TABS & MODES ============================================================ */
@@ -891,18 +941,42 @@ function openMatches(id){
 function closeMatches(){ $('matches-panel').style.display = 'none'; }
 
 /* ============================================================ PREVIEW ============================================================ */
-function requirementLines(p){
+// Structured requirements: headed items ([label,value]) + free-text "other" + a one-line highlight.
+function requirementInfo(p){
   const R = p.requirements || {};
-  const bits = [];
-  const range = (lo, hi, unit) => lo != null && hi != null ? lo + '–' + hi + (unit || '')
-    : lo != null ? lo + (unit || '') + '+' : 'up to ' + hi + (unit || '');
-  if (R.caste) bits.push(R.caste + ' family');
-  if (R.ageMin != null || R.ageMax != null) bits.push('age ' + range(R.ageMin, R.ageMax, '') + ' yrs');
-  if (R.heightMinInches != null || R.heightMaxInches != null)
-    bits.push('height ' + range(heightDisplay(R.heightMinInches), heightDisplay(R.heightMaxInches), ''));
-  if (R.education) bits.push(R.education);
+  const items = [];
+  const numRange = (lo, hi) => lo != null && hi != null ? lo + '–' + hi : lo != null ? lo + '+' : 'up to ' + hi;
+  const hRange = (lo, hi) => {
+    const a = heightDisplay(lo), b = heightDisplay(hi);
+    return a && b ? a + ' – ' + b : a ? a + ' & above' : 'up to ' + b;
+  };
+  if (R.ageMin != null || R.ageMax != null) items.push(['Age', numRange(R.ageMin, R.ageMax) + ' yrs']);
+  if (R.heightMinInches != null || R.heightMaxInches != null) items.push(['Height', hRange(R.heightMinInches, R.heightMaxInches)]);
+  if (R.caste) items.push(['Caste', R.caste]);
+  if (R.education) items.push(['Education', R.education]);
+  const bits = items.map(([l,v]) => l === 'Age' ? 'age ' + v : l === 'Height' ? 'height ' + v : l === 'Caste' ? v + ' family' : v);
   const highlight = bits.length ? 'Seeking ' + bits.join(', ') : 'Open to suitable proposals';
-  return { highlight, rest: R.other || '' };
+  return { items, other: R.other || '', highlight, hasAny: items.length > 0 || !!R.other };
+}
+const WA_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#25D366" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.359.101 11.945c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a11.96 11.96 0 005.71 1.454h.006c6.585 0 11.946-5.359 11.949-11.945a11.9 11.9 0 00-3.48-8.408"/></svg>';
+const WA_DATAURL = 'data:image/svg+xml;base64,' + btoa(WA_SVG);
+function lookingBoxHTML(p){
+  const heShe = p.gender === 'female' ? "What She's Looking For" : "What He's Looking For";
+  const req = requirementInfo(p);
+  let inner;
+  if (req.items.length) {
+    inner = '<div class="rgrid">' + req.items.map(([l,v]) =>
+      `<div><div class="rl">${l}</div><div class="rv">${esc(v)}</div></div>`).join('') + '</div>';
+    if (req.other) inner += `<div class="other"><div class="rl">Other demands</div><div class="rv">${esc(req.other)}</div></div>`;
+  } else if (req.other) {
+    inner = `<div class="other"><div class="rl">Requirements</div><div class="rv">${esc(req.other)}</div></div>`;
+  } else {
+    inner = `<div class="hl">${esc(req.highlight)}</div>`;
+  }
+  return `<div class="looking"><div class="t">${heShe}</div>${inner}</div>`;
+}
+function ctaHTML(){
+  return `<div class="cta">${WA_SVG}<div><div class="l1">DM if you're interested in this profile</div><div class="l2">${esc(contactNo)}</div></div></div>`;
 }
 
 function refreshPreviewSelect(){
@@ -917,32 +991,45 @@ function renderPreview(){
   const id = $('prev-select').value;
   const p = profiles.find(x => x.id === id);
   $('prev-empty').style.display = p ? 'none' : '';
-  $('dl-btn').style.display = p ? '' : 'none';
+  $('prev-dl-row').style.display = p ? 'flex' : 'none';
+  $('prev-square-wrap').style.display = p ? '' : 'none';
   $('prev-select').parentElement.style.display = profiles.length ? '' : 'none';
-  if (!p) { $('vcard-holder').innerHTML = ''; return; }
+  if (!p) { $('vcard-holder').innerHTML = ''; $('prev-square-img').removeAttribute('src'); return; }
   $('vcard-holder').innerHTML = vcardHTML(p, 'vcard');
+  updateSquareImg('prev-square-img', p);
 }
 
-/* Live instant card in the New Profile tab — re-renders as the form is typed into */
+// Render the square canvas and show it in an <img> so the preview exactly matches the download.
+let squareToken = 0;
+async function updateSquareImg(imgId, p){
+  const my = ++squareToken;
+  try {
+    const url = await renderCanvas(p, 'square');
+    if (my === squareToken) { const el = $(imgId); if (el) el.src = url; }
+  } catch (e) { /* ignore transient render errors */ }
+}
+
+/* Live instant cards in the New Profile tab — re-render as the form is typed into */
 let liveTimer = null;
-function scheduleLiveCard(){ clearTimeout(liveTimer); liveTimer = setTimeout(renderLiveCard, 250); }
+function scheduleLiveCard(){ clearTimeout(liveTimer); liveTimer = setTimeout(renderLiveCard, 300); }
 function renderLiveCard(){
   const holder = $('live-card-holder');
   if (!holder) return;
   const p = buildDraftProfile();
   const hasAny = p.name || p.age != null || p.photo || p.caste || p.city || p.education;
+  const setDl = d => { for (const id of ['live-dl-portrait','live-dl-square','live-dl-both']) $(id).disabled = d; };
   if (!hasAny) {
-    holder.innerHTML = '<div class="empty" style="width:420px;max-width:100%"><b>Your card appears here instantly</b>Start filling the details above — the branded profile card builds itself as you type.</div>';
-    $('live-dl-btn').disabled = true;
+    holder.innerHTML = '<div class="empty" style="width:420px;max-width:100%"><b>Your cards appear here instantly</b>Start filling the details above — the branded profile cards build themselves as you type.</div>';
+    $('live-square-img').removeAttribute('src');
+    setDl(true);
     return;
   }
-  $('live-dl-btn').disabled = false;
+  setDl(false);
   holder.innerHTML = vcardHTML(p, 'vcard-live');
+  updateSquareImg('live-square-img', p);
 }
 
 function vcardHTML(p, domId){
-  const heShe = p.gender === 'female' ? "What She's Looking For" : "What He's Looking For";
-  const req = requirementLines(p);
   const details = [
     ['Education', p.education], ['Profession', p.profession],
     ['Caste', p.caste], ['Sect', p.sect],
@@ -968,12 +1055,9 @@ function vcardHTML(p, domId){
       </div>
       <div class="details">${details.map(([l,v]) => `<div class="dt"><div class="l">${l}</div><div class="v">${esc(v)}</div></div>`).join('')}</div>
       ${p.about ? `<div class="about">“${esc(p.about)}”</div>` : ''}
-      <div class="looking">
-        <div class="t">${heShe}</div>
-        <div class="hl">${esc(req.highlight)}</div>
-        ${req.rest ? `<div class="rest">${esc(req.rest)}</div>` : ''}
-      </div>
+      ${lookingBoxHTML(p)}
       <div class="foot">City Marriage Bureau · Profile ${p.catalogId}</div>
+      ${ctaHTML()}
     </div>`;
 }
 
@@ -1003,22 +1087,54 @@ function loadImg(src){
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 }
 
-async function downloadCard(){
-  const id = $('prev-select').value;
-  const p = profiles.find(x => x.id === id);
-  if (p) await downloadCardFor(p);
+const PAL = { PLUM:'#6E1E3C', PLUM2:'#8E2A4D', GOLD:'#B5893B', GOLD2:'#D4AF61', CREAM:'#FBF6EE', INK:'#3A1220' };
+const FN = w => `${w} Poppins, sans-serif`;
+let waImg = null;
+async function waLogo(){ if (!waImg) { try { waImg = await loadImg(WA_DATAURL); } catch { waImg = null; } } return waImg; }
+async function fontsReady(){
+  try { await Promise.all(['800 50px Poppins','700 28px Poppins','700 24px Poppins','600 22px Poppins','500 26px Poppins','400 22px Poppins','italic 400 24px Poppins'].map(f => document.fonts.load(f))); } catch {}
 }
-async function downloadLiveCard(){
-  await downloadCardFor(buildDraftProfile());
-}
-async function downloadCardFor(p){
-  try { await document.fonts.load('800 56px Poppins'); await document.fonts.load('700 30px Poppins'); await document.fonts.load('500 26px Poppins'); } catch {}
-  const W = 1080, cnv = $('dlcanvas');
-  const ctx = cnv.getContext('2d');
-  const PLUM = '#6E1E3C', PLUM2 = '#8E2A4D', GOLD = '#B5893B', GOLD2 = '#D4AF61', CREAM = '#FBF6EE', INK = '#3A1220';
-  const F = w => `${w} Poppins, sans-serif`;
 
-  // Precompute details to size the canvas
+// Draw the white "DM if interested" WhatsApp footer. Returns nothing; fills [0,y]..[W,y+h].
+function drawCTA(ctx, wa, W, y, h){
+  ctx.fillStyle = '#EADFC9'; ctx.fillRect(0, y, W, 2);
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, y + 2, W, h - 2);
+  const logo = Math.min(76, h * 0.5);
+  ctx.textAlign = 'left';
+  ctx.font = FN('800 ' + Math.round(h*0.26) + 'px'); const numW = ctx.measureText(contactNo).width;
+  ctx.font = FN('400 22px'); const capW = ctx.measureText("DM if you're interested in this profile").width;
+  const groupW = logo + 22 + Math.max(numW, capW);
+  const gx = (W - groupW) / 2, gcy = y + h/2 + 2;
+  if (wa) ctx.drawImage(wa, gx, gcy - logo/2, logo, logo);
+  ctx.fillStyle = '#5d4a34'; ctx.font = FN('400 22px');
+  ctx.fillText("DM if you're interested in this profile", gx + logo + 22, gcy - 8);
+  ctx.fillStyle = PAL.PLUM; ctx.font = FN('800 ' + Math.round(h*0.26) + 'px');
+  ctx.fillText(contactNo, gx + logo + 22, gcy + Math.round(h*0.26));
+}
+
+async function drawPhotoCircle(ctx, p, cx, cy, R){
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.closePath();
+  ctx.fillStyle = '#F1E6D2'; ctx.fill(); ctx.clip();
+  if (p.photo) {
+    try { const img = await loadImg(p.photo); const s = Math.max(2*R/img.width, 2*R/img.height);
+      ctx.drawImage(img, cx - img.width*s/2, cy - img.height*s/2, img.width*s, img.height*s); } catch {}
+  } else { ctx.textAlign = 'center'; ctx.fillStyle = PAL.GOLD; ctx.font = FN('600 ' + Math.round(R*0.8) + 'px'); ctx.fillText('👤', cx, cy + R*0.3); }
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
+  ctx.lineWidth = R*0.075; ctx.strokeStyle = PAL.GOLD2; ctx.stroke();
+}
+
+async function renderCanvas(p, variant){
+  await fontsReady();
+  const wa = await waLogo();
+  return variant === 'square' ? drawSquare(p, wa) : drawPortrait(p, wa);
+}
+
+async function drawPortrait(p, wa){
+  const { PLUM, PLUM2, GOLD, GOLD2, CREAM, INK } = PAL;
+  const W = 1080;
+  const meas = document.createElement('canvas').getContext('2d');
   const details = [
     ['EDUCATION', p.education], ['PROFESSION', p.profession],
     ['CASTE', p.caste], ['SECT', p.sect],
@@ -1028,10 +1144,30 @@ async function downloadCardFor(p){
     ['FATHER', p.father], ['MOTHER', p.mother], ['SIBLINGS', p.siblings]
   ].filter(([,v]) => v);
   const detailRows = Math.ceil(details.length / 2);
-  const H = 980 + detailRows * 92 + (p.about ? 90 : 0) + 300;
-  cnv.width = W; cnv.height = H;
+  const req = requirementInfo(p);
+  const reqRows = Math.ceil(req.items.length / 2);
 
-  // Background
+  // Measure the looking-for box height
+  meas.font = FN('400 23px');
+  const otherLines = req.other ? wrapLines(meas, req.other, W - 170, 3) : [];
+  let lookH = 40 + 44; // top pad + title
+  if (req.items.length) { lookH += reqRows * 88; if (req.other) lookH += 34 + otherLines.length * 32; }
+  else if (req.other) { lookH += otherLines.length * 32; }
+  else lookH += 48;
+  lookH += 30;
+
+  const aboutLines = p.about ? (meas.font = FN('italic 400 24px'), wrapLines(meas, '“' + p.about + '”', W - 140, 2)) : [];
+  const aboutH = p.about ? 20 + aboutLines.length * 34 : 0;
+
+  const chipY = 690, chipH = 110;
+  const dy = chipY + chipH + 66;
+  const afterDetails = dy + detailRows * 92 + 4;
+  const boxY = afterDetails + aboutH + 24;
+  const ctaH = 150;
+  const H = boxY + lookH + 26 + ctaH;
+
+  const cnv = document.createElement('canvas'); cnv.width = W; cnv.height = H;
+  const ctx = cnv.getContext('2d');
   ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
 
   // Header band
@@ -1039,113 +1175,176 @@ async function downloadCardFor(p){
   grad.addColorStop(0, PLUM); grad.addColorStop(1, PLUM2);
   ctx.fillStyle = grad; ctx.fillRect(0, 0, W, 340);
   ctx.fillStyle = GOLD2; ctx.fillRect(0, 336, W, 4);
-
   ctx.textAlign = 'center';
-  ctx.fillStyle = GOLD2; ctx.font = F('700 34px');
+  ctx.fillStyle = GOLD2; ctx.font = FN('700 34px');
   ctx.fillText('C I T Y   M A R R I A G E   B U R E A U', W/2, 96);
-  ctx.fillStyle = '#E8CFA4'; ctx.font = F('400 22px');
+  ctx.fillStyle = '#E8CFA4'; ctx.font = FN('400 22px');
   ctx.fillText('T R U S T E D   R I S H T A   S E R V I C E', W/2, 136);
 
-  // Photo circle
-  const cx = W/2, cy = 340, R = 140;
-  ctx.save();
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.closePath();
-  ctx.fillStyle = '#F1E6D2'; ctx.fill();
-  ctx.clip();
-  if (p.photo) {
-    try {
-      const img = await loadImg(p.photo);
-      const s = Math.max(2*R / img.width, 2*R / img.height);
-      ctx.drawImage(img, cx - img.width*s/2, cy - img.height*s/2, img.width*s, img.height*s);
-    } catch {}
-  } else {
-    ctx.fillStyle = GOLD; ctx.font = F('600 110px'); ctx.fillText('👤', cx, cy + 40);
-  }
-  ctx.restore();
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
-  ctx.lineWidth = 10; ctx.strokeStyle = GOLD2; ctx.stroke();
+  await drawPhotoCircle(ctx, p, W/2, 340, 140);
 
   // Name + ID
-  ctx.fillStyle = PLUM; ctx.font = F('800 58px');
-  ctx.fillText(p.name || 'New Profile', W/2, cy + R + 92);
-  const idText = p.catalogId;
-  ctx.font = F('700 28px');
-  const idW = ctx.measureText(idText).width + 56;
-  rr(ctx, W/2 - idW/2, cy + R + 122, idW, 52, 26);
-  ctx.fillStyle = GOLD2; ctx.fill();
-  ctx.fillStyle = PLUM; ctx.fillText(idText, W/2, cy + R + 158);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = PLUM; let ns = 58; const nm = p.name || 'New Profile';
+  ctx.font = FN(`800 ${ns}px`); while (ctx.measureText(nm).width > W - 120 && ns > 30) { ns -= 2; ctx.font = FN(`800 ${ns}px`); }
+  ctx.fillText(nm, W/2, 340 + 140 + 92);
+  ctx.font = FN('700 28px'); const idW = ctx.measureText(p.catalogId).width + 56;
+  rr(ctx, W/2 - idW/2, 340 + 140 + 122, idW, 52, 26); ctx.fillStyle = GOLD2; ctx.fill();
+  ctx.fillStyle = PLUM; ctx.fillText(p.catalogId, W/2, 340 + 140 + 158);
 
   // Stat chips
-  const stats = [
-    ['AGE', p.age != null ? p.age + ' yrs' : '—'],
-    ['HEIGHT', p.heightDisplay || '—'],
-    ['INCOME', p.income || '—'],
-    ['RESIDENCE', p.residence || p.city || '—']
-  ];
-  const chipY = cy + R + 210, chipW = (W - 100 - 3*18) / 4, chipH = 110;
+  const stats = [['AGE', p.age != null ? p.age + ' yrs' : '—'], ['HEIGHT', p.heightDisplay || '—'], ['INCOME', p.income || '—'], ['RESIDENCE', p.residence || p.city || '—']];
+  const chipW = (W - 100 - 3*18) / 4;
   stats.forEach(([l, v], i) => {
     const x = 50 + i * (chipW + 18);
-    rr(ctx, x, chipY, chipW, chipH, 16);
-    ctx.fillStyle = '#fff'; ctx.fill();
+    rr(ctx, x, chipY, chipW, chipH, 16); ctx.fillStyle = '#fff'; ctx.fill();
     ctx.lineWidth = 3; ctx.strokeStyle = GOLD2; ctx.stroke();
-    ctx.fillStyle = GOLD; ctx.font = F('700 19px');
-    ctx.fillText(l, x + chipW/2, chipY + 38);
-    ctx.fillStyle = PLUM;
-    let fs = 27;
-    ctx.font = F(`700 ${fs}px`);
-    while (ctx.measureText(String(v)).width > chipW - 22 && fs > 15) { fs -= 2; ctx.font = F(`700 ${fs}px`); }
+    ctx.fillStyle = GOLD; ctx.font = FN('700 19px'); ctx.fillText(l, x + chipW/2, chipY + 38);
+    ctx.fillStyle = PLUM; let fs = 27; ctx.font = FN(`700 ${fs}px`);
+    while (ctx.measureText(String(v)).width > chipW - 22 && fs > 15) { fs -= 2; ctx.font = FN(`700 ${fs}px`); }
     ctx.fillText(String(v), x + chipW/2, chipY + 80);
   });
 
   // Details grid
-  let dy = chipY + chipH + 66;
   ctx.textAlign = 'left';
   details.forEach(([l, v], i) => {
     const col = i % 2, row = Math.floor(i / 2);
     const x = 60 + col * (W/2 - 40), y = dy + row * 92;
-    ctx.fillStyle = GOLD; ctx.font = F('700 20px');
-    ctx.fillText(l, x, y);
-    ctx.fillStyle = INK; ctx.font = F('500 27px');
-    const lines = wrapLines(ctx, v, W/2 - 100, 1);
-    ctx.fillText(lines[0] || '', x, y + 36);
+    ctx.fillStyle = GOLD; ctx.font = FN('700 20px'); ctx.fillText(l, x, y);
+    ctx.fillStyle = INK; ctx.font = FN('500 27px'); ctx.fillText(wrapLines(ctx, v, W/2 - 100, 1)[0] || '', x, y + 36);
   });
-  let afterDetails = dy + detailRows * 92 + 4;
 
   // About
-  if (p.about) {
-    ctx.fillStyle = '#5d4a34'; ctx.font = F('italic 400 24px');
-    const lines = wrapLines(ctx, '“' + p.about + '”', W - 140, 2);
-    lines.forEach((ln, i) => ctx.fillText(ln, 70, afterDetails + 26 + i * 34));
-    afterDetails += 40 + lines.length * 34;
-  }
+  if (p.about) { ctx.fillStyle = '#5d4a34'; ctx.font = FN('italic 400 24px'); aboutLines.forEach((ln, i) => ctx.fillText(ln, 70, afterDetails + 26 + i * 34)); }
 
-  // Looking-for box
-  const req = requirementLines(p);
-  const boxY = afterDetails + 24, boxH = H - boxY - 86;
-  const lg = ctx.createLinearGradient(50, boxY, W - 50, boxY + boxH);
+  // Looking-for box (headed)
+  const lg = ctx.createLinearGradient(50, boxY, W - 50, boxY + lookH);
   lg.addColorStop(0, PLUM); lg.addColorStop(1, PLUM2);
-  rr(ctx, 50, boxY, W - 100, boxH, 20);
-  ctx.fillStyle = lg; ctx.fill();
-  ctx.fillStyle = GOLD2; ctx.font = F('700 22px');
-  ctx.fillText((p.gender === 'male' ? "WHAT HE'S LOOKING FOR" : "WHAT SHE'S LOOKING FOR"), 84, boxY + 52);
-  ctx.font = F('800 30px');
-  const hlLines = wrapLines(ctx, req.highlight, W - 170, 2);
-  hlLines.forEach((ln, i) => ctx.fillText(ln, 84, boxY + 100 + i * 40));
-  if (req.rest) {
-    ctx.fillStyle = '#F5E8D0'; ctx.font = F('400 23px');
-    const rl = wrapLines(ctx, req.rest, W - 170, 2);
-    rl.forEach((ln, i) => ctx.fillText(ln, 84, boxY + 104 + hlLines.length * 40 + i * 33));
+  rr(ctx, 50, boxY, W - 100, lookH, 20); ctx.fillStyle = lg; ctx.fill();
+  ctx.textAlign = 'left';
+  ctx.fillStyle = GOLD2; ctx.font = FN('700 22px');
+  ctx.fillText((p.gender === 'female' ? "WHAT SHE'S LOOKING FOR" : "WHAT HE'S LOOKING FOR"), 84, boxY + 50);
+  if (req.items.length) {
+    const colW = (W - 168) / 2;
+    req.items.forEach(([l, v], i) => {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = 84 + col * colW, iy = boxY + 50 + 40 + row * 88;
+      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 16px'); ctx.fillText(l.toUpperCase(), x, iy);
+      ctx.fillStyle = '#fff'; ctx.font = FN('700 27px'); ctx.fillText(wrapLines(ctx, v, colW - 24, 1)[0] || '', x, iy + 34);
+    });
+    if (req.other) {
+      const oy = boxY + 50 + 40 + reqRows * 88;
+      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 16px'); ctx.fillText('OTHER DEMANDS', 84, oy);
+      ctx.fillStyle = '#F5E8D0'; ctx.font = FN('400 23px'); otherLines.forEach((ln, i) => ctx.fillText(ln, 84, oy + 30 + i * 32));
+    }
+  } else if (req.other) {
+    ctx.fillStyle = '#F5E8D0'; ctx.font = FN('400 23px'); otherLines.forEach((ln, i) => ctx.fillText(ln, 84, boxY + 90 + i * 32));
+  } else {
+    ctx.fillStyle = GOLD2; ctx.font = FN('800 30px');
+    wrapLines(ctx, req.highlight, W - 170, 2).forEach((ln, i) => ctx.fillText(ln, 84, boxY + 96 + i * 40));
   }
 
-  // Footer
-  ctx.textAlign = 'center';
-  ctx.fillStyle = GOLD; ctx.font = F('600 20px');
-  ctx.fillText('C I T Y   M A R R I A G E   B U R E A U   ·   P R O F I L E   ' + p.catalogId, W/2, H - 34);
+  drawCTA(ctx, wa, W, H - ctaH, ctaH);
+  return cnv.toDataURL('image/png');
+}
 
-  const a = document.createElement('a');
-  a.download = 'CMB-' + p.catalogId + '-' + (p.name || 'profile').replace(/[^\w]+/g, '_') + '.png';
-  a.href = cnv.toDataURL('image/png');
-  a.click();
+async function drawSquare(p, wa){
+  const { PLUM, PLUM2, GOLD, GOLD2, CREAM, INK } = PAL;
+  const S = 1080;
+  const cnv = document.createElement('canvas'); cnv.width = S; cnv.height = S;
+  const ctx = cnv.getContext('2d');
+  ctx.fillStyle = CREAM; ctx.fillRect(0, 0, S, S);
+
+  // Header band
+  const g = ctx.createLinearGradient(0, 0, S, 250);
+  g.addColorStop(0, PLUM); g.addColorStop(1, PLUM2);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, S, 250); ctx.fillStyle = GOLD2; ctx.fillRect(0, 246, S, 4);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = GOLD2; ctx.font = FN('700 30px'); ctx.fillText('C I T Y   M A R R I A G E   B U R E A U', S/2, 80);
+  ctx.fillStyle = '#E8CFA4'; ctx.font = FN('400 18px'); ctx.fillText('T R U S T E D   R I S H T A   S E R V I C E', S/2, 114);
+
+  await drawPhotoCircle(ctx, p, S/2, 250, 108);
+
+  // Name + ID
+  ctx.textAlign = 'center';
+  ctx.fillStyle = PLUM; let ns = 50; const nm = p.name || 'New Profile';
+  ctx.font = FN(`800 ${ns}px`); while (ctx.measureText(nm).width > S - 140 && ns > 26) { ns -= 2; ctx.font = FN(`800 ${ns}px`); }
+  ctx.fillText(nm, S/2, 250 + 108 + 66);
+  ctx.font = FN('700 24px'); const idW = ctx.measureText(p.catalogId).width + 48;
+  rr(ctx, S/2 - idW/2, 250 + 108 + 92, idW, 46, 23); ctx.fillStyle = GOLD2; ctx.fill();
+  ctx.fillStyle = PLUM; ctx.fillText(p.catalogId, S/2, 250 + 108 + 123);
+
+  // Stat chips
+  const stats = [['AGE', p.age != null ? p.age + ' yrs' : '—'], ['HEIGHT', p.heightDisplay || '—'], ['INCOME', p.income || '—'], ['RESIDENCE', p.residence || p.city || '—']];
+  const sy = 496, sw = (S - 80 - 3*16) / 4, sh = 88;
+  stats.forEach(([l, v], i) => {
+    const x = 40 + i * (sw + 16);
+    rr(ctx, x, sy, sw, sh, 14); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = GOLD2; ctx.stroke();
+    ctx.fillStyle = GOLD; ctx.font = FN('700 16px'); ctx.fillText(l, x + sw/2, sy + 32);
+    ctx.fillStyle = PLUM; let fs = 24; ctx.font = FN(`700 ${fs}px`);
+    while (ctx.measureText(String(v)).width > sw - 16 && fs > 12) { fs -= 2; ctx.font = FN(`700 ${fs}px`); }
+    ctx.fillText(String(v), x + sw/2, sy + 66);
+  });
+
+  // Details (curated, up to 4)
+  const det = [['EDUCATION', p.education], ['PROFESSION', p.profession], ['CASTE', p.caste], ['SECT', p.sect], ['MARITAL', MARITAL_LABEL[p.maritalStatus] + (p.children ? ' · ' + p.children : '')], ['CITY', p.city || p.residence]].filter(([,v]) => v).slice(0, 4);
+  const dyS = sy + sh + 46; ctx.textAlign = 'left';
+  det.forEach(([l, v], i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const x = 48 + col * (S/2 - 20), y = dyS + row * 66;
+    ctx.fillStyle = GOLD; ctx.font = FN('700 16px'); ctx.fillText(l, x, y);
+    ctx.fillStyle = INK; ctx.font = FN('500 24px'); ctx.fillText(wrapLines(ctx, v, S/2 - 60, 1)[0] || '', x, y + 30);
+  });
+
+  // Requirements strip (headed cells)
+  const req = requirementInfo(p);
+  const ctaH = 140;
+  const boxTop = dyS + 2 * 66 + 8, boxBot = S - ctaH - 14, boxH = boxBot - boxTop;
+  const lg = ctx.createLinearGradient(40, boxTop, S - 40, boxTop + boxH);
+  lg.addColorStop(0, PLUM); lg.addColorStop(1, PLUM2);
+  rr(ctx, 40, boxTop, S - 80, boxH, 16); ctx.fillStyle = lg; ctx.fill();
+  ctx.textAlign = 'left';
+  ctx.fillStyle = GOLD2; ctx.font = FN('700 18px');
+  ctx.fillText((p.gender === 'female' ? "WHAT SHE'S LOOKING FOR" : "WHAT HE'S LOOKING FOR"), 66, boxTop + 36);
+  const items = req.items.slice(0, 4);
+  if (items.length) {
+    const cw = (S - 132) / items.length;
+    items.forEach(([l, v], i) => {
+      const x = 66 + i * cw;
+      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 14px'); ctx.fillText(l.toUpperCase(), x, boxTop + 74);
+      ctx.fillStyle = '#fff'; ctx.font = FN('700 22px'); ctx.fillText(wrapLines(ctx, v, cw - 14, 1)[0] || '', x, boxTop + 104);
+    });
+  } else {
+    ctx.fillStyle = GOLD2; ctx.font = FN('800 26px');
+    wrapLines(ctx, req.highlight, S - 140, 2).forEach((ln, i) => ctx.fillText(ln, 66, boxTop + 78 + i * 34));
+  }
+
+  drawCTA(ctx, wa, S, S - ctaH, ctaH);
+  return cnv.toDataURL('image/png');
+}
+
+function cardFileName(p, variant){
+  return 'CMB-' + p.catalogId + '-' + (p.name || 'profile').replace(/[^\w]+/g, '_') + (variant === 'square' ? '-square' : '') + '.png';
+}
+function triggerDownload(url, name){
+  const a = document.createElement('a'); a.download = name; a.href = url;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+async function downloadCardFor(p, variant){
+  if (variant === 'both') {
+    triggerDownload(await renderCanvas(p, 'portrait'), cardFileName(p, 'portrait'));
+    await new Promise(r => setTimeout(r, 450));
+    triggerDownload(await renderCanvas(p, 'square'), cardFileName(p, 'square'));
+    return;
+  }
+  triggerDownload(await renderCanvas(p, variant), cardFileName(p, variant));
+}
+async function downloadSel(variant){
+  const p = profiles.find(x => x.id === $('prev-select').value);
+  if (p) await downloadCardFor(p, variant);
+}
+async function downloadLive(variant){
+  await downloadCardFor(buildDraftProfile(), variant);
 }
 
 /* ============================================================ PHOTO MODE WIRING ============================================================ */
@@ -1172,6 +1371,9 @@ async function init(){
   apiKey = (await store.get('settings:apikey')) || '';
   if (apiKey) { $('apikey').value = apiKey; $('keystatus').textContent = '✓ Key loaded.'; }
   else if (!keylessMode) banner('global-banner','info','👋 First time? Paste your Claude API key above (get one at <b>console.anthropic.com</b> → API Keys) to enable Message &amp; Photo extraction. The Form mode works without a key.');
+
+  contactNo = (await store.get('settings:contact')) || '+92 321 2266621';
+  $('contact').value = contactNo;
 
   counters = (await store.get('meta:counters')) || { m: 0, f: 0 };
   const index = (await store.get('meta:index')) || [];
