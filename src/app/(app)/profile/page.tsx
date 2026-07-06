@@ -115,6 +115,7 @@ function parseJsonArray(val: unknown): string[] {
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Record<string, string | boolean | string[] | null | undefined> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [photos, setPhotos] = useState<string[]>([]);
   const router = useRouter();
   const supabase = createClient();
 
@@ -124,6 +125,17 @@ export default function ProfilePage() {
       if (!user) return;
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       setProfile(data);
+
+      // Gallery lives in profile_photos (written by onboarding + settings)
+      const { data: photoRows } = await supabase
+        .from("profile_photos")
+        .select("url")
+        .eq("profile_id", user.id)
+        .order("order_index");
+      const urls = (photoRows || []).map((r: { url: string }) => r.url);
+      if (data?.avatar_url && !urls.includes(data.avatar_url)) urls.unshift(data.avatar_url);
+      setPhotos(urls);
+
       setLoading(false);
     };
     load();
@@ -453,22 +465,28 @@ export default function ProfilePage() {
           {/* More Photos */}
           <Section title="Photos" emoji="📸" bg="bg-gray-50" border="border-gray-200">
             <div className="grid grid-cols-3 gap-2">
-              {[avatarUrl, ...(profile?.photo_urls ? (profile.photo_urls as string[]) : [])].filter(Boolean).slice(0, 6).map((url, i) => (
+              {photos.slice(0, 6).map((url, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={i}
-                  src={url as string}
+                  src={url}
                   alt={`Photo ${i + 1}`}
                   className="w-full aspect-square rounded-xl object-cover"
                 />
               ))}
               {/* Placeholder slots */}
-              {Array.from({ length: Math.max(0, 3 - [avatarUrl, ...(profile?.photo_urls ? (profile.photo_urls as string[]) : [])].filter(Boolean).length) }).map((_, i) => (
+              {Array.from({ length: Math.max(0, 3 - photos.length) }).map((_, i) => (
                 <div key={`placeholder-${i}`} className="w-full aspect-square rounded-xl bg-gray-100 border-2 border-dashed border-gray-200 flex items-center justify-center">
                   <span className="text-2xl text-gray-300">📷</span>
                 </div>
               ))}
             </div>
+            <button
+              onClick={() => router.push("/settings")}
+              className="mt-3 w-full py-2.5 rounded-full border-2 border-brand-100 text-brand-700 text-sm font-semibold hover:bg-brand-50 transition-colors"
+            >
+              Manage photos
+            </button>
           </Section>
 
           {/* Sign Out */}

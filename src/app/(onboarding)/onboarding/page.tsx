@@ -523,23 +523,28 @@ export default function OnboardingPage() {
     }, 2000);
   };
 
-  const handlePhotoUpload = (index: number, file: File) => {
+  const handlePhotoUpload = async (index: number, file: File) => {
+    if (!userId) return;
     setPhotoStatuses((s) => ({ ...s, [index]: "checking" }));
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const url = e.target?.result as string;
-      setTimeout(() => {
-        if (file.size > 50 * 1024) {
-          const updated = [...form.photo_urls];
-          updated[index] = url;
-          set("photo_urls", updated);
-          setPhotoStatuses((s) => ({ ...s, [index]: "ok" }));
-        } else {
-          setPhotoStatuses((s) => ({ ...s, [index]: "fail" }));
-        }
-      }, 1200);
-    };
-    reader.readAsDataURL(file);
+    if (file.size <= 50 * 1024) {
+      setPhotoStatuses((s) => ({ ...s, [index]: "fail" }));
+      return;
+    }
+    // Upload to storage so photos persist beyond this session
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${userId}/onboarding-${index}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file);
+    if (error) {
+      setPhotoStatuses((s) => ({ ...s, [index]: "fail" }));
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+    setForm((f) => {
+      const updated = [...f.photo_urls];
+      updated[index] = publicUrl;
+      return { ...f, photo_urls: updated };
+    });
+    setPhotoStatuses((s) => ({ ...s, [index]: "ok" }));
   };
 
   const saveProfile = async () => {
@@ -584,11 +589,27 @@ export default function OnboardingPage() {
       onboarding_complete: true,
     };
 
+    // First uploaded photo becomes the profile display picture
+    const photos = form.photo_urls.filter(Boolean);
+    if (photos.length > 0) {
+      profileData.avatar_url = photos[0];
+    }
+
     const { error: saveErr } = await supabase.from("profiles").update(profileData).eq("id", userId);
-    setSaving(false);
     if (saveErr) {
       console.error("Profile save error:", saveErr);
     }
+
+    // Persist all photos to the gallery table (same source Settings and
+    // profile pages read from)
+    if (photos.length > 0) {
+      await supabase.from("profile_photos").delete().eq("profile_id", userId);
+      await supabase.from("profile_photos").insert(
+        photos.map((url, i) => ({ profile_id: userId, url, order_index: i }))
+      );
+    }
+
+    setSaving(false);
     router.push("/discover");
     router.refresh();
   };
