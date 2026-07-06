@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { Users, BookOpen, Heart, Flag } from "lucide-react";
+import { Users, BookOpen, Flag } from "lucide-react";
+import { SeedDemoButton } from "./SeedDemoButton";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -39,6 +40,8 @@ export default async function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      <SeedDemoButton />
     </div>
   );
 }
