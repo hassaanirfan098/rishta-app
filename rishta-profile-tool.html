@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>City Marriage Bureau — Rishta Profile Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plum:#6E1E3C; --plum2:#8E2A4D; --gold:#B5893B; --gold2:#D4AF61;
+    --cream:#FBF6EE; --ink:#3A1220; --line:#E8DCC8; --ok:#2E7D32; --bad:#B3261E; --na:#8A8A8A;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Poppins',system-ui,-apple-system,'Segoe UI',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh;}
+  header.app{background:linear-gradient(120deg,var(--plum) 0%,var(--plum2) 100%); color:#fff; padding:18px 28px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  header.app .logo{width:46px;height:46px;border-radius:50%;border:2px solid var(--gold2);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--gold2);font-size:15px;letter-spacing:1px;}
+  header.app h1{font-size:20px;font-weight:700;letter-spacing:.3px;}
+  header.app p{font-size:12px;color:#F3DFB8;font-weight:400;}
+  nav.tabs{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;}
+  nav.tabs button{background:rgba(255,255,255,.09); color:#fff; border:1px solid rgba(255,255,255,.25); padding:9px 18px; border-radius:999px; cursor:pointer; font-family:inherit; font-size:13.5px; font-weight:500;}
+  nav.tabs button.active{background:var(--gold2); color:var(--plum); border-color:var(--gold2); font-weight:700;}
+  main{max-width:1180px; margin:0 auto; padding:22px 20px 80px;}
+
+  .banner{border-radius:12px; padding:12px 16px; margin:0 0 16px; font-size:13.5px; line-height:1.5; display:none;}
+  .banner.show{display:block;}
+  .banner.info{background:#F4EAD5; border:1px solid var(--gold); color:#5c4514;}
+  .banner.error{background:#FBE9E7; border:1px solid #E57373; color:#8c1d18; white-space:pre-wrap;}
+  .banner.success{background:#E8F5E9; border:1px solid #81C784; color:#1B5E20;}
+
+  .keyrow{background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px;}
+  .keyrow label{font-size:12.5px; font-weight:600; color:var(--plum);}
+  .keyrow input{flex:1; min-width:220px;}
+  .keyrow .status{font-size:12px; color:var(--na);}
+
+  section.tab{display:none;}
+  section.tab.active{display:block;}
+
+  .modes{display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap;}
+  .modes button{background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:14px 20px; cursor:pointer; font-family:inherit; text-align:left; min-width:200px; flex:1;}
+  .modes button .t{display:block; font-weight:700; font-size:14.5px; color:var(--plum);}
+  .modes button .d{display:block; font-size:12px; color:#7a6a55; margin-top:3px;}
+  .modes button.active{border-color:var(--plum); background:#fff; box-shadow:0 0 0 3px rgba(110,30,60,.12);}
+
+  .panel{background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:18px;}
+  .panel h2{font-size:16px; color:var(--plum); margin-bottom:12px; font-weight:700;}
+  .panel h3{font-size:13.5px; color:var(--gold); margin:18px 0 8px; text-transform:uppercase; letter-spacing:1px; font-weight:700;}
+
+  textarea, input, select{font-family:inherit; font-size:13.5px; padding:9px 11px; border:1.5px solid var(--line); border-radius:9px; background:#FFFDF8; color:var(--ink); width:100%;}
+  textarea:focus, input:focus, select:focus{outline:none; border-color:var(--plum2);}
+  textarea{resize:vertical;}
+  label.fld{display:block; font-size:12px; font-weight:600; color:#6b5335; margin-bottom:4px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:13px;}
+  .grid .wide{grid-column:1 / -1;}
+  .hrow{display:flex; gap:8px;}
+  .note{font-size:11.5px; color:#9a7c3c; margin-top:3px; font-style:italic;}
+
+  .btn{background:var(--plum); color:#fff; border:none; border-radius:10px; padding:12px 26px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer;}
+  .btn:hover{background:var(--plum2);}
+  .btn.gold{background:var(--gold); color:#fff;}
+  .btn.gold:hover{background:var(--gold2); color:var(--plum);}
+  .btn.ghost{background:transparent; color:var(--plum); border:1.5px solid var(--plum);}
+  .btn.sm{padding:7px 14px; font-size:12.5px; border-radius:8px;}
+  .btn:disabled{opacity:.55; cursor:wait;}
+
+  .photodrop{border:2px dashed var(--gold); border-radius:14px; padding:34px; text-align:center; color:#8a6d3b; cursor:pointer; background:#FFFDF6;}
+  .photodrop.drag{background:#F6ECD8;}
+  .photodrop img{max-width:100%; max-height:260px; border-radius:10px; margin-top:12px;}
+
+  .avatar-pick{display:flex; align-items:center; gap:14px;}
+  .avatar-pick .circ{width:74px;height:74px;border-radius:50%;border:3px solid var(--gold2);background:#F1E6D2 center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:24px;overflow:hidden;flex-shrink:0;}
+  .avatar-pick .circ img{width:100%;height:100%;object-fit:cover;}
+
+  .empty{border:1.5px dashed var(--gold); background:#FFFDF6; border-radius:14px; padding:38px 24px; text-align:center; color:#7a6340;}
+  .empty b{color:var(--plum); display:block; font-size:15px; margin-bottom:6px;}
+
+  /* profile list */
+  .filters{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-bottom:16px;}
+  .plist{display:grid; grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); gap:14px;}
+  .pcard{background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;}
+  .pcard .top{display:flex; gap:12px; align-items:center;}
+  .pcard .circ{width:52px;height:52px;border-radius:50%;border:2.5px solid var(--gold2);background:#F1E6D2 center/cover no-repeat;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gold);}
+  .pcard .circ img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+  .pcard .nm{font-weight:700; font-size:14.5px; color:var(--plum);}
+  .pcard .id{display:inline-block; background:var(--gold2); color:var(--plum); font-size:11px; font-weight:700; border-radius:6px; padding:1px 8px; margin-left:6px;}
+  .pcard .meta{font-size:12px; color:#7a6a55; line-height:1.55;}
+  .pcard .acts{display:flex; gap:8px; margin-top:auto;}
+
+  /* matches */
+  .mhead{display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap;}
+  .mcard{background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px;}
+  .mcard .row1{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .pct{font-size:22px; font-weight:800; color:var(--plum); background:#F4EAD5; border:2px solid var(--gold2); border-radius:12px; padding:6px 14px; min-width:86px; text-align:center;}
+  .pct small{display:block; font-size:10px; font-weight:600; color:#8a6d3b; letter-spacing:.5px;}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
+  .chip{font-size:11.5px; border-radius:999px; padding:3px 10px; font-weight:500; border:1px solid;}
+  .chip.hit{color:var(--ok); border-color:#A5D6A7; background:#F0F9F0;}
+  .chip.partial{color:#946200; border-color:#E8CB8A; background:#FCF6E8;}
+  .chip.miss{color:var(--bad); border-color:#EF9A9A; background:#FDF1F0;}
+  .chip.na{color:var(--na); border-color:#D5D5D5; background:#F7F7F7;}
+  .dirlabel{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--gold); margin-top:10px;}
+
+  /* ============ PREVIEW CARD (DOM) ============ */
+  .prevwrap{display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;}
+  .vcard{width:420px; max-width:100%; background:var(--cream); border-radius:20px; overflow:hidden; box-shadow:0 12px 40px rgba(58,18,32,.22); border:1px solid #EADFC9;}
+  .vcard .band{background:linear-gradient(135deg,var(--plum) 0%,var(--plum2) 100%); padding:22px 20px 68px; text-align:center; position:relative;}
+  .vcard .brand{color:var(--gold2); font-size:12px; letter-spacing:3px; text-transform:uppercase; font-weight:700;}
+  .vcard .brand small{display:block; color:#E8CFA4; font-size:9px; letter-spacing:2px; margin-top:2px; font-weight:400;}
+  .vcard .photo{width:128px; height:128px; border-radius:50%; border:4px solid var(--gold2); background:#F1E6D2 center/cover no-repeat; margin:-64px auto 0; position:relative; z-index:2; display:flex; align-items:center; justify-content:center; font-size:44px; color:var(--gold); overflow:hidden;}
+  .vcard .photo img{width:100%; height:100%; object-fit:cover;}
+  .vcard .name{ text-align:center; font-size:24px; font-weight:800; color:var(--plum); margin-top:12px; padding:0 16px;}
+  .vcard .cid{text-align:center; margin-top:5px;}
+  .vcard .cid span{background:var(--gold2); color:var(--plum); font-weight:700; font-size:12px; border-radius:999px; padding:3px 14px; letter-spacing:1px;}
+  .vcard .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:16px 16px 4px;}
+  .vcard .stat{background:#fff; border:1.5px solid var(--gold2); border-radius:12px; text-align:center; padding:9px 4px;}
+  .vcard .stat .l{font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--gold); font-weight:700;}
+  .vcard .stat .v{font-size:12.5px; font-weight:700; color:var(--plum); margin-top:2px; word-break:break-word;}
+  .vcard .details{padding:14px 20px 6px; display:grid; grid-template-columns:1fr 1fr; gap:9px 16px;}
+  .vcard .dt .l{font-size:9.5px; text-transform:uppercase; letter-spacing:1px; color:var(--gold); font-weight:700;}
+  .vcard .dt .v{font-size:12.5px; color:var(--ink); font-weight:500;}
+  .vcard .about{padding:6px 20px 4px; font-size:12px; color:#5d4a34; font-style:italic; line-height:1.55;}
+  .vcard .looking{margin:14px 16px 18px; background:linear-gradient(135deg,var(--plum) 0%,var(--plum2) 100%); border-radius:14px; padding:14px 16px; color:#F5E8D0;}
+  .vcard .looking .t{font-size:10.5px; text-transform:uppercase; letter-spacing:2px; color:var(--gold2); font-weight:700; margin-bottom:6px;}
+  .vcard .looking .hl{font-weight:800; color:var(--gold2); font-size:13.5px; line-height:1.5;}
+  .vcard .looking .rest{font-size:11.5px; line-height:1.6; margin-top:5px;}
+  .vcard .foot{border-top:1px solid #EADFC9; padding:10px; text-align:center; font-size:10px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; font-weight:600;}
+  @media (max-width:640px){ .vcard .stats{grid-template-columns:repeat(2,1fr);} }
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="logo">CMB</div>
+  <div>
+    <h1>City Marriage Bureau</h1>
+    <p>Rishta Profile Tool — intake · matching · shareable cards</p>
+  </div>
+  <nav class="tabs">
+    <button id="tabbtn-new" class="active" onclick="showTab('new')">➕ New Profile</button>
+    <button id="tabbtn-match" onclick="showTab('match')">💞 Matching Space</button>
+    <button id="tabbtn-preview" onclick="showTab('preview')">🪪 Profile Preview</button>
+  </nav>
+</header>
+
+<main>
+  <div id="global-banner" class="banner"></div>
+
+  <div class="keyrow" id="keyrow">
+    <label for="apikey">Claude API key</label>
+    <input type="password" id="apikey" placeholder="sk-ant-..." autocomplete="off">
+    <button class="btn sm gold" onclick="saveApiKey()">Save key</button>
+    <span class="status" id="keystatus">Needed for Message &amp; Photo extraction. Stored only on this device.</span>
+  </div>
+
+  <!-- ============================== TAB: NEW PROFILE ============================== -->
+  <section class="tab active" id="tab-new">
+    <div class="modes">
+      <button id="modebtn-form" class="active" onclick="showMode('form')"><span class="t">📝 Form</span><span class="d">Type the details field by field (verbal intake)</span></button>
+      <button id="modebtn-message" onclick="showMode('message')"><span class="t">💬 Message</span><span class="d">Paste a WhatsApp rishta message — auto-extract</span></button>
+      <button id="modebtn-photo" onclick="showMode('photo')"><span class="t">📷 Photo</span><span class="d">Upload a photo of a profile card / register page</span></button>
+    </div>
+
+    <!-- message mode input -->
+    <div class="panel" id="mode-message" style="display:none">
+      <h2>Paste WhatsApp message</h2>
+      <textarea id="msg-input" rows="10" placeholder="Paste the full rishta message here — Roman Urdu, English, mixed, any format. Example:&#10;&#10;*Rishta for son*&#10;Name: Ahmed Raza&#10;Age 29, Height: 5.7&#10;McS from Punjab University&#10;Income: Alhamdulillah&#10;..."></textarea>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+        <button class="btn" id="msg-extract-btn" onclick="extractFromMessage()">✨ Extract profile</button>
+        <span class="status" id="msg-status" style="font-size:12.5px;color:#8a6d3b;"></span>
+      </div>
+      <div class="banner error" id="msg-error"></div>
+    </div>
+
+    <!-- photo mode input -->
+    <div class="panel" id="mode-photo" style="display:none">
+      <h2>Upload profile card photo</h2>
+      <div class="photodrop" id="photodrop" onclick="document.getElementById('photo-input').click()">
+        <div>📄 Click or drag a photo of the profile card here<br><small>Paper form, register page, or screenshot — JPG / PNG / WEBP</small></div>
+        <img id="photo-preview" style="display:none">
+      </div>
+      <input type="file" id="photo-input" accept="image/*" style="display:none">
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+        <button class="btn" id="photo-extract-btn" onclick="extractFromPhoto()" disabled>✨ Read &amp; extract profile</button>
+        <span class="status" id="photo-status" style="font-size:12.5px;color:#8a6d3b;"></span>
+      </div>
+      <div class="banner error" id="photo-error"></div>
+    </div>
+
+    <!-- ================= REVIEW CARD (shared by all modes) ================= -->
+    <div class="panel" id="review-panel">
+      <div class="banner info" id="review-banner">✅ Extracted — review below, correct anything inline, then Save. Fields I was unsure about are noted under <b>Raw notes</b>.</div>
+      <h2 id="review-title">Profile details</h2>
+
+      <div class="avatar-pick" style="margin-bottom:16px;">
+        <div class="circ" id="pphoto-circ">👤</div>
+        <div>
+          <label class="fld">Person's photo (for the preview card)</label>
+          <input type="file" id="pphoto-input" accept="image/*" style="width:auto">
+        </div>
+      </div>
+
+      <div class="grid">
+        <div><label class="fld">Full name *</label><input id="f-name"></div>
+        <div><label class="fld">Gender *</label>
+          <select id="f-gender"><option value="">—</option><option value="male">Male</option><option value="female">Female</option></select></div>
+        <div><label class="fld">Age</label><input id="f-age" type="number" min="16" max="80"></div>
+        <div><label class="fld">Height</label>
+          <div class="hrow">
+            <select id="f-feet"><option value="">ft</option><option>4</option><option>5</option><option>6</option><option>7</option></select>
+            <select id="f-inches"><option value="">in</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select>
+          </div></div>
+        <div><label class="fld">Complexion</label><input id="f-complexion" placeholder="Fair / Wheatish / ..."></div>
+        <div><label class="fld">Marital status</label>
+          <select id="f-marital" onchange="toggleChildren()">
+            <option value="never_married">Never married</option>
+            <option value="divorced">Divorced</option>
+            <option value="separated">Separated</option>
+            <option value="widowed">Widowed</option>
+          </select></div>
+        <div id="children-wrap" style="display:none"><label class="fld">Children (if any)</label><input id="f-children" placeholder="e.g. 1 beta, 1 beti"></div>
+        <div><label class="fld">Education</label><input id="f-education" placeholder="M.Sc, MBA, BS CS ..."></div>
+        <div><label class="fld">Profession</label><input id="f-profession"></div>
+        <div><label class="fld">Income</label><input id="f-income" placeholder="Rs 150k/month or Undisclosed"></div>
+        <div><label class="fld">Caste</label><input id="f-caste"></div>
+        <div><label class="fld">Sect</label><input id="f-sect" placeholder="Sunni / Shia / ..."></div>
+        <div><label class="fld">City</label><input id="f-city"></div>
+        <div><label class="fld">Current residence / country</label><input id="f-residence" placeholder="Lahore, Pakistan / Dubai, UAE"></div>
+        <div><label class="fld">Property</label><input id="f-property" placeholder="Own house, plot ..."></div>
+        <div><label class="fld">Father</label><input id="f-father" placeholder="Retd. Govt officer"></div>
+        <div><label class="fld">Mother</label><input id="f-mother" placeholder="Housewife"></div>
+        <div><label class="fld">Siblings</label><input id="f-siblings" placeholder="2 brothers, 1 sister"></div>
+        <div class="wide"><label class="fld">About him/her</label><textarea id="f-about" rows="2"></textarea></div>
+      </div>
+
+      <h3>Requirements (what they're looking for)</h3>
+      <div class="grid">
+        <div><label class="fld">Age from</label><input id="r-agemin" type="number" min="16" max="80"></div>
+        <div><label class="fld">Age to</label><input id="r-agemax" type="number" min="16" max="80"></div>
+        <div><label class="fld">Height from</label><input id="r-heightmin" placeholder="e.g. 5'2"></div>
+        <div><label class="fld">Height to</label><input id="r-heightmax" placeholder="e.g. 5'8"></div>
+        <div><label class="fld">Caste demand</label><input id="r-caste" placeholder="Same caste / Syed / any"></div>
+        <div><label class="fld">Education demand</label><input id="r-education" placeholder="Min. Bachelors"></div>
+        <div class="wide"><label class="fld">Other demands</label><textarea id="r-other" rows="2" placeholder="Deendar family, no dowry demand, settled abroad preferred..."></textarea></div>
+      </div>
+
+      <div id="rawnote-wrap" style="display:none; margin-top:14px;">
+        <label class="fld">Raw notes (original text preserved where I was unsure)</label>
+        <textarea id="f-rawnote" rows="2" style="background:#FCF6E8;"></textarea>
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <button class="btn gold" style="font-size:15px; padding:13px 34px;" onclick="saveProfile()">💾 Save Profile</button>
+        <button class="btn ghost sm" onclick="clearForm()">Clear form</button>
+        <span id="save-status" style="font-size:13px; color:#2E7D32; font-weight:600;"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== TAB: MATCHING SPACE ============================== -->
+  <section class="tab" id="tab-match">
+    <div class="panel">
+      <h2>Saved profiles</h2>
+      <div class="filters">
+        <div><label class="fld">Gender</label>
+          <select id="fl-gender" onchange="renderList()"><option value="">All</option><option value="male">Male</option><option value="female">Female</option></select></div>
+        <div><label class="fld">Age from</label><input id="fl-agemin" type="number" oninput="renderList()"></div>
+        <div><label class="fld">Age to</label><input id="fl-agemax" type="number" oninput="renderList()"></div>
+        <div><label class="fld">Caste</label><input id="fl-caste" placeholder="contains..." oninput="renderList()"></div>
+        <div><label class="fld">City</label><input id="fl-city" placeholder="contains..." oninput="renderList()"></div>
+        <div><label class="fld">Marital status</label>
+          <select id="fl-marital" onchange="renderList()"><option value="">All</option><option value="never_married">Never married</option><option value="divorced">Divorced</option><option value="separated">Separated</option><option value="widowed">Widowed</option></select></div>
+        <div><label class="fld">Search</label><input id="fl-search" placeholder="name or ID..." oninput="renderList()"></div>
+      </div>
+      <div id="plist" class="plist"></div>
+      <div id="plist-empty" class="empty" style="display:none">
+        <b>No profiles yet</b>
+        Add your first rishta from the <a href="#" onclick="showTab('new');return false;">New Profile</a> tab — paste a WhatsApp message, upload a card photo, or fill the form.
+      </div>
+    </div>
+
+    <div class="panel" id="matches-panel" style="display:none">
+      <div class="mhead">
+        <h2 id="matches-title" style="margin:0;">Matches</h2>
+        <button class="btn ghost sm" onclick="closeMatches()">✕ Close</button>
+      </div>
+      <div id="matches-body"></div>
+    </div>
+  </section>
+
+  <!-- ============================== TAB: PREVIEW ============================== -->
+  <section class="tab" id="tab-preview">
+    <div class="panel">
+      <h2>Shareable profile card</h2>
+      <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:18px;">
+        <div style="min-width:260px;"><label class="fld">Choose profile</label>
+          <select id="prev-select" onchange="renderPreview()"></select></div>
+        <button class="btn gold" id="dl-btn" onclick="downloadCard()">⬇️ Download as image</button>
+      </div>
+      <div id="prev-empty" class="empty" style="display:none">
+        <b>Nothing to preview yet</b>
+        Save a profile first from the <a href="#" onclick="showTab('new');return false;">New Profile</a> tab, then come back here to see and download its branded card.
+      </div>
+      <div class="prevwrap">
+        <div id="vcard-holder"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<canvas id="dlcanvas" width="1080" height="1400" style="display:none"></canvas>
+
+<script>
+"use strict";
+/* ============================================================
+   STORAGE — window.storage compatible wrapper.
+   If a native window.storage exists (claude.ai artifact runtime),
+   it's used directly. Otherwise the SAME interface is provided
+   backed by IndexedDB (NOT localStorage).
+   ============================================================ */
+const store = (() => {
+  const native = (typeof window.storage === 'object' && window.storage !== null &&
+                  (typeof window.storage.set === 'function' || typeof window.storage.setItem === 'function'))
+                 ? window.storage : null;
+  if (native) {
+    const S = {
+      async set(k, v){ return native.set ? native.set(k, JSON.stringify(v)) : native.setItem(k, JSON.stringify(v)); },
+      async get(k){
+        const r = native.get ? await native.get(k) : await native.getItem(k);
+        if (r == null) return null;
+        const val = (typeof r === 'object' && 'value' in r) ? r.value : r;
+        try { return JSON.parse(val); } catch { return val; }
+      },
+      async del(k){ return native.delete ? native.delete(k) : native.removeItem(k); }
+    };
+    return S;
+  }
+  // IndexedDB fallback (local browser use)
+  let dbp = null;
+  function db(){
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      const req = indexedDB.open('cmb-rishta', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('kv');
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+    return dbp;
+  }
+  const mem = new Map(); // in-session safety net if IndexedDB fails
+  async function op(mode, fn){
+    try {
+      const d = await db();
+      return await new Promise((res, rej) => {
+        const tx = d.transaction('kv', mode);
+        const st = tx.objectStore('kv');
+        const r = fn(st);
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+    } catch (e) {
+      console.warn('Storage unavailable, using in-memory fallback:', e);
+      banner('global-banner','info','⚠️ Persistent storage is unavailable in this browser — profiles will be kept only for this session.');
+      return null;
+    }
+  }
+  return {
+    async set(k, v){ mem.set(k, v); await op('readwrite', st => st.put(v, k)); },
+    async get(k){ const r = await op('readonly', st => st.get(k)); return r !== null && r !== undefined ? r : (mem.has(k) ? mem.get(k) : null); },
+    async del(k){ mem.delete(k); await op('readwrite', st => st.delete(k)); }
+  };
+})();
+
+/* ============================================================ STATE ============================================================ */
+const MODEL = 'claude-sonnet-4-6';
+let profiles = [];              // loaded profile objects
+let counters = { m: 0, f: 0 };  // catalog id counters
+let apiKey = '';
+let keylessMode = false;        // claude.ai artifact runtime → no key needed
+let pendingPersonPhoto = null;  // dataURL for person photo in review card
+let pendingCardPhoto = null;    // {dataUrl, mediaType} for photo-mode extraction
+
+/* ============================================================ HELPERS ============================================================ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(id, type, msg){
+  const el = $(id);
+  el.className = 'banner show ' + type;
+  el.innerHTML = msg;
+  if (type === 'success') setTimeout(() => el.classList.remove('show'), 6000);
+}
+function hideBanner(id){ $(id).classList.remove('show'); }
+
+function heightDisplay(inches){
+  if (inches == null || inches === '' || isNaN(inches)) return null;
+  const ft = Math.floor(inches / 12), inch = Math.round(inches % 12);
+  return ft + '′' + inch + '″';
+}
+function parseHeightStr(s){
+  // Accepts: 5'7 / 5.7 / 5-7 / 5 ft 7 / 67 / 170cm  → inches
+  if (s == null) return null;
+  if (typeof s === 'number') return s > 30 ? Math.round(s) : null;
+  s = String(s).trim().toLowerCase();
+  if (!s) return null;
+  let m = s.match(/(\d{2,3})\s*cm/);
+  if (m) return Math.round(parseInt(m[1],10) / 2.54);
+  m = s.match(/(\d)\s*(?:'|′|ft|feet|\.|-|\s)\s*(\d{1,2})/);
+  if (m) return parseInt(m[1],10)*12 + parseInt(m[2],10);
+  m = s.match(/^(\d)\s*(?:'|ft|feet)?$/);
+  if (m) return parseInt(m[1],10)*12;
+  m = s.match(/^(\d{2,3})$/);
+  if (m){ const n = parseInt(m[1],10); return (n >= 40 && n <= 90) ? n : null; }
+  return null;
+}
+const MARITAL_LABEL = { never_married:'Never married', divorced:'Divorced', separated:'Separated', widowed:'Widowed' };
+
+function resizeImage(file, maxEdge){
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width:w, height:h } = img;
+        const scale = Math.min(1, maxEdge / Math.max(w, h));
+        w = Math.round(w * scale); h = Math.round(h * scale);
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = reject;
+      img.src = fr.result;
+    };
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ============================================================ CLAUDE API ============================================================ */
+const EXTRACTION_SYSTEM = `You extract matrimonial (rishta) profile data for a marriage bureau in Pakistan. Input is either a raw WhatsApp-style text message or a photo of a profile card / register page (read ALL handwritten and printed text in it). Messages mix English, Urdu script, and Roman Urdu.
+
+Return ONLY a single JSON object — no markdown fences, no commentary — with exactly these keys (use null when the information is genuinely absent; never invent data):
+
+{
+  "name": string|null,
+  "gender": "male"|"female"|null,        // infer from context: "rishta for son/beta/larka" => male; "daughter/beti/larki" => female
+  "age": number|null,
+  "height_inches": number|null,
+  "complexion": string|null,
+  "marital_status": "never_married"|"divorced"|"separated"|"widowed"|null,   // "single"/"kunwara"/"shaadi nahi hui" => never_married; "khula"/"talaq yafta" => divorced
+  "children": string|null,               // e.g. "1 son, 1 daughter (beta 5y)" — only if mentioned
+  "education": string|null,              // normalized, e.g. "M.Sc" not "McS"
+  "profession": string|null,
+  "income": string|null,
+  "caste": string|null,                  // zaat/biradari, e.g. Rajput, Jutt, Arain, Syed, Sheikh, Mughal
+  "sect": string|null,                   // maslak, e.g. Sunni, Shia, Deobandi, Barelvi, Ahl-e-Hadith
+  "city": string|null,
+  "residence": string|null,              // current residence incl. country, e.g. "Dubai, UAE" or "Lahore, Pakistan"
+  "property": string|null,
+  "father": string|null,
+  "mother": string|null,
+  "siblings": string|null,
+  "about": string|null,                  // short free-text description of the person if present
+  "requirements": {
+    "age_min": number|null, "age_max": number|null,
+    "height_min_inches": number|null, "height_max_inches": number|null,
+    "caste": string|null, "education": string|null,
+    "other": string|null                 // all remaining demands verbatim-ish: family type, dowry, city, deendar, etc.
+  },
+  "raw_note": string|null                // see rules below
+}
+
+NORMALIZATION RULES — follow exactly:
+1. HEIGHT: In Pakistani rishta messages "5.7", "5,7" or "Height: 5.7" means 5 feet 7 inches — NEVER 5.7 feet. Convert all forms (5'7, 5 ft 7, 5-7, 170 cm) to total inches (5.7 => 67). Same for requirement ranges.
+2. INCOME: "Alhamdulillah", "Mashallah", "handsome", "acha khasa", "sufficient" or any pious/vague answer => income = "Undisclosed" and put the original phrase in raw_note.
+3. EDUCATION typos: normalize obvious garbles ("McS" => most likely "M.Sc" — or "MCS" if computer-science context) and record the original spelling in raw_note.
+4. ROMAN URDU: "shaadi shuda nahi" => never_married; "beta/beti" counts => children; "apna ghar / apna makan" => property "Own house"; "larki chahiye ..." / "requirements" / "demand" section => requirements. "Zaat" => caste. "Maslak" => sect.
+5. raw_note: one short string listing every uncertain interpretation as \`field: original text\`, separated by "; ". null if nothing was ambiguous.
+6. The requirements object describes what THIS person's family demands in a spouse — do not mix it with the person's own attributes.
+7. Numbers must be JSON numbers, not strings. Do not add keys that are not in the schema.`;
+
+async function callClaude(userContent){
+  const body = {
+    model: MODEL,
+    max_tokens: 1500,
+    system: EXTRACTION_SYSTEM,
+    messages: [{ role: 'user', content: userContent }]
+  };
+  const headers = { 'content-type': 'application/json' };
+  if (!keylessMode) {
+    if (!apiKey) throw new Error('No API key set. Paste your Claude API key in the bar at the top and press "Save key".');
+    headers['x-api-key'] = apiKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+  let resp;
+  try {
+    resp = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers, body: JSON.stringify(body) });
+  } catch (e) {
+    throw new Error('Network error — could not reach the Claude API. Check your internet connection. (' + e.message + ')');
+  }
+  if (!resp.ok) {
+    let detail = '';
+    try { const j = await resp.json(); detail = j?.error?.message || JSON.stringify(j); } catch { detail = await resp.text().catch(()=> ''); }
+    const hints = { 401:'The API key looks invalid — re-check it.', 429:'Rate limited — wait a minute and try again.', 529:'Claude is overloaded — try again shortly.' };
+    throw new Error(`API error ${resp.status}. ${hints[resp.status] || ''}\n${detail}`.trim());
+  }
+  const data = await resp.json();
+  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  return parseJsonLoose(text);
+}
+function parseJsonLoose(text){
+  if (!text) throw new Error('The model returned an empty response — please try again.');
+  let t = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a === -1 || b === -1) throw new Error('Could not find JSON in the model response:\n' + text.slice(0, 400));
+  try { return JSON.parse(t.slice(a, b + 1)); }
+  catch (e) { throw new Error('The model response was not valid JSON (' + e.message + '):\n' + text.slice(0, 400)); }
+}
+
+/* ============================================================ API KEY ============================================================ */
+async function saveApiKey(){
+  apiKey = $('apikey').value.trim();
+  await store.set('settings:apikey', apiKey);
+  $('keystatus').textContent = apiKey ? '✓ Key saved on this device.' : 'Key cleared.';
+}
+
+/* ============================================================ TABS & MODES ============================================================ */
+function showTab(name){
+  for (const t of ['new','match','preview']) {
+    $('tab-'+t).classList.toggle('active', t === name);
+    $('tabbtn-'+t).classList.toggle('active', t === name);
+  }
+  if (name === 'match') renderList();
+  if (name === 'preview') refreshPreviewSelect();
+}
+function showMode(mode){
+  for (const m of ['form','message','photo']) $('modebtn-'+m).classList.toggle('active', m === mode);
+  $('mode-message').style.display = mode === 'message' ? '' : 'none';
+  $('mode-photo').style.display   = mode === 'photo'   ? '' : 'none';
+  // In form mode the review card IS the form; in extract modes it appears after extraction.
+  $('review-panel').style.display = mode === 'form' ? '' : 'none';
+  hideBanner('review-banner');
+  $('review-title').textContent = 'Profile details';
+}
+function toggleChildren(){
+  $('children-wrap').style.display = $('f-marital').value === 'never_married' ? 'none' : '';
+}
+
+/* ============================================================ EXTRACTION FLOWS ============================================================ */
+async function extractFromMessage(){
+  hideBanner('msg-error');
+  const text = $('msg-input').value.trim();
+  if (!text) { banner('msg-error','error','Paste a message first — the box is empty.'); return; }
+  const btn = $('msg-extract-btn');
+  btn.disabled = true; $('msg-status').textContent = 'Reading the message with Claude…';
+  try {
+    const data = await callClaude([{ type:'text', text: 'Extract the rishta profile from this message:\n\n' + text }]);
+    populateForm(data, 'message');
+  } catch (e) {
+    banner('msg-error','error', esc(e.message) + '\n\nYour pasted message is untouched — fix the issue and press Extract again.');
+  } finally {
+    btn.disabled = false; $('msg-status').textContent = '';
+  }
+}
+
+async function extractFromPhoto(){
+  hideBanner('photo-error');
+  if (!pendingCardPhoto) { banner('photo-error','error','Choose a photo first.'); return; }
+  const btn = $('photo-extract-btn');
+  btn.disabled = true; $('photo-status').textContent = 'Reading the card with Claude (OCR + extraction)…';
+  try {
+    const b64 = pendingCardPhoto.dataUrl.split(',')[1];
+    const data = await callClaude([
+      { type:'image', source:{ type:'base64', media_type: pendingCardPhoto.mediaType, data: b64 } },
+      { type:'text', text:'Read this profile card photo and extract the rishta profile.' }
+    ]);
+    populateForm(data, 'photo');
+  } catch (e) {
+    banner('photo-error','error', esc(e.message) + '\n\nYour photo is still loaded — fix the issue and try again.');
+  } finally {
+    btn.disabled = false; $('photo-status').textContent = '';
+  }
+}
+
+function populateForm(d, sourceType){
+  clearForm(true);
+  const set = (id, v) => { if (v != null && v !== '') $(id).value = v; };
+  set('f-name', d.name); set('f-gender', d.gender); set('f-age', d.age);
+  if (d.height_inches != null && !isNaN(d.height_inches)) {
+    $('f-feet').value = Math.floor(d.height_inches/12);
+    $('f-inches').value = Math.round(d.height_inches%12);
+  }
+  set('f-complexion', d.complexion);
+  if (d.marital_status && MARITAL_LABEL[d.marital_status]) $('f-marital').value = d.marital_status;
+  toggleChildren();
+  set('f-children', d.children);
+  set('f-education', d.education); set('f-profession', d.profession); set('f-income', d.income);
+  set('f-caste', d.caste); set('f-sect', d.sect); set('f-city', d.city); set('f-residence', d.residence);
+  set('f-property', d.property); set('f-father', d.father); set('f-mother', d.mother);
+  set('f-siblings', d.siblings); set('f-about', d.about);
+  const r = d.requirements || {};
+  set('r-agemin', r.age_min); set('r-agemax', r.age_max);
+  if (r.height_min_inches != null) $('r-heightmin').value = heightDisplay(r.height_min_inches) || '';
+  if (r.height_max_inches != null) $('r-heightmax').value = heightDisplay(r.height_max_inches) || '';
+  set('r-caste', r.caste); set('r-education', r.education); set('r-other', r.other);
+  if (d.raw_note) { $('rawnote-wrap').style.display = ''; $('f-rawnote').value = d.raw_note; }
+  $('review-panel').style.display = '';
+  $('review-panel').dataset.source = sourceType;
+  banner('review-banner','info','✅ Extracted from your ' + (sourceType === 'photo' ? 'photo' : 'message') + ' — review below, correct anything inline, then <b>Save Profile</b>.' + (d.raw_note ? ' Uncertain bits are preserved under <b>Raw notes</b>.' : ''));
+  $('review-banner').className = 'banner show info';
+  $('review-title').textContent = 'Review extracted profile';
+  $('review-panel').scrollIntoView({ behavior:'smooth' });
+}
+
+function clearForm(keepHidden){
+  for (const el of document.querySelectorAll('#review-panel input:not([type=file]), #review-panel textarea, #review-panel select')) el.value = '';
+  $('f-marital').value = 'never_married';
+  toggleChildren();
+  pendingPersonPhoto = null;
+  $('pphoto-circ').innerHTML = '👤';
+  $('rawnote-wrap').style.display = 'none';
+  $('save-status').textContent = '';
+  if (!keepHidden) hideBanner('review-banner');
+}
+
+/* ============================================================ SAVE ============================================================ */
+async function saveProfile(){
+  const name = $('f-name').value.trim();
+  const gender = $('f-gender').value;
+  if (!name || !gender) { banner('global-banner','error','Name and gender are required before saving.'); window.scrollTo({top:0,behavior:'smooth'}); return; }
+  hideBanner('global-banner');
+
+  const ft = $('f-feet').value, inch = $('f-inches').value;
+  const heightInches = ft !== '' ? (parseInt(ft,10)*12 + (inch !== '' ? parseInt(inch,10) : 0)) : null;
+  const g = gender === 'male' ? 'm' : 'f';
+  counters[g] += 1;
+  const catalogId = g.toUpperCase() + '-' + String(counters[g]).padStart(2,'0');
+
+  const profile = {
+    id: catalogId.toLowerCase(),
+    catalogId,
+    createdAt: new Date().toISOString(),
+    sourceType: $('review-panel').dataset.source || 'form',
+    photo: pendingPersonPhoto,
+    name, gender,
+    age: $('f-age').value ? parseInt($('f-age').value,10) : null,
+    heightInches,
+    heightDisplay: heightDisplay(heightInches),
+    complexion: $('f-complexion').value.trim() || null,
+    maritalStatus: $('f-marital').value,
+    children: $('f-children').value.trim() || null,
+    education: $('f-education').value.trim() || null,
+    profession: $('f-profession').value.trim() || null,
+    income: $('f-income').value.trim() || null,
+    caste: $('f-caste').value.trim() || null,
+    sect: $('f-sect').value.trim() || null,
+    city: $('f-city').value.trim() || null,
+    residence: $('f-residence').value.trim() || null,
+    property: $('f-property').value.trim() || null,
+    father: $('f-father').value.trim() || null,
+    mother: $('f-mother').value.trim() || null,
+    siblings: $('f-siblings').value.trim() || null,
+    about: $('f-about').value.trim() || null,
+    requirements: {
+      ageMin: $('r-agemin').value ? parseInt($('r-agemin').value,10) : null,
+      ageMax: $('r-agemax').value ? parseInt($('r-agemax').value,10) : null,
+      heightMinInches: parseHeightStr($('r-heightmin').value),
+      heightMaxInches: parseHeightStr($('r-heightmax').value),
+      caste: $('r-caste').value.trim() || null,
+      education: $('r-education').value.trim() || null,
+      other: $('r-other').value.trim() || null
+    },
+    raw_note: $('f-rawnote').value.trim() || null
+  };
+
+  try {
+    await store.set('profiles:' + profile.id, profile);
+    await store.set('meta:counters', counters);
+    const index = (await store.get('meta:index')) || [];
+    if (!index.includes(profile.id)) index.push(profile.id);
+    await store.set('meta:index', index);
+  } catch (e) {
+    counters[g] -= 1;
+    banner('global-banner','error','Could not save the profile: ' + esc(e.message));
+    return;
+  }
+  profiles.push(profile);
+  $('save-status').textContent = '✓ Saved as ' + catalogId + ' (auto-approved)';
+  banner('global-banner','success','✅ <b>' + esc(name) + '</b> saved as <b>' + catalogId + '</b>. Find them in the Matching Space, or download their card from Profile Preview.');
+  clearForm();
+  $('msg-input').value = '';
+  resetPhotoMode();
+}
+
+async function deleteProfile(id){
+  const p = profiles.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm('Delete profile ' + p.catalogId + ' (' + p.name + ')? This cannot be undone.')) return;
+  await store.del('profiles:' + id);
+  const index = ((await store.get('meta:index')) || []).filter(k => k !== id);
+  await store.set('meta:index', index);
+  profiles = profiles.filter(x => x.id !== id);
+  renderList(); closeMatches(); refreshPreviewSelect();
+}
+
+/* ============================================================ MATCHING ============================================================ */
+const EDU_LEVELS = [
+  { rank:1, words:['matric','metric','matriculation','o level','olevel','middle','primary'] },
+  { rank:2, words:['inter','intermediate','fa','fsc','f.sc','ics','icom','i.com','a level','alevel','dae','diploma'] },
+  { rank:3, words:['bachelor','ba','b.a','bsc','b.sc','bs','b.s','bba','b.com','bcom','be','b.e','llb','mbbs','graduation','graduate','bds','pharm'] },
+  { rank:4, words:['master','ma','m.a','msc','m.sc','mcs','m.cs','mba','m.com','mcom','ms','m.s','me','m.e','llm','mphil','m.phil'] },
+  { rank:5, words:['phd','ph.d','doctorate','post doc','postdoc'] }
+];
+function eduRank(s){
+  if (!s) return null;
+  const t = ' ' + String(s).toLowerCase().replace(/[^a-z.]+/g,' ') + ' ';
+  let best = null;
+  for (const lvl of EDU_LEVELS)
+    for (const w of lvl.words)
+      if (t.includes(' ' + w + ' ') || t.includes(' ' + w + '.')) best = Math.max(best || 0, lvl.rank);
+  return best;
+}
+function normTxt(s){ return String(s || '').toLowerCase().replace(/[^a-z؀-ۿ]+/g,' ').trim(); }
+
+// Score how well `cand` satisfies `req`'s demands. Returns {chips:[], score, weight}
+function scoreDirection(req, cand){
+  const chips = [];
+  let score = 0, weight = 0;
+  const R = req.requirements || {};
+
+  // Age
+  if (R.ageMin != null || R.ageMax != null) {
+    if (cand.age == null) chips.push({ s:'na', t:'Age unknown' });
+    else {
+      weight += 3;
+      const lo = R.ageMin ?? 0, hi = R.ageMax ?? 200;
+      if (cand.age >= lo && cand.age <= hi) { score += 3; chips.push({ s:'hit', t:`Age ${cand.age} in ${lo}–${hi === 200 ? '∞' : hi}` }); }
+      else if (cand.age >= lo - 2 && cand.age <= hi + 2) { score += 1.5; chips.push({ s:'partial', t:`Age ${cand.age} near ${lo}–${hi === 200 ? '∞' : hi}` }); }
+      else chips.push({ s:'miss', t:`Age ${cand.age} outside ${lo}–${hi === 200 ? '∞' : hi}` });
+    }
+  }
+  // Height
+  if (R.heightMinInches != null || R.heightMaxInches != null) {
+    if (cand.heightInches == null) chips.push({ s:'na', t:'Height unknown' });
+    else {
+      weight += 2;
+      const lo = R.heightMinInches ?? 0, hi = R.heightMaxInches ?? 999;
+      const hd = cand.heightDisplay || heightDisplay(cand.heightInches);
+      if (cand.heightInches >= lo && cand.heightInches <= hi) { score += 2; chips.push({ s:'hit', t:`Height ${hd} in range` }); }
+      else if (cand.heightInches >= lo - 1 && cand.heightInches <= hi + 1) { score += 1; chips.push({ s:'partial', t:`Height ${hd} ~1″ off` }); }
+      else chips.push({ s:'miss', t:`Height ${hd} out of range` });
+    }
+  }
+  // Caste (only if demanded)
+  if (R.caste) {
+    const demand = normTxt(R.caste);
+    if (/(any|koi bhi|no demand|khula)/.test(demand)) chips.push({ s:'na', t:'Caste: any' });
+    else if (!cand.caste) { weight += 3; score += 1; chips.push({ s:'partial', t:`Caste demanded ${req.requirements.caste}, candidate's unknown` }); }
+    else {
+      weight += 3;
+      const cc = normTxt(cand.caste);
+      const same = /(same|apni zaat|own caste)/.test(demand) ? normTxt(req.caste) : demand;
+      if (same && (cc.includes(same) || same.includes(cc))) { score += 3; chips.push({ s:'hit', t:`Caste ${cand.caste} ✓ (${R.caste})` }); }
+      else chips.push({ s:'miss', t:`Caste demanded ${R.caste} ≠ ${cand.caste}` });
+    }
+  }
+  // Education (only if demanded)
+  if (R.education) {
+    const need = eduRank(R.education), have = eduRank(cand.education);
+    if (need == null) chips.push({ s:'na', t:'Edu demand unclear' });
+    else if (have == null) { weight += 2; score += 0.5; chips.push({ s:'partial', t:'Education unknown' }); }
+    else {
+      weight += 2;
+      if (have >= need) { score += 2; chips.push({ s:'hit', t:`Education ${cand.education} ≥ ${R.education}` }); }
+      else if (have === need - 1) { score += 1; chips.push({ s:'partial', t:`Education ${cand.education} slightly below ${R.education}` }); }
+      else chips.push({ s:'miss', t:`Education ${cand.education || '—'} below ${R.education}` });
+    }
+  }
+  // Location compatibility (own locations, symmetric context)
+  const c1 = normTxt(req.city), c2 = normTxt(cand.city);
+  const r1 = normTxt(req.residence), r2 = normTxt(cand.residence);
+  if ((c1 && c2) || (r1 && r2)) {
+    weight += 1;
+    if (c1 && c2 && (c1 === c2 || c1.includes(c2) || c2.includes(c1))) { score += 1; chips.push({ s:'hit', t:`Same city (${cand.city})` }); }
+    else if (r1 && r2 && (r1.includes('pakistan') === r2.includes('pakistan'))) { score += 0.5; chips.push({ s:'partial', t:'Different city, compatible country' }); }
+    else chips.push({ s:'miss', t:'Location mismatch' });
+  }
+  if (weight === 0) chips.push({ s:'na', t:'No specific demands — neutral' });
+  return { chips, score, weight };
+}
+
+function matchScore(a, b){
+  const dA = scoreDirection(a, b); // a's demands vs b
+  const dB = scoreDirection(b, a); // b's demands vs a
+  const pcts = [];
+  if (dA.weight > 0) pcts.push(dA.score / dA.weight);
+  if (dB.weight > 0) pcts.push(dB.score / dB.weight);
+  const pct = pcts.length ? Math.round(100 * pcts.reduce((x,y)=>x+y,0) / pcts.length) : 50;
+  return { pct, dA, dB };
+}
+
+function renderList(){
+  const g = $('fl-gender').value, amin = $('fl-agemin').value, amax = $('fl-agemax').value;
+  const caste = normTxt($('fl-caste').value), city = normTxt($('fl-city').value);
+  const ms = $('fl-marital').value, q = normTxt($('fl-search').value);
+  const list = profiles.filter(p =>
+    (!g || p.gender === g) &&
+    (!amin || (p.age != null && p.age >= +amin)) &&
+    (!amax || (p.age != null && p.age <= +amax)) &&
+    (!caste || normTxt(p.caste).includes(caste)) &&
+    (!city || normTxt(p.city).includes(city) || normTxt(p.residence).includes(city)) &&
+    (!ms || p.maritalStatus === ms) &&
+    (!q || normTxt(p.name).includes(q) || normTxt(p.catalogId).includes(q))
+  );
+  $('plist-empty').style.display = profiles.length ? 'none' : '';
+  $('plist').innerHTML = list.map(p => `
+    <div class="pcard">
+      <div class="top">
+        <div class="circ">${p.photo ? `<img src="${p.photo}">` : '👤'}</div>
+        <div><span class="nm">${esc(p.name)}</span><span class="id">${p.catalogId}</span>
+          <div class="meta">${[p.age ? p.age + ' yrs' : null, p.heightDisplay, MARITAL_LABEL[p.maritalStatus]].filter(Boolean).join(' · ')}</div>
+        </div>
+      </div>
+      <div class="meta">${[p.caste, p.sect, p.education, p.profession].filter(Boolean).map(esc).join(' · ') || '—'}<br>${esc(p.residence || p.city || '')}</div>
+      <div class="acts">
+        <button class="btn sm" onclick="openMatches('${p.id}')">💞 Matches</button>
+        <button class="btn sm ghost" onclick="showTab('preview'); $('prev-select').value='${p.id}'; renderPreview();">🪪 Card</button>
+        <button class="btn sm ghost" style="color:var(--bad);border-color:#E9B8B4;" onclick="deleteProfile('${p.id}')">🗑</button>
+      </div>
+    </div>`).join('');
+  if (profiles.length && !list.length)
+    $('plist').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>No profiles match these filters</b>Loosen the filters above to see your ' + profiles.length + ' saved profile(s).</div>';
+}
+
+function openMatches(id){
+  const p = profiles.find(x => x.id === id);
+  if (!p) return;
+  const pool = profiles.filter(x => x.gender !== p.gender && x.gender && p.gender);
+  $('matches-panel').style.display = '';
+  $('matches-title').textContent = 'Matches for ' + p.name + ' (' + p.catalogId + ')';
+  if (!pool.length) {
+    $('matches-body').innerHTML = '<div class="empty"><b>No ' + (p.gender === 'male' ? 'female' : 'male') + ' profiles saved yet</b>Add profiles of the opposite gender from the New Profile tab — matches will appear here ranked by compatibility.</div>';
+    return;
+  }
+  const scored = pool.map(c => ({ c, ...matchScore(p, c) })).sort((x,y) => y.pct - x.pct);
+  const pron = p.gender === 'male' ? 'His' : 'Her';
+  $('matches-body').innerHTML = scored.map(({ c, pct, dA, dB }) => `
+    <div class="mcard">
+      <div class="row1">
+        <div class="pct">${pct}%<small>MATCH</small></div>
+        <div class="circ" style="width:52px;height:52px;border-radius:50%;border:2.5px solid var(--gold2);overflow:hidden;display:flex;align-items:center;justify-content:center;background:#F1E6D2;color:var(--gold);flex-shrink:0;">${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover">` : '👤'}</div>
+        <div>
+          <span class="nm" style="font-weight:700;color:var(--plum)">${esc(c.name)}</span><span class="id" style="background:var(--gold2);color:var(--plum);font-size:11px;font-weight:700;border-radius:6px;padding:1px 8px;margin-left:6px;">${c.catalogId}</span>
+          <div class="meta" style="font-size:12px;color:#7a6a55;">${[c.age ? c.age+' yrs' : null, c.heightDisplay, c.caste, c.education, c.residence || c.city].filter(Boolean).map(esc).join(' · ')}</div>
+        </div>
+        <button class="btn sm ghost" style="margin-left:auto" onclick="showTab('preview'); $('prev-select').value='${c.id}'; renderPreview();">🪪 Card</button>
+      </div>
+      <div class="dirlabel">${pron} side's demands → ${esc(c.name.split(' ')[0])}</div>
+      <div class="chips">${dA.chips.map(ch => `<span class="chip ${ch.s}">${ch.s==='hit'?'✓':ch.s==='miss'?'✗':ch.s==='partial'?'≈':'—'} ${esc(ch.t)}</span>`).join('')}</div>
+      <div class="dirlabel">${esc(c.name.split(' ')[0])}'s side's demands → ${esc(p.name.split(' ')[0])}</div>
+      <div class="chips">${dB.chips.map(ch => `<span class="chip ${ch.s}">${ch.s==='hit'?'✓':ch.s==='miss'?'✗':ch.s==='partial'?'≈':'—'} ${esc(ch.t)}</span>`).join('')}</div>
+    </div>`).join('');
+  $('matches-panel').scrollIntoView({ behavior:'smooth' });
+}
+function closeMatches(){ $('matches-panel').style.display = 'none'; }
+
+/* ============================================================ PREVIEW ============================================================ */
+function requirementLines(p){
+  const R = p.requirements || {};
+  const bits = [];
+  const range = (lo, hi, unit) => lo != null && hi != null ? lo + '–' + hi + (unit || '')
+    : lo != null ? lo + (unit || '') + '+' : 'up to ' + hi + (unit || '');
+  if (R.caste) bits.push(R.caste + ' family');
+  if (R.ageMin != null || R.ageMax != null) bits.push('age ' + range(R.ageMin, R.ageMax, '') + ' yrs');
+  if (R.heightMinInches != null || R.heightMaxInches != null)
+    bits.push('height ' + range(heightDisplay(R.heightMinInches), heightDisplay(R.heightMaxInches), ''));
+  if (R.education) bits.push(R.education);
+  const highlight = bits.length ? 'Seeking ' + bits.join(', ') : 'Open to suitable proposals';
+  return { highlight, rest: R.other || '' };
+}
+
+function refreshPreviewSelect(){
+  const sel = $('prev-select');
+  const cur = sel.value;
+  sel.innerHTML = profiles.map(p => `<option value="${p.id}">${p.catalogId} — ${esc(p.name)}</option>`).join('');
+  if (profiles.find(p => p.id === cur)) sel.value = cur;
+  renderPreview();
+}
+
+function renderPreview(){
+  const id = $('prev-select').value;
+  const p = profiles.find(x => x.id === id);
+  $('prev-empty').style.display = p ? 'none' : '';
+  $('dl-btn').style.display = p ? '' : 'none';
+  $('prev-select').parentElement.style.display = profiles.length ? '' : 'none';
+  if (!p) { $('vcard-holder').innerHTML = ''; return; }
+  const heShe = p.gender === 'male' ? "What He's Looking For" : "What She's Looking For";
+  const req = requirementLines(p);
+  const details = [
+    ['Education', p.education], ['Profession', p.profession],
+    ['Caste', p.caste], ['Sect', p.sect],
+    ['Marital status', MARITAL_LABEL[p.maritalStatus] + (p.children ? ' · ' + p.children : '')],
+    ['Complexion', p.complexion],
+    ['City', p.city], ['Property', p.property],
+    ['Father', p.father], ['Mother', p.mother],
+    ['Siblings', p.siblings]
+  ].filter(([,v]) => v);
+  $('vcard-holder').innerHTML = `
+    <div class="vcard" id="vcard">
+      <div class="band">
+        <div class="brand">City Marriage Bureau<small>Trusted Rishta Service</small></div>
+      </div>
+      <div class="photo">${p.photo ? `<img src="${p.photo}">` : '👤'}</div>
+      <div class="name">${esc(p.name)}</div>
+      <div class="cid"><span>${p.catalogId}</span></div>
+      <div class="stats">
+        <div class="stat"><div class="l">Age</div><div class="v">${p.age != null ? p.age + ' yrs' : '—'}</div></div>
+        <div class="stat"><div class="l">Height</div><div class="v">${p.heightDisplay || '—'}</div></div>
+        <div class="stat"><div class="l">Income</div><div class="v">${esc(p.income || '—')}</div></div>
+        <div class="stat"><div class="l">Residence</div><div class="v">${esc(p.residence || p.city || '—')}</div></div>
+      </div>
+      <div class="details">${details.map(([l,v]) => `<div class="dt"><div class="l">${l}</div><div class="v">${esc(v)}</div></div>`).join('')}</div>
+      ${p.about ? `<div class="about">“${esc(p.about)}”</div>` : ''}
+      <div class="looking">
+        <div class="t">${heShe}</div>
+        <div class="hl">${esc(req.highlight)}</div>
+        ${req.rest ? `<div class="rest">${esc(req.rest)}</div>` : ''}
+      </div>
+      <div class="foot">City Marriage Bureau · Profile ${p.catalogId}</div>
+    </div>`;
+}
+
+/* ============================================================ CANVAS DOWNLOAD ============================================================ */
+function rr(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r); ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r); ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+function wrapLines(ctx, text, maxW, maxLines){
+  const words = String(text).split(/\s+/);
+  const lines = []; let line = '';
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+    else line = test;
+    if (lines.length === maxLines) break;
+  }
+  if (line && lines.length < maxLines) lines.push(line);
+  if (lines.length === maxLines && words.join(' ').length > lines.join(' ').length)
+    lines[maxLines-1] = lines[maxLines-1].replace(/\s?\S*$/, '…');
+  return lines;
+}
+function loadImg(src){
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+}
+
+async function downloadCard(){
+  const id = $('prev-select').value;
+  const p = profiles.find(x => x.id === id);
+  if (!p) return;
+  try { await document.fonts.load('800 56px Poppins'); await document.fonts.load('700 30px Poppins'); await document.fonts.load('500 26px Poppins'); } catch {}
+  const W = 1080, cnv = $('dlcanvas');
+  const ctx = cnv.getContext('2d');
+  const PLUM = '#6E1E3C', PLUM2 = '#8E2A4D', GOLD = '#B5893B', GOLD2 = '#D4AF61', CREAM = '#FBF6EE', INK = '#3A1220';
+  const F = w => `${w} Poppins, sans-serif`;
+
+  // Precompute details to size the canvas
+  const details = [
+    ['EDUCATION', p.education], ['PROFESSION', p.profession],
+    ['CASTE', p.caste], ['SECT', p.sect],
+    ['MARITAL STATUS', MARITAL_LABEL[p.maritalStatus] + (p.children ? ' · ' + p.children : '')],
+    ['COMPLEXION', p.complexion],
+    ['CITY', p.city], ['PROPERTY', p.property],
+    ['FATHER', p.father], ['MOTHER', p.mother], ['SIBLINGS', p.siblings]
+  ].filter(([,v]) => v);
+  const detailRows = Math.ceil(details.length / 2);
+  const H = 980 + detailRows * 92 + (p.about ? 90 : 0) + 300;
+  cnv.width = W; cnv.height = H;
+
+  // Background
+  ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
+
+  // Header band
+  const grad = ctx.createLinearGradient(0, 0, W, 340);
+  grad.addColorStop(0, PLUM); grad.addColorStop(1, PLUM2);
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, 340);
+  ctx.fillStyle = GOLD2; ctx.fillRect(0, 336, W, 4);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = GOLD2; ctx.font = F('700 34px');
+  ctx.fillText('C I T Y   M A R R I A G E   B U R E A U', W/2, 96);
+  ctx.fillStyle = '#E8CFA4'; ctx.font = F('400 22px');
+  ctx.fillText('T R U S T E D   R I S H T A   S E R V I C E', W/2, 136);
+
+  // Photo circle
+  const cx = W/2, cy = 340, R = 140;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.closePath();
+  ctx.fillStyle = '#F1E6D2'; ctx.fill();
+  ctx.clip();
+  if (p.photo) {
+    try {
+      const img = await loadImg(p.photo);
+      const s = Math.max(2*R / img.width, 2*R / img.height);
+      ctx.drawImage(img, cx - img.width*s/2, cy - img.height*s/2, img.width*s, img.height*s);
+    } catch {}
+  } else {
+    ctx.fillStyle = GOLD; ctx.font = F('600 110px'); ctx.fillText('👤', cx, cy + 40);
+  }
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
+  ctx.lineWidth = 10; ctx.strokeStyle = GOLD2; ctx.stroke();
+
+  // Name + ID
+  ctx.fillStyle = PLUM; ctx.font = F('800 58px');
+  ctx.fillText(p.name, W/2, cy + R + 92);
+  const idText = p.catalogId;
+  ctx.font = F('700 28px');
+  const idW = ctx.measureText(idText).width + 56;
+  rr(ctx, W/2 - idW/2, cy + R + 122, idW, 52, 26);
+  ctx.fillStyle = GOLD2; ctx.fill();
+  ctx.fillStyle = PLUM; ctx.fillText(idText, W/2, cy + R + 158);
+
+  // Stat chips
+  const stats = [
+    ['AGE', p.age != null ? p.age + ' yrs' : '—'],
+    ['HEIGHT', p.heightDisplay || '—'],
+    ['INCOME', p.income || '—'],
+    ['RESIDENCE', p.residence || p.city || '—']
+  ];
+  const chipY = cy + R + 210, chipW = (W - 100 - 3*18) / 4, chipH = 110;
+  stats.forEach(([l, v], i) => {
+    const x = 50 + i * (chipW + 18);
+    rr(ctx, x, chipY, chipW, chipH, 16);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = GOLD2; ctx.stroke();
+    ctx.fillStyle = GOLD; ctx.font = F('700 19px');
+    ctx.fillText(l, x + chipW/2, chipY + 38);
+    ctx.fillStyle = PLUM;
+    let fs = 27;
+    ctx.font = F(`700 ${fs}px`);
+    while (ctx.measureText(String(v)).width > chipW - 22 && fs > 15) { fs -= 2; ctx.font = F(`700 ${fs}px`); }
+    ctx.fillText(String(v), x + chipW/2, chipY + 80);
+  });
+
+  // Details grid
+  let dy = chipY + chipH + 66;
+  ctx.textAlign = 'left';
+  details.forEach(([l, v], i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const x = 60 + col * (W/2 - 40), y = dy + row * 92;
+    ctx.fillStyle = GOLD; ctx.font = F('700 20px');
+    ctx.fillText(l, x, y);
+    ctx.fillStyle = INK; ctx.font = F('500 27px');
+    const lines = wrapLines(ctx, v, W/2 - 100, 1);
+    ctx.fillText(lines[0] || '', x, y + 36);
+  });
+  let afterDetails = dy + detailRows * 92 + 4;
+
+  // About
+  if (p.about) {
+    ctx.fillStyle = '#5d4a34'; ctx.font = F('italic 400 24px');
+    const lines = wrapLines(ctx, '“' + p.about + '”', W - 140, 2);
+    lines.forEach((ln, i) => ctx.fillText(ln, 70, afterDetails + 26 + i * 34));
+    afterDetails += 40 + lines.length * 34;
+  }
+
+  // Looking-for box
+  const req = requirementLines(p);
+  const boxY = afterDetails + 24, boxH = H - boxY - 86;
+  const lg = ctx.createLinearGradient(50, boxY, W - 50, boxY + boxH);
+  lg.addColorStop(0, PLUM); lg.addColorStop(1, PLUM2);
+  rr(ctx, 50, boxY, W - 100, boxH, 20);
+  ctx.fillStyle = lg; ctx.fill();
+  ctx.fillStyle = GOLD2; ctx.font = F('700 22px');
+  ctx.fillText((p.gender === 'male' ? "WHAT HE'S LOOKING FOR" : "WHAT SHE'S LOOKING FOR"), 84, boxY + 52);
+  ctx.font = F('800 30px');
+  const hlLines = wrapLines(ctx, req.highlight, W - 170, 2);
+  hlLines.forEach((ln, i) => ctx.fillText(ln, 84, boxY + 100 + i * 40));
+  if (req.rest) {
+    ctx.fillStyle = '#F5E8D0'; ctx.font = F('400 23px');
+    const rl = wrapLines(ctx, req.rest, W - 170, 2);
+    rl.forEach((ln, i) => ctx.fillText(ln, 84, boxY + 104 + hlLines.length * 40 + i * 33));
+  }
+
+  // Footer
+  ctx.textAlign = 'center';
+  ctx.fillStyle = GOLD; ctx.font = F('600 20px');
+  ctx.fillText('C I T Y   M A R R I A G E   B U R E A U   ·   P R O F I L E   ' + p.catalogId, W/2, H - 34);
+
+  const a = document.createElement('a');
+  a.download = 'CMB-' + p.catalogId + '-' + (p.name || 'profile').replace(/[^\w]+/g, '_') + '.png';
+  a.href = cnv.toDataURL('image/png');
+  a.click();
+}
+
+/* ============================================================ PHOTO MODE WIRING ============================================================ */
+function resetPhotoMode(){
+  pendingCardPhoto = null;
+  $('photo-preview').style.display = 'none';
+  $('photo-input').value = '';
+  $('photo-extract-btn').disabled = true;
+}
+async function acceptCardPhoto(file){
+  if (!file || !file.type.startsWith('image/')) return;
+  const dataUrl = await resizeImage(file, 1568);
+  pendingCardPhoto = { dataUrl, mediaType: 'image/jpeg' };
+  const pv = $('photo-preview');
+  pv.src = dataUrl; pv.style.display = '';
+  $('photo-extract-btn').disabled = false;
+}
+
+/* ============================================================ INIT ============================================================ */
+async function init(){
+  keylessMode = !!(typeof window.storage === 'object' && window.storage) && location.hostname.endsWith('claude.ai');
+  if (keylessMode) { $('keyrow').style.display = 'none'; }
+
+  apiKey = (await store.get('settings:apikey')) || '';
+  if (apiKey) { $('apikey').value = apiKey; $('keystatus').textContent = '✓ Key loaded.'; }
+  else if (!keylessMode) banner('global-banner','info','👋 First time? Paste your Claude API key above (get one at <b>console.anthropic.com</b> → API Keys) to enable Message &amp; Photo extraction. The Form mode works without a key.');
+
+  counters = (await store.get('meta:counters')) || { m: 0, f: 0 };
+  const index = (await store.get('meta:index')) || [];
+  profiles = [];
+  for (const id of index) {
+    const p = await store.get('profiles:' + id);
+    if (p) profiles.push(p);
+  }
+  toggleChildren();
+  renderList();
+  refreshPreviewSelect();
+
+  // person photo input
+  $('pphoto-input').addEventListener('change', async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    pendingPersonPhoto = await resizeImage(f, 512);
+    $('pphoto-circ').innerHTML = `<img src="${pendingPersonPhoto}">`;
+  });
+  // card photo input + drag/drop
+  $('photo-input').addEventListener('change', e => acceptCardPhoto(e.target.files[0]));
+  const drop = $('photodrop');
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('drag'); acceptCardPhoto(e.dataTransfer.files[0]); });
+}
+init();
+</script>
+</body>
+</html>
