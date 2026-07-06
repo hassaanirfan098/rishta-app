@@ -399,6 +399,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [visible, setVisible] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [referralExpanded, setReferralExpanded] = useState<string | null>(null);
   const [professionSearch, setProfessionSearch] = useState("");
@@ -456,7 +457,11 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
+      if (!data.user) {
+        // Not signed in — onboarding is meaningless, send to login
+        router.replace("/login");
+        return;
+      }
       setUserId(data.user.id);
       const { data: profile } = await supabase
         .from("profiles")
@@ -464,8 +469,11 @@ export default function OnboardingPage() {
         .eq("id", data.user.id)
         .single();
       if (profile?.onboarding_complete) {
+        // Already onboarded — never show the flow again
         router.replace("/discover");
+        return;
       }
+      setCheckingAuth(false);
     });
   }, [supabase]);
 
@@ -1578,6 +1586,17 @@ export default function OnboardingPage() {
         return null;
     }
   };
+
+  // Block rendering until we know the visitor actually needs onboarding —
+  // prevents signed-in, already-onboarded users from seeing a "Get Started"
+  // flash before the async redirect fires
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div

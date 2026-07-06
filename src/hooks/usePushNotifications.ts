@@ -8,7 +8,11 @@ export function usePushNotifications() {
 
     const register = async () => {
       try {
-        const reg = await navigator.serviceWorker.register("/sw.js");
+        // updateViaCache: "none" ensures sw.js itself is never served stale;
+        // reg.update() forces an update check on every app open so cache
+        // purges (activate handler) reach installed PWAs quickly
+        const reg = await navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" });
+        reg.update().catch(() => {});
         const permission = await Notification.requestPermission();
         if (permission !== "granted") return;
 
