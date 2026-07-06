@@ -202,14 +202,11 @@ export default function DiscoverPage() {
         </div>
       )}
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="bg-white/90 backdrop-blur-md border-b border-hairline sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <LogoGlyph className="w-7 h-7" />
-            <div>
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight leading-none">Discover</h1>
-              <p className="text-xs text-gray-400 mt-0.5">Find your match</p>
-            </div>
+            <LogoGlyph className="w-6 h-6" />
+            <h1 className="text-2xl font-semibold text-ink tracking-tight">Discover</h1>
           </div>
           <Button
             variant="ghost"
@@ -287,28 +284,27 @@ export default function DiscoverPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-lg mx-auto px-4 py-5">
+      <div className="max-w-2xl mx-auto px-5 py-6">
         {loading ? (
           <ProfileGridSkeleton count={4} />
         ) : combined.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="text-5xl mb-4">🤍</div>
-            <h3 className="text-lg font-semibold text-gray-800">
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <h3 className="text-lg font-semibold text-ink">
               {activeFilters ? "No matches for these filters" : "No profiles yet"}
             </h3>
-            <p className="text-sm text-gray-500 mt-2 max-w-xs">
+            <p className="text-sm text-muted mt-2 max-w-xs">
               {activeFilters
                 ? "Try widening your filters to see more people."
                 : "New members join every day. Check back soon for fresh matches."}
             </p>
             {activeFilters && (
-              <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
+              <Button variant="outline" size="sm" className="mt-5" onClick={clearFilters}>
                 Clear filters
               </Button>
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-8">
             {combined.map((item, idx) =>
               item.type === "member" ? (
                 <ProfileCard
