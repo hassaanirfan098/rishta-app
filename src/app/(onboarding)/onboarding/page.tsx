@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { LogoGlyph } from "@/components/Logo";
+import { LogoGlyph, LogoMark } from "@/components/Logo";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -627,25 +627,20 @@ export default function OnboardingPage() {
       // ── Step 0: Welcome ──────────────────────────────────────────────────────
       case 0:
         return (
-          <div className={`min-h-screen bg-gradient-to-br ${STEP_BG[0]} flex flex-col items-center justify-center px-6 text-center`}>
-            <div className="relative mb-8">
-              <div className="w-24 h-24 bg-white/15 rounded-3xl flex items-center justify-center border border-white/20 mb-6 mx-auto">
-                <LogoGlyph className="w-16 h-16" variant="onDark" />
-              </div>
-              <div className="absolute -inset-4 bg-white/5 rounded-full blur-2xl" />
-            </div>
-            <p className="text-white/90 text-4xl font-bold mb-3" style={{ fontFamily: "serif" }}>
+          <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
+            <LogoMark className="w-20 h-20 rounded-3xl mb-8" rounded="rounded-3xl" />
+            <p className="text-brand-600 text-3xl mb-3" style={{ fontFamily: "serif" }}>
               السلام عليكم
             </p>
-            <h1 className="text-white text-3xl font-extrabold tracking-tight mb-3">Welcome to Rishta</h1>
-            <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+            <h1 className="text-ink text-3xl font-semibold tracking-tight mb-3">Welcome to Rishta</h1>
+            <p className="text-muted text-sm leading-relaxed max-w-xs">
               Tell us about yourself and we'll show you great profiles nearby
             </p>
             <button
               onClick={next}
-              className="mt-12 w-full max-w-xs bg-white text-brand-900 font-bold py-4 rounded-full text-lg shadow-xl hover:bg-brand-50 active:scale-95 transition-all"
+              className="mt-12 w-full max-w-xs bg-brand-600 text-white font-medium h-12 rounded-lg text-base hover:bg-brand-700 transition-colors"
             >
-              Get Started
+              Get started
             </button>
           </div>
         );
@@ -922,27 +917,27 @@ export default function OnboardingPage() {
       // ── Step 10: Notifications ───────────────────────────────────────────────
       case 10:
         return (
-          <div className={`min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br ${STEP_BG[10]}`}>
+          <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-center">
             <ProgressBar step={step} total={TOTAL_STEPS} />
-            <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center mb-8">
-              <Bell className="w-12 h-12 text-white" />
+            <div className="w-20 h-20 rounded-2xl bg-brand-50 flex items-center justify-center mb-8">
+              <Bell className="w-9 h-9 text-brand-600" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2 text-center">Don't miss a match!</h2>
-            <p className="text-white/70 text-sm text-center mb-10 max-w-xs">
-              We'll let you know when someone likes you or sends you a message
+            <h2 className="text-2xl font-semibold text-ink mb-2">Don&apos;t miss a match</h2>
+            <p className="text-muted text-sm mb-10 max-w-xs">
+              We&apos;ll let you know when someone likes you or sends you a message.
             </p>
-            <div className="w-full max-w-sm space-y-4">
+            <div className="w-full max-w-sm space-y-3">
               <button
                 onClick={() => { set("notifications_enabled", true); next(); }}
-                className="w-full bg-white text-brand-700 font-bold py-4 rounded-full text-base hover:bg-brand-50 active:scale-95 transition-all shadow-lg"
+                className="w-full bg-brand-600 text-white font-medium h-12 rounded-lg text-base hover:bg-brand-700 transition-colors"
               >
-                🔔 Turn on Notifications
+                Turn on notifications
               </button>
               <button
                 onClick={next}
-                className="w-full text-white/60 text-sm py-2 hover:text-white"
+                className="w-full text-muted text-sm py-2 hover:text-ink"
               >
-                Maybe Later
+                Maybe later
               </button>
             </div>
           </div>
@@ -1581,25 +1576,25 @@ export default function OnboardingPage() {
       // ── Step 32: Done ────────────────────────────────────────────────────────
       case 32:
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 text-center">
-            <div className="w-28 h-28 rounded-full bg-brand-500/30 border-2 border-brand-400/50 flex items-center justify-center mb-8 shadow-xl">
-              <Check className="h-14 w-14 text-brand-400" />
+          <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-center">
+            <div className="w-20 h-20 rounded-full bg-brand-50 flex items-center justify-center mb-8">
+              <Check className="h-10 w-10 text-brand-600" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Profile Complete! 🎉</h1>
-            <p className="text-white/60 text-sm mb-2 max-w-xs leading-relaxed">
+            <h1 className="text-3xl font-semibold text-ink mb-2 tracking-tight">Profile complete</h1>
+            <p className="text-muted text-sm mb-4 max-w-xs leading-relaxed">
               Your profile has been submitted. You can start exploring while our team reviews it — usually within 24 hours.
             </p>
-            <div className="flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 rounded-xl px-4 py-2 mb-10">
-              <span className="text-amber-400 text-sm">⏳ Profile under review</span>
+            <div className="flex items-center gap-2 bg-surface-soft border border-hairline rounded-full px-4 py-1.5 mb-10">
+              <span className="text-muted text-sm">Profile under review</span>
             </div>
             <button
               onClick={saveProfile}
               disabled={saving}
-              className="w-full max-w-sm bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-full text-base active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
+              className="w-full max-w-sm bg-brand-600 hover:bg-brand-700 text-white font-medium h-12 rounded-lg text-base transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start Exploring →"}
+              {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start exploring"}
             </button>
-            {saving && <p className="text-white/40 text-xs mt-3">Saving your profile…</p>}
+            {saving && <p className="text-muted-soft text-xs mt-3">Saving your profile…</p>}
           </div>
         );
 
@@ -1613,8 +1608,8 @@ export default function OnboardingPage() {
   // flash before the async redirect fires
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -1633,9 +1628,9 @@ export default function OnboardingPage() {
 function ProgressBar({ step, total }: { step: number; total: number }) {
   const pct = Math.round((step / (total - 1)) * 100);
   return (
-    <div className="fixed top-0 left-0 right-0 h-1 bg-white/20 z-50">
+    <div className="fixed top-0 left-0 right-0 h-1 bg-hairline z-50">
       <div
-        className="h-full bg-gold-400 transition-all duration-300"
+        className="h-full bg-brand-600 transition-all duration-300"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -1666,46 +1661,46 @@ function StepWrapper({
   bgClass?: string;
 }) {
   return (
-    <div className={`min-h-screen flex flex-col bg-gradient-to-br ${bgClass || "from-brand-600 to-brand-700"}`}>
+    <div className="min-h-screen flex flex-col bg-white">
       <ProgressBar step={step} total={total} />
 
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-6 pb-2">
+      <div className="flex items-center gap-3 px-5 pt-6 pb-2 max-w-lg mx-auto w-full">
         <button
           onClick={onBack}
           aria-label="Go back"
-          className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
+          className="w-9 h-9 rounded-full bg-surface-soft hover:bg-surface-strong flex items-center justify-center transition-colors flex-shrink-0"
         >
-          <ArrowLeft className="h-5 w-5 text-white" />
+          <ArrowLeft className="h-5 w-5 text-ink" />
         </button>
         <div className="flex-1">
-          <p className="text-xs text-white/60">Step {step} of {total - 1}</p>
+          <p className="text-xs text-muted">Step {step} of {total - 1}</p>
         </div>
       </div>
 
       {/* Step title */}
-      <div className="px-5 pt-3 pb-4">
-        <h2 className="text-3xl font-extrabold tracking-tight text-white">{title}</h2>
-        {subtitle && <p className="text-sm text-white/70 mt-1">{subtitle}</p>}
+      <div className="px-5 pt-4 pb-4 max-w-lg mx-auto w-full">
+        <h2 className="text-3xl font-semibold tracking-tight text-ink">{title}</h2>
+        {subtitle && <p className="text-sm text-muted mt-1.5">{subtitle}</p>}
       </div>
 
-      {/* Content card */}
-      <div className="flex-1 mx-4 mb-4 bg-white/95 backdrop-blur rounded-3xl shadow-2xl overflow-hidden">
-        <div className="h-full px-5 pt-5 pb-28 overflow-y-auto">
-          {children}
-        </div>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto max-w-lg mx-auto w-full">
+        <div className="px-5 pt-1 pb-32">{children}</div>
       </div>
 
       {/* Continue Button */}
       {onContinue && (
-        <div className="fixed bottom-0 left-0 right-0 px-5 py-5 bg-gradient-to-t from-black/30 to-transparent">
-          <button
-            onClick={onContinue}
-            disabled={continueDisabled}
-            className="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-4 rounded-full text-base active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-          >
-            Continue
-          </button>
+        <div className="fixed bottom-0 left-0 right-0 px-5 py-4 bg-white border-t border-hairline">
+          <div className="max-w-lg mx-auto">
+            <button
+              onClick={onContinue}
+              disabled={continueDisabled}
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium h-12 rounded-lg text-base transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       )}
     </div>
