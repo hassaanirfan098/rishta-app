@@ -16,9 +16,6 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [done, setDone] = useState(false);
-  const [resendMsg, setResendMsg] = useState("");
-  const [resendCooldown, setResendCooldown] = useState(0);
   const router = useRouter();
   const supabase = createClient();
 
@@ -30,81 +27,30 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback` },
+
+    // Create the account server-side, already confirmed (no email needed)
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
-    if (error) {
-      console.error('Signup error:', error);
-      const msg = error.message || (error as any).code || (error as any).error_description || String(error);
-      setError(msg && msg !== '{}' ? msg : 'Sign up failed — please try again or contact support.');
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || "Sign up failed — please try again.");
       setLoading(false);
       return;
     }
-    // If email confirmation is OFF in Supabase, signUp returns an active
-    // session — send the user straight into onboarding instead of asking
-    // them to check an email that will never come.
-    if (data.session) {
-      router.push("/onboarding");
-      router.refresh();
+
+    // Immediately sign in to establish a session, then go to onboarding
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) {
+      // Account exists now — send them to login as a fallback
+      router.push("/login");
       return;
     }
-    setLoading(false);
-    setDone(true);
+    router.push("/onboarding");
+    router.refresh();
   };
-
-  const handleResend = async () => {
-    setResendMsg("");
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email,
-      options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback` },
-    });
-    if (error) {
-      setResendMsg(error.message);
-      return;
-    }
-    setResendMsg("Sent again — check your inbox and spam folder.");
-    setResendCooldown(30);
-    const timer = setInterval(() => {
-      setResendCooldown((c) => {
-        if (c <= 1) { clearInterval(timer); return 0; }
-        return c - 1;
-      });
-    }, 1000);
-  };
-
-  if (done) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex flex-col items-center justify-center px-6">
-        <div className="w-full max-w-sm text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-600 rounded-3xl shadow-lg mb-6">
-            <LogoGlyph className="w-12 h-12" variant="onDark" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
-          <p className="text-gray-500 text-sm mb-6">
-            We sent a confirmation link to <span className="font-medium text-gray-700">{email}</span>. Click it to activate your account, then come back to sign in. If it&apos;s not there in a minute, check your spam folder.
-          </p>
-          {resendMsg && (
-            <p className={`text-sm mb-4 ${resendMsg.startsWith("Sent") ? "text-brand-600" : "text-red-500"}`}>{resendMsg}</p>
-          )}
-          <div className="space-y-3">
-            <Link href="/login">
-              <Button className="w-full bg-brand-600 hover:bg-brand-700">Go to Sign In</Button>
-            </Link>
-            <button
-              onClick={handleResend}
-              disabled={resendCooldown > 0}
-              className="w-full text-sm text-gray-500 hover:text-gray-700 disabled:text-gray-300 font-medium"
-            >
-              {resendCooldown > 0 ? `Resend email in ${resendCooldown}s` : "Didn't get it? Resend email"}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex flex-col">
