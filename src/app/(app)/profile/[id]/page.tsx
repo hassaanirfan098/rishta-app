@@ -2,17 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Heart, MessageCircle, Flag, Loader2, X } from "lucide-react";
+import {
+  ArrowLeft, Heart, MessageCircle, Flag, Loader2, X,
+  Users, Moon, Briefcase, HeartHandshake, Leaf, Sparkles, Brain,
+  type LucideIcon,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
 
-function Section({ title, emoji, children }: {
-  title: string; emoji: string; children: React.ReactNode; bg?: string; border?: string;
+function Section({ title, icon: Icon, children }: {
+  title: string; icon: LucideIcon; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
-      <h3 className="font-extrabold text-gray-900 text-lg mb-4 flex items-center gap-2.5">
-        <span className="w-9 h-9 rounded-2xl bg-brand-50 flex items-center justify-center text-lg">{emoji}</span>
+    <div className="bg-white rounded-[14px] p-5 border border-hairline">
+      <h3 className="font-semibold text-ink text-base mb-4 flex items-center gap-2.5">
+        <span className="w-9 h-9 rounded-lg bg-surface-soft flex items-center justify-center">
+          <Icon className="h-4 w-4 text-ink" />
+        </span>
         {title}
       </h3>
       {children}
@@ -23,24 +29,28 @@ function Section({ title, emoji, children }: {
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
-    <div className="flex justify-between items-start py-1.5 border-b border-gray-100 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900 text-right max-w-[55%]">{value}</span>
+    <div className="flex justify-between items-start py-2.5 border-b border-hairline-soft last:border-0">
+      <span className="text-sm text-muted">{label}</span>
+      <span className="text-sm text-ink text-right max-w-[60%]">{value}</span>
     </div>
   );
 }
 
 function Chips({ items }: { items?: string[] | null }) {
-  if (!items?.length) return <p className="text-sm text-gray-400">Not specified</p>;
+  if (!items?.length) return <p className="text-sm text-muted-soft">Not specified</p>;
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
-        <span key={item} className="px-3 py-1.5 bg-white rounded-xl border border-gray-200 text-sm text-gray-700 font-medium">
+        <span key={item} className="px-3 py-1.5 rounded-full border border-hairline text-sm text-ink">
           {item}
         </span>
       ))}
     </div>
   );
+}
+
+function initialsOf(name: string) {
+  return (name || "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
 const REPORT_REASONS = ["Fake profile", "Inappropriate content", "Harassment", "Scam or fraud", "Other"];
@@ -151,8 +161,8 @@ export default function ProfileViewPage() {
         {mainPhoto ? (
           <img src={mainPhoto} alt={profile.full_name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-8xl">
-            {profile.gender === "male" ? "👨" : "👩"}
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-100 to-brand-200 text-brand-700 text-6xl font-semibold">
+            {initialsOf(profile.full_name)}
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -195,11 +205,11 @@ export default function ProfileViewPage() {
       {/* Content */}
       <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
         {profile.about_me && (
-          <Section title="About" emoji="💬" bg="bg-brand-50" border="border-brand-100">
+          <Section title="About" icon={Sparkles}>
             <p className="text-gray-700 text-sm leading-relaxed">"{profile.about_me}"</p>
           </Section>
         )}
-        <Section title="Basics" emoji="👤" bg="bg-sky-50" border="border-sky-100">
+        <Section title="Basics" icon={Users}>
           <Row label="Age" value={age ? `${age} years` : null} />
           <Row label="Height" value={heightDisplay(profile.height_cm)} />
           <Row label="Marital Status" value={profile.marital_status} />
@@ -207,7 +217,7 @@ export default function ProfileViewPage() {
           <Row label="Ethnicity" value={Array.isArray(profile.ethnicity) ? profile.ethnicity.join(", ") : profile.ethnicity} />
           <Row label="Grew up in" value={profile.grew_up_in} />
         </Section>
-        <Section title="Faith" emoji="🕌" bg="bg-amber-50" border="border-amber-100">
+        <Section title="Faith" icon={Moon}>
           <Row label="Sect" value={profile.sect} />
           <Row label="Religiosity" value={profile.religiosity} />
           <Row label="Born religion" value={profile.born_religion} />
@@ -219,31 +229,31 @@ export default function ProfileViewPage() {
             </div>
           )}
         </Section>
-        <Section title="Career & Education" emoji="🎓" bg="bg-purple-50" border="border-purple-100">
+        <Section title="Career & education" icon={Briefcase}>
           <Row label="Profession" value={profile.profession} />
           <Row label="Education" value={profile.education} />
         </Section>
-        <Section title="Relationship Goals" emoji="💍" bg="bg-rose-50" border="border-rose-100">
+        <Section title="Marriage intentions" icon={HeartHandshake}>
           <Row label="Marriage readiness" value={profile.marriage_readiness} />
           <Row label="Knowing timeline" value={profile.knowing_timeline} />
           <Row label="Marriage timeline" value={profile.marriage_timeline} />
           <Row label="Relocation" value={profile.relocation} />
         </Section>
-        <Section title="Family" emoji="👨‍👩‍👧" bg="bg-pink-50" border="border-pink-100">
+        <Section title="Family" icon={Users}>
           <Row label="Has children" value={profile.has_children} />
           <Row label="Wants children" value={profile.wants_children} />
         </Section>
-        <Section title="Lifestyle" emoji="🌿" bg="bg-blue-50" border="border-blue-100">
+        <Section title="Lifestyle" icon={Leaf}>
           <Row label="Smoking" value={profile.smoking} />
           <Row label="Drinking" value={profile.drinking} />
         </Section>
         {profile.interests?.length > 0 && (
-          <Section title="Interests" emoji="✨" bg="bg-fuchsia-50" border="border-fuchsia-100">
+          <Section title="Interests" icon={Sparkles}>
             <Chips items={profile.interests} />
           </Section>
         )}
         {profile.personality_traits?.length > 0 && (
-          <Section title="Personality" emoji="🧠" bg="bg-indigo-50" border="border-indigo-100">
+          <Section title="Personality" icon={Brain}>
             <Chips items={profile.personality_traits} />
           </Section>
         )}

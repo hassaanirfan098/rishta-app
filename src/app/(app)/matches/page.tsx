@@ -74,22 +74,22 @@ export default function MatchesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white/90 backdrop-blur-md border-b border-hairline sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center gap-2.5 mb-4">
-            <LogoGlyph className="w-7 h-7" />
-            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Matches</h1>
+            <LogoGlyph className="w-6 h-6" />
+            <h1 className="text-2xl font-semibold text-ink tracking-tight">Matches</h1>
           </div>
-          <div className="flex bg-gray-100 rounded-full p-1">
+          <div className="flex bg-surface-soft rounded-lg p-1">
             <button
               onClick={() => setTab("matches")}
-              className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all ${tab === "matches" ? "bg-brand-600 text-white shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${tab === "matches" ? "bg-white text-ink shadow-card" : "text-muted"}`}
             >
               Matches {matches.length > 0 && `(${matches.length})`}
             </button>
             <button
               onClick={() => setTab("liked")}
-              className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${tab === "liked" ? "bg-brand-600 text-white shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${tab === "liked" ? "bg-white text-ink shadow-card" : "text-muted"}`}
             >
               {!isGold && <Lock className="h-3.5 w-3.5" />}
               Liked You {likes.length > 0 && `(${likes.length})`}
@@ -127,13 +127,13 @@ export default function MatchesPage() {
                   <Link
                     key={match.id}
                     href={`/chat/${match.id}`}
-                    className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-md bg-brand-900 group"
+                    className="relative aspect-[3/4] rounded-[14px] overflow-hidden shadow-card bg-surface-strong group"
                   >
                     {profile.avatar_url ? (
                       <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-400 to-brand-700 text-6xl">
-                        {profile.full_name?.charAt(0) || "👤"}
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-100 to-brand-200 text-brand-700 text-5xl font-semibold">
+                        {profile.full_name?.charAt(0) || ""}
                       </div>
                     )}
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent" />
@@ -194,13 +194,13 @@ export default function MatchesPage() {
                 <Link
                   key={like.liker_id}
                   href={`/profile/${profile.id}`}
-                  className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-md bg-brand-900 group"
+                  className="relative aspect-[3/4] rounded-[14px] overflow-hidden shadow-card bg-surface-strong group"
                 >
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-400 to-brand-700 text-6xl">
-                      {profile.full_name?.charAt(0) || "👤"}
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-100 to-brand-200 text-brand-700 text-5xl font-semibold">
+                      {profile.full_name?.charAt(0) || ""}
                     </div>
                   )}
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent" />

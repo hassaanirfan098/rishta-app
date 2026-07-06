@@ -49,11 +49,11 @@ export default function ChatListPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white/90 backdrop-blur-md border-b border-hairline sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center gap-2.5">
-            <LogoGlyph className="w-7 h-7" />
-            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Messages</h1>
+            <LogoGlyph className="w-6 h-6" />
+            <h1 className="text-2xl font-semibold text-ink tracking-tight">Messages</h1>
           </div>
         </div>
       </div>
@@ -82,18 +82,18 @@ export default function ChatListPage() {
                 <Link
                   key={convo.id}
                   href={`/chat/${convo.id}`}
-                  className="flex items-center gap-3.5 bg-white rounded-2xl p-3.5 border border-gray-100 active:scale-[0.99] hover:border-brand-200 transition-all"
+                  className="flex items-center gap-3.5 bg-white rounded-[14px] p-3.5 border border-hairline active:scale-[0.99] hover:shadow-card transition-all"
                 >
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center shrink-0 overflow-hidden">
                     {profile.avatar_url ? (
                       <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <span className="font-bold text-white text-lg">{profile.full_name?.charAt(0)}</span>
+                      <span className="font-semibold text-brand-700 text-lg">{profile.full_name?.charAt(0)}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline justify-between">
-                      <h3 className="font-bold text-gray-900 truncate text-base">{profile.full_name}</h3>
+                      <h3 className="font-semibold text-ink truncate text-base">{profile.full_name}</h3>
                       {convo.lastMessage && (
                         <span className="text-xs text-gray-400 shrink-0 ml-2">
                           {new Date(convo.lastMessage.created_at).toLocaleDateString()}

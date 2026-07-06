@@ -2,28 +2,35 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Edit2, LogOut, Shield } from "lucide-react";
+import {
+  Edit2,
+  LogOut,
+  BadgeCheck,
+  MapPin,
+  Briefcase,
+  Moon,
+  HeartHandshake,
+  Users,
+  Globe,
+  Leaf,
+  Sparkles,
+  Brain,
+  Camera,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import { calculateAge } from "@/lib/utils";
 import { LogoGlyph } from "@/components/Logo";
 
-function Section({
-  title,
-  emoji,
-  children,
-}: {
-  title: string;
-  emoji: string;
-  children: React.ReactNode;
-  bg?: string;
-  border?: string;
-}) {
+function Section({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
-      <h3 className="font-extrabold text-gray-900 text-lg mb-4 flex items-center gap-2.5">
-        <span className="w-9 h-9 rounded-2xl bg-brand-50 flex items-center justify-center text-lg">{emoji}</span>
+    <div className="bg-white rounded-[14px] p-5 border border-hairline">
+      <h3 className="font-semibold text-ink text-base mb-4 flex items-center gap-2.5">
+        <span className="w-9 h-9 rounded-lg bg-surface-soft flex items-center justify-center">
+          <Icon className="h-4 w-4 text-ink" />
+        </span>
         {title}
       </h3>
       {children}
@@ -31,71 +38,38 @@ function Section({
   );
 }
 
-function Chip({ children }: { children: React.ReactNode }) {
+function Row({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
   return (
-    <span className="px-3 py-1.5 rounded-xl border-2 border-brand-200 bg-white text-brand-700 text-sm font-medium">
-      {children}
-    </span>
+    <div className="flex justify-between items-start py-2.5 border-b border-hairline-soft last:border-0">
+      <span className="text-sm text-muted">{label}</span>
+      <span className="text-sm text-ink text-right max-w-[60%]">{value}</span>
+    </div>
   );
 }
 
-function StatusBadge({ label, color }: { label: string; color: string }) {
-  const colors: Record<string, string> = {
-    green: "bg-brand-100 text-brand-800 border-brand-200",
-    red: "bg-red-100 text-red-800 border-red-200",
-    yellow: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    blue: "bg-blue-100 text-blue-800 border-blue-200",
-    gray: "bg-gray-100 text-gray-700 border-gray-200",
-  };
+function Chips({ items }: { items: string[] }) {
+  if (!items.length) return null;
   return (
-    <span className={`px-3 py-1.5 rounded-xl border-2 text-sm font-semibold ${colors[color] || colors.gray}`}>
-      {label}
-    </span>
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => (
+        <span key={item} className="px-3 py-1.5 rounded-full border border-hairline text-sm text-ink">
+          {item}
+        </span>
+      ))}
+    </div>
   );
 }
 
-const INTEREST_EMOJIS: Record<string, string> = {
-  "Photography": "📸", "Painting": "🎨", "Drawing": "✏️", "Calligraphy": "🖋️",
-  "Pottery": "🏺", "Sculpture": "🗿", "DIY & Crafts": "🔨", "Knitting": "🧶",
-  "Sewing": "🧵", "Interior Design": "🏠", "Architecture": "🏛️", "Fashion": "👗",
-  "Jewellery Making": "💍", "Cooking": "👨‍🍳", "Baking": "🍰", "Food Photography": "📸",
-  "Trying New Cuisines": "🌍", "Coffee": "☕", "Tea": "🍵", "BBQ": "🔥",
-  "Meal Prep": "📦", "Food Blogging": "📝", "Gym": "💪", "Running": "🏃",
-  "Cycling": "🚴", "Swimming": "🏊", "Hiking": "🥾", "Football/Soccer": "⚽",
-  "Cricket": "🏏", "Badminton": "🏸", "Tennis": "🎾", "Squash": "🏉",
-  "Martial Arts": "🥋", "Yoga": "🧘", "Rock Climbing": "🧗", "Horse Riding": "🐴",
-  "Reading": "📚", "Writing": "✍️", "Poetry": "📜", "Blogging": "💻",
-  "Movies": "🎬", "TV Series": "📺", "Anime": "🎌", "Gaming": "🎮",
-  "Board Games": "♟️", "Escape Rooms": "🔐", "Comedy": "😂", "Stand-up": "🎤",
-  "Nasheed": "🎵", "Qawwali": "🎶", "Instruments": "🎸", "Singing": "🎤",
-  "Theatre": "🎭", "Dancing": "💃", "Travelling": "✈️", "Backpacking": "🎒",
-  "Road Trips": "🚗", "Camping": "⛺", "Nature": "🌿", "Museums": "🏛️",
-  "Cultural Experiences": "🌍", "Learning Languages": "🗣️", "Coding": "💻",
-  "Robotics": "🤖", "AI & Technology": "🤖", "Science": "🔬", "Astronomy": "🔭",
-  "Finance & Investing": "📈", "Islamic History": "📜", "Quranic Studies": "📖",
-  "Dawah": "🤲", "Charity & Volunteering": "❤️", "Spiritual Retreats": "🕌",
-  "Halal Travel": "✈️", "Parenting": "👨‍👩‍👧", "Gardening": "🌱", "Home Decor": "🏡",
-  "Minimalism": "🪴", "Sustainability": "♻️", "Animals & Pets": "🐾",
-  "Child Education": "📚", "Entrepreneurship": "💼", "Public Speaking": "🎤",
-  "Leadership": "👑", "Mentoring": "🤝", "Social Work": "❤️",
-};
-
-const PERSONALITY_EMOJIS: Record<string, string> = {
-  "Adventurous": "🏔️", "Ambitious": "🚀", "Analytical": "🔍", "Animal Lover": "🐾",
-  "Artistic": "🎨", "Bookworm": "📚", "Carefree": "🌸", "Caring": "💚",
-  "Charismatic": "✨", "Cheerful": "😊", "Creative": "🎨", "Curious": "🔍",
-  "Dependable": "🤝", "Detail-oriented": "🔬", "Disciplined": "⚡", "Empathetic": "💛",
-  "Family-oriented": "👨‍👩‍👧", "Funny/Humorous": "😂", "Generous": "💝", "Gentle": "🌸",
-  "Hardworking": "💪", "Homebody": "🏠", "Imaginative": "💭", "Independent": "🦅",
-  "Intellectual": "🧠", "Introvert": "🌙", "Extrovert": "☀️", "Kind-hearted": "💚",
-  "Leader": "👑", "Loyal": "🤝", "Methodical": "📋", "Nurturing": "🌱",
-  "Open-minded": "🌈", "Optimistic": "☀️", "Outgoing": "🎉", "Passionate": "🔥",
-  "Patient": "🕊️", "Perfectionist": "✨", "Playful": "🎮", "Practical": "🔧",
-  "Protective": "🛡️", "Quiet": "🌿", "Reliable": "⚓", "Romantic": "🌹",
-  "Sarcastic (friendly)": "😏", "Sensitive": "💛", "Sincere": "💎", "Social": "👥",
-  "Spiritual": "🕌", "Spontaneous": "⚡", "Straightforward": "💬", "Thoughtful": "🌷",
-  "Traditional": "📜", "Witty": "😄",
-};
+function initials(name: string) {
+  return (name || "")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
 
 function parseJsonArray(val: unknown): string[] {
   if (!val) return [];
@@ -105,7 +79,6 @@ function parseJsonArray(val: unknown): string[] {
       const parsed = JSON.parse(val);
       if (Array.isArray(parsed)) return parsed as string[];
     } catch {
-      // not JSON, treat as comma-separated
       return val.split(",").map((s) => s.trim()).filter(Boolean);
     }
   }
@@ -126,7 +99,6 @@ export default function ProfilePage() {
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       setProfile(data);
 
-      // Gallery lives in profile_photos (written by onboarding + settings)
       const { data: photoRows } = await supabase
         .from("profile_photos")
         .select("url")
@@ -148,8 +120,12 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-white">
+        <div className="max-w-2xl mx-auto px-5 py-6 space-y-5">
+          <div className="aspect-[4/5] max-h-[480px] w-full rounded-[20px] skeleton" />
+          <div className="h-5 w-1/2 rounded skeleton" />
+          <div className="h-40 rounded-[14px] skeleton" />
+        </div>
       </div>
     );
   }
@@ -159,346 +135,194 @@ export default function ProfilePage() {
   const personalityTraits = parseJsonArray(profile?.personality_traits);
   const faithValues = parseJsonArray(profile?.faith_values);
   const avatarUrl = profile?.avatar_url as string | undefined;
-  const gender = profile?.gender as string | undefined;
+  const name = (profile?.full_name as string) || "Your Name";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="bg-white/90 backdrop-blur-md border-b border-hairline sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <LogoGlyph className="w-7 h-7" />
-            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Profile</h1>
+            <LogoGlyph className="w-6 h-6" />
+            <h1 className="text-2xl font-semibold text-ink tracking-tight">Profile</h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="icon" onClick={() => router.push("/settings")}>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" aria-label="Edit profile" onClick={() => router.push("/settings")}>
               <Edit2 className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 text-gray-400" />
+            <Button variant="ghost" size="icon" aria-label="Sign out" onClick={handleSignOut}>
+              <LogOut className="h-4.5 w-4.5 text-muted" />
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto pb-10">
+      <div className="max-w-2xl mx-auto px-5 py-6 pb-12 space-y-5">
         {/* Hero */}
-        <div className="relative h-[440px] bg-gradient-to-br from-brand-300 to-brand-600 sm:rounded-b-[32px] overflow-hidden">
+        <div className="relative aspect-[4/5] max-h-[480px] w-full rounded-[20px] overflow-hidden bg-surface-strong shadow-card">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[7rem]">
-              {gender === "male" ? "👨" : "👩"}
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-100 to-brand-200 text-brand-700 text-6xl font-semibold">
+              {initials(name)}
             </div>
           )}
-          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
           <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
             {profile?.is_verified && (
-              <div className="flex items-center gap-1 bg-white/90 backdrop-blur text-brand-700 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm">
-                <Shield className="h-3 w-3 text-gold-600" />
+              <span className="flex items-center gap-1 bg-white text-ink text-xs font-medium pl-1.5 pr-2.5 py-1 rounded-full shadow-card">
+                <BadgeCheck className="h-3.5 w-3.5 text-brand-600" />
                 Verified
-              </div>
+              </span>
             )}
-            {!profile?.is_approved && (
-              <Badge variant="secondary">Pending Approval</Badge>
-            )}
+            {!profile?.is_approved && <Badge variant="secondary">Pending approval</Badge>}
           </div>
-          <div className="absolute bottom-5 left-5 right-5">
-            <h2 className="text-white text-3xl font-extrabold tracking-tight leading-none drop-shadow">
-              {(profile?.full_name as string) || "Your Name"}{age ? <span className="font-semibold">, {age}</span> : ""}
+          <div className="absolute inset-x-0 bottom-0 p-6">
+            <h2 className="text-white text-3xl font-semibold tracking-tight leading-none">
+              {name}
+              {age ? <span className="font-normal text-white/85">, {age}</span> : ""}
             </h2>
             {!!(profile?.city || profile?.country) && (
-              <p className="text-white/85 text-sm mt-2 flex items-center gap-1">
-                <span>📍</span>
+              <p className="text-white/80 text-sm mt-2 flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
                 {[(profile?.city as string | undefined), (profile?.country as string | undefined)].filter(Boolean).join(", ")}
               </p>
             )}
+            {profile?.profession && <p className="text-white/70 text-sm mt-1">{profile.profession as string}</p>}
           </div>
         </div>
 
-        {/* Content sections */}
-        <div className="px-4 py-5 space-y-4">
+        {/* Onboarding CTA */}
+        {!profile?.onboarding_complete && (
+          <div className="rounded-[14px] border border-hairline p-5">
+            <p className="text-sm font-semibold text-ink">Complete your profile</p>
+            <p className="text-sm text-muted mt-1">Profiles with complete info get 3× more matches.</p>
+            <Button size="sm" className="mt-4" onClick={() => router.push("/onboarding")}>
+              Complete profile
+            </Button>
+          </div>
+        )}
 
-          {/* Onboarding CTA */}
-          {!profile?.onboarding_complete && (
-            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4">
-              <p className="text-sm text-amber-800 font-medium">Complete your profile</p>
-              <p className="text-xs text-amber-600 mt-1">Profiles with complete info get 3x more matches</p>
-              <Button
-                className="mt-3 bg-amber-600 hover:bg-amber-700 text-white"
-                size="sm"
-                onClick={() => router.push("/onboarding")}
-              >
-                Complete Profile
-              </Button>
-            </div>
-          )}
-
-          {/* About Me */}
-          {profile?.about_me && (
-            <Section title="About Me" emoji="✨">
-              <div className="border-l-4 border-brand-400 pl-4">
-                <p className="text-gray-700 text-sm leading-relaxed italic">
-                  "{profile.about_me as string}"
-                </p>
-              </div>
-            </Section>
-          )}
-
-          {/* Location */}
-          {(profile?.city || profile?.country || profile?.grew_up_in) && (
-            <Section title="Location" emoji="📍" bg="bg-sky-50" border="border-sky-100">
-              <div className="space-y-2">
-                {(profile?.city || profile?.country) && (
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <span className="text-base">🏙️</span>
-                    <span>Based in {[profile?.city, profile?.country].filter(Boolean).join(", ")}</span>
-                  </div>
-                )}
-                {profile?.grew_up_in && profile.grew_up_in !== profile?.country && (
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <span className="text-base">🌱</span>
-                    <span>Grew up in {profile.grew_up_in as string}</span>
-                  </div>
-                )}
-              </div>
-            </Section>
-          )}
-
-          {/* Career & Education */}
-          {(profile?.profession || profile?.education) && (
-            <Section title="Career & Education" emoji="💼" bg="bg-purple-50" border="border-purple-100">
-              <div className="flex flex-wrap gap-3">
-                {profile?.profession && (
-                  <div className="flex-1 min-w-[120px] bg-white rounded-xl p-3 border border-purple-100">
-                    <p className="text-xs text-gray-400 mb-1">Profession</p>
-                    <p className="font-semibold text-gray-800 text-sm">💼 {profile.profession as string}</p>
-                  </div>
-                )}
-                {profile?.education && (
-                  <div className="flex-1 min-w-[120px] bg-white rounded-xl p-3 border border-purple-100">
-                    <p className="text-xs text-gray-400 mb-1">Education</p>
-                    <p className="font-semibold text-gray-800 text-sm">🎓 {profile.education as string}</p>
-                  </div>
-                )}
-              </div>
-            </Section>
-          )}
-
-          {/* Faith & Religion */}
-          {(profile?.sect || profile?.religiosity || faithValues.length > 0) && (
-            <Section title="Faith & Religion" emoji="🕌" bg="bg-amber-50" border="border-amber-100">
-              <div className="space-y-3">
-                {profile?.sect && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 w-20 flex-shrink-0">Sect:</span>
-                    <span className="font-semibold text-gray-800 text-sm">☀️ {profile.sect as string}</span>
-                  </div>
-                )}
-                {profile?.religiosity && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 w-20 flex-shrink-0">Practice:</span>
-                    <span className="font-semibold text-gray-800 text-sm">✨ {profile.religiosity as string}</span>
-                  </div>
-                )}
-                {faithValues.length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-400 mb-2">Faith values:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {faithValues.map((v) => (
-                        <Chip key={v}>{v}</Chip>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Section>
-          )}
-
-          {/* Relationship Goals */}
-          {(profile?.marriage_readiness || profile?.knowing_timeline || profile?.marriage_timeline) && (
-            <Section title="Relationship Goals" emoji="💍" bg="bg-rose-50" border="border-rose-100">
-              <div className="space-y-3">
-                {profile?.marriage_readiness && (
-                  <div className="bg-white rounded-xl p-3 border border-rose-100">
-                    <p className="text-xs text-gray-400 mb-1">Readiness</p>
-                    <p className="font-semibold text-gray-800 text-sm">
-                      {profile.marriage_readiness === "ready_soon" ? "💍 Ready to get married soon" :
-                       profile.marriage_readiness === "know_first" ? "💬 Wants to get to know first" :
-                       "👀 Just exploring"}
-                    </p>
-                  </div>
-                )}
-                {profile?.knowing_timeline && (
-                  <div className="bg-white rounded-xl p-3 border border-rose-100">
-                    <p className="text-xs text-gray-400 mb-1">Getting to know each other</p>
-                    <p className="font-semibold text-gray-800 text-sm">⏱️ {profile.knowing_timeline as string}</p>
-                  </div>
-                )}
-                {profile?.marriage_timeline && (
-                  <div className="bg-white rounded-xl p-3 border border-rose-100">
-                    <p className="text-xs text-gray-400 mb-1">Marriage timeline</p>
-                    <p className="font-semibold text-gray-800 text-sm">📅 {profile.marriage_timeline as string}</p>
-                  </div>
-                )}
-              </div>
-            </Section>
-          )}
-
-          {/* Family */}
-          {(profile?.marital_status || profile?.has_children || profile?.wants_children || profile?.relocation) && (
-            <Section title="Family" emoji="👨‍👩‍👧" bg="bg-pink-50" border="border-pink-100">
-              <div className="flex flex-wrap gap-2">
-                {profile?.marital_status && (
-                  <StatusBadge label={`💚 ${profile.marital_status as string}`} color="green" />
-                )}
-                {profile?.has_children && (
-                  <StatusBadge label={`👶 ${profile.has_children as string}`} color="blue" />
-                )}
-                {profile?.wants_children && (
-                  <StatusBadge label={`🌱 Wants: ${profile.wants_children as string}`} color="yellow" />
-                )}
-                {profile?.relocation && (
-                  <StatusBadge label={`✈️ ${profile.relocation as string}`} color="gray" />
-                )}
-              </div>
-            </Section>
-          )}
-
-          {/* Background */}
-          {(profile?.ethnicity || profile?.nationality || profile?.born_religion || profile?.caste || profile?.language) && (
-            <Section title="Background" emoji="🌍" bg="bg-purple-50" border="border-purple-100">
-              <div className="space-y-2">
-                {profile?.nationality && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-gray-500 w-24 flex-shrink-0">Nationality:</span>
-                    <span className="font-medium text-gray-800">🌐 {profile.nationality as string}</span>
-                  </div>
-                )}
-                {profile?.ethnicity && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-gray-500 w-24 flex-shrink-0">Ethnicity:</span>
-                    <span className="font-medium text-gray-800">🧬 {profile.ethnicity as string}</span>
-                  </div>
-                )}
-                {profile?.born_religion && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-gray-500 w-24 flex-shrink-0">Religion:</span>
-                    <span className="font-medium text-gray-800">☪️ {profile.born_religion as string}</span>
-                  </div>
-                )}
-                {profile?.caste && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-gray-500 w-24 flex-shrink-0">Caste:</span>
-                    <span className="font-medium text-gray-800">{profile.caste as string}</span>
-                  </div>
-                )}
-                {profile?.language && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-gray-500 w-24 flex-shrink-0">Language:</span>
-                    <span className="font-medium text-gray-800">🗣️ {profile.language as string}</span>
-                  </div>
-                )}
-              </div>
-            </Section>
-          )}
-
-          {/* Lifestyle */}
-          {(profile?.diet || profile?.smoking || profile?.drinking) && (
-            <Section title="Lifestyle" emoji="🏃" bg="bg-blue-50" border="border-blue-100">
-              <div className="flex flex-wrap gap-2">
-                {profile?.diet && (
-                  <StatusBadge
-                    label={`🍽️ ${profile.diet as string}`}
-                    color={profile.diet === "strictly_halal" ? "green" : profile.diet === "mostly_halal" ? "yellow" : "gray"}
-                  />
-                )}
-                {profile?.smoking && (
-                  <StatusBadge
-                    label={`🚭 ${profile.smoking as string}`}
-                    color={profile.smoking === "Non-smoker" ? "green" : profile.smoking === "Yes I smoke" ? "red" : "yellow"}
-                  />
-                )}
-                {profile?.drinking && (
-                  <StatusBadge
-                    label={`🥤 ${profile.drinking as string}`}
-                    color={profile.drinking === "Never" ? "green" : profile.drinking === "Yes" ? "red" : "yellow"}
-                  />
-                )}
-              </div>
-            </Section>
-          )}
-
-          {/* Interests */}
-          {interests.length > 0 && (
-            <Section title="Interests" emoji="❤️" bg="bg-fuchsia-50" border="border-fuchsia-100">
-              <div className="flex flex-wrap gap-2">
-                {interests.map((interest) => (
-                  <span
-                    key={interest}
-                    className="px-3 py-1.5 rounded-xl border-2 border-fuchsia-200 bg-white text-fuchsia-700 text-sm font-medium"
-                  >
-                    {INTEREST_EMOJIS[interest] && `${INTEREST_EMOJIS[interest]} `}{interest}
-                  </span>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {/* Personality */}
-          {personalityTraits.length > 0 && (
-            <Section title="Personality" emoji="🧠" bg="bg-indigo-50" border="border-indigo-100">
-              <div className="flex flex-wrap gap-2">
-                {personalityTraits.map((trait) => (
-                  <span
-                    key={trait}
-                    className="px-3 py-1.5 rounded-xl border-2 border-indigo-200 bg-white text-indigo-700 text-sm font-medium"
-                  >
-                    {PERSONALITY_EMOJIS[trait] && `${PERSONALITY_EMOJIS[trait]} `}{trait}
-                  </span>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {/* More Photos */}
-          <Section title="Photos" emoji="📸" bg="bg-gray-50" border="border-gray-200">
-            <div className="grid grid-cols-3 gap-2">
-              {photos.slice(0, 6).map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={i}
-                  src={url}
-                  alt={`Photo ${i + 1}`}
-                  className="w-full aspect-square rounded-xl object-cover"
-                />
-              ))}
-              {/* Placeholder slots */}
-              {Array.from({ length: Math.max(0, 3 - photos.length) }).map((_, i) => (
-                <div key={`placeholder-${i}`} className="w-full aspect-square rounded-xl bg-gray-100 border-2 border-dashed border-gray-200 flex items-center justify-center">
-                  <span className="text-2xl text-gray-300">📷</span>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => router.push("/settings")}
-              className="mt-3 w-full py-2.5 rounded-full border-2 border-brand-100 text-brand-700 text-sm font-semibold hover:bg-brand-50 transition-colors"
-            >
-              Manage photos
-            </button>
+        {/* About */}
+        {profile?.about_me && (
+          <Section title="About" icon={Sparkles}>
+            <p className="text-body text-sm leading-relaxed">{profile.about_me as string}</p>
           </Section>
+        )}
 
-          {/* Sign Out */}
-          <Button
-            variant="outline"
-            className="w-full border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200"
-            onClick={handleSignOut}
+        {/* Basics */}
+        <Section title="Basics" icon={Users}>
+          <Row label="Marital status" value={profile?.marital_status as string} />
+          <Row label="Height" value={profile?.height_cm ? `${profile.height_cm} cm` : null} />
+          <Row label="Grew up in" value={profile?.grew_up_in as string} />
+          <Row label="Nationality" value={profile?.nationality as string} />
+          <Row label="Ethnicity" value={profile?.ethnicity as string} />
+          <Row label="Caste" value={profile?.caste as string} />
+        </Section>
+
+        {/* Career & Education */}
+        {(profile?.profession || profile?.education) && (
+          <Section title="Career & education" icon={Briefcase}>
+            <Row label="Profession" value={profile?.profession as string} />
+            <Row label="Education" value={profile?.education as string} />
+          </Section>
+        )}
+
+        {/* Faith */}
+        {(profile?.sect || profile?.religiosity || faithValues.length > 0) && (
+          <Section title="Faith" icon={Moon}>
+            <Row label="Sect" value={profile?.sect as string} />
+            <Row label="Practice" value={profile?.religiosity as string} />
+            {faithValues.length > 0 && (
+              <div className="pt-3">
+                <Chips items={faithValues} />
+              </div>
+            )}
+          </Section>
+        )}
+
+        {/* Marriage intentions */}
+        {(profile?.marriage_readiness || profile?.knowing_timeline || profile?.marriage_timeline || profile?.wants_children || profile?.has_children || profile?.relocation) && (
+          <Section title="Marriage intentions" icon={HeartHandshake}>
+            <Row
+              label="Readiness"
+              value={
+                profile?.marriage_readiness === "ready_soon"
+                  ? "Ready to marry soon"
+                  : profile?.marriage_readiness === "know_first"
+                    ? "Wants to get to know first"
+                    : (profile?.marriage_readiness as string)
+              }
+            />
+            <Row label="Getting to know" value={profile?.knowing_timeline as string} />
+            <Row label="Marriage timeline" value={profile?.marriage_timeline as string} />
+            <Row label="Has children" value={profile?.has_children as string} />
+            <Row label="Wants children" value={profile?.wants_children as string} />
+            <Row label="Relocation" value={profile?.relocation as string} />
+          </Section>
+        )}
+
+        {/* Lifestyle */}
+        {(profile?.diet || profile?.smoking || profile?.drinking) && (
+          <Section title="Lifestyle" icon={Leaf}>
+            <Row label="Diet" value={profile?.diet as string} />
+            <Row label="Smoking" value={profile?.smoking as string} />
+            <Row label="Drinking" value={profile?.drinking as string} />
+          </Section>
+        )}
+
+        {/* Languages / background */}
+        {(profile?.language || profile?.born_religion) && (
+          <Section title="Background" icon={Globe}>
+            <Row label="Language" value={profile?.language as string} />
+            <Row label="Born religion" value={profile?.born_religion as string} />
+          </Section>
+        )}
+
+        {/* Interests */}
+        {interests.length > 0 && (
+          <Section title="Interests" icon={Sparkles}>
+            <Chips items={interests} />
+          </Section>
+        )}
+
+        {/* Personality */}
+        {personalityTraits.length > 0 && (
+          <Section title="Personality" icon={Brain}>
+            <Chips items={personalityTraits} />
+          </Section>
+        )}
+
+        {/* Photos */}
+        <Section title="Photos" icon={Camera}>
+          <div className="grid grid-cols-3 gap-2">
+            {photos.slice(0, 6).map((url, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={i} src={url} alt={`Photo ${i + 1}`} className="w-full aspect-square rounded-lg object-cover bg-surface-strong" />
+            ))}
+            {Array.from({ length: Math.max(0, 3 - photos.length) }).map((_, i) => (
+              <div key={`ph-${i}`} className="w-full aspect-square rounded-lg bg-surface-soft border border-dashed border-hairline flex items-center justify-center">
+                <Camera className="h-5 w-5 text-muted-soft" />
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => router.push("/settings")}
+            className="mt-4 w-full h-11 rounded-lg border border-hairline text-ink text-sm font-medium hover:bg-surface-soft transition-colors"
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
-        </div>
+            Manage photos
+          </button>
+        </Section>
+
+        {/* Sign out */}
+        <button
+          onClick={handleSignOut}
+          className="w-full h-12 rounded-lg border border-hairline text-muted text-sm font-medium hover:bg-surface-soft hover:text-ink transition-colors flex items-center justify-center gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </button>
       </div>
     </div>
   );

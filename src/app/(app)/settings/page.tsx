@@ -18,8 +18,8 @@ const MARITAL = ["Never married", "Divorced", "Widowed"];
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4">
-      <h3 className="font-extrabold text-gray-900 text-lg">{title}</h3>
+    <div className="bg-white rounded-[14px] p-5 border border-hairline space-y-4">
+      <h3 className="font-semibold text-ink text-base">{title}</h3>
       {children}
     </div>
   );
@@ -164,13 +164,13 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white/90 backdrop-blur-md border-b border-hairline sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
           <button aria-label="Go back" onClick={() => router.back()}>
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </button>
-          <h1 className="text-xl font-extrabold text-gray-900 flex-1 tracking-tight">Settings</h1>
-          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-brand-600 hover:bg-brand-700 rounded-full">
+          <h1 className="text-xl font-semibold text-ink flex-1 tracking-tight">Settings</h1>
+          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-brand-600 hover:bg-brand-700">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? "Saved ✓" : <><Save className="h-4 w-4 mr-1" />Save</>}
           </Button>
         </div>
