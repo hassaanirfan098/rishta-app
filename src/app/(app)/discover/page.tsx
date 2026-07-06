@@ -3,15 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
-import { ProfileCard } from "@/components/ProfileCard";
-import { DirectoryCard } from "@/components/DirectoryCard";
+import { SwipeDeck, type DeckItem } from "@/components/SwipeDeck";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
-import { ProfileGridSkeleton } from "@/components/Skeletons";
 import { LogoGlyph } from "@/components/Logo";
 
 interface Filters {
@@ -286,7 +284,13 @@ export default function DiscoverPage() {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-5 py-6">
         {loading ? (
-          <ProfileGridSkeleton count={4} />
+          <div className="max-w-md mx-auto">
+            <div className="h-[min(66vh,600px)] min-h-[430px] rounded-[20px] skeleton" />
+            <div className="flex items-center justify-center gap-5 pt-6">
+              <div className="w-14 h-14 rounded-full skeleton" />
+              <div className="w-16 h-16 rounded-full skeleton" />
+            </div>
+          </div>
         ) : combined.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <h3 className="text-lg font-semibold text-ink">
@@ -304,25 +308,25 @@ export default function DiscoverPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-8">
-            {combined.map((item, idx) =>
-              item.type === "member" ? (
-                <ProfileCard
-                  key={item.data.id}
-                  profile={item.data}
-                  onLike={handleLike}
-                  onMessage={handleMessage}
-                />
-              ) : (
-                <DirectoryCard
-                  key={item.data.id}
-                  profile={item.data}
-                  isUnlocked={unlocks.has(item.data.id)}
-                  onUnlock={handleUnlock}
-                />
-              )
-            )}
-          </div>
+          <SwipeDeck
+            items={combined as DeckItem[]}
+            onLike={handleLike}
+            onUnlock={handleUnlock}
+            onOpenProfile={(id) => router.push(`/profile/${id}`)}
+            emptyState={
+              <>
+                <h3 className="text-lg font-semibold text-ink">You&apos;re all caught up</h3>
+                <p className="text-sm text-muted mt-2 max-w-xs">
+                  You&apos;ve seen everyone for now. New members join every day — check back soon.
+                </p>
+                {activeFilters && (
+                  <Button variant="outline" size="sm" className="mt-5" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                )}
+              </>
+            }
+          />
         )}
       </div>
 
