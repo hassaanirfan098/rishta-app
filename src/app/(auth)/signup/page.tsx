@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { LogoGlyph } from "@/components/Logo";
+import { LogoMark } from "@/components/Logo";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -53,83 +53,74 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-600 rounded-3xl shadow-lg mb-4">
-            <LogoGlyph className="w-12 h-12" variant="onDark" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mt-2">
-            <span className="text-brand-600">Rishta</span>
-          </h1>
-          <p className="text-gray-500 mt-1 text-sm">رشتہ — Muslim Matrimonial</p>
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-5 py-12">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <LogoMark className="w-16 h-16 rounded-2xl mx-auto" rounded="rounded-2xl" />
+          <h1 className="text-3xl font-semibold text-ink tracking-tight mt-5">Create your account</h1>
+          <p className="text-muted text-sm mt-2">Start your journey to finding a match</p>
         </div>
 
-        <div className="w-full max-w-sm">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-7">
-            <h2 className="text-xl font-semibold text-gray-900 mb-1">Create account</h2>
-            <p className="text-sm text-gray-500 mb-6">Start your journey to finding a match</p>
-
-            <form onSubmit={handleSignup} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
+        <div>
+          <form onSubmit={handleSignup} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-sm text-ink">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-sm text-ink">Password</Label>
+              <div className="relative">
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min. 8 characters"
+                  className="pr-10"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Min. 8 characters"
-                    className="pr-10"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+                <p className="text-sm text-red-600">{error}</p>
               </div>
+            )}
 
-              {error && (
-                <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
-              )}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Create account
+            </Button>
+          </form>
 
-              <Button type="submit" className="w-full bg-brand-600 hover:bg-brand-700" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
-                Create Account
-              </Button>
-            </form>
-          </div>
-
-          <p className="text-center text-xs text-gray-400 mt-5">
+          <p className="text-center text-sm text-muted mt-6">
             Already have an account?{" "}
             <Link href="/login" className="text-brand-600 font-medium">
               Sign in
             </Link>
           </p>
-          <p className="text-center text-xs text-gray-400 mt-3">
+          <p className="text-center text-xs text-muted mt-4 leading-relaxed">
             By signing up, you agree to our{" "}
-            <Link href="/terms" className="underline underline-offset-2 hover:text-gray-600">
+            <Link href="/terms" className="text-ink underline underline-offset-2">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="underline underline-offset-2 hover:text-gray-600">
+            <Link href="/privacy" className="text-ink underline underline-offset-2">
               Privacy Policy
             </Link>
             .
