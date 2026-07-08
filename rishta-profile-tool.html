@@ -487,7 +487,7 @@ const store = (() => {
 })();
 
 /* ============================================================ STATE ============================================================ */
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'gemini-1.5-flash';
 let profiles = [];
 let counters = { m: 0, f: 0 };
 let apiKey = '';
@@ -613,7 +613,8 @@ async function callGemini(userContent){
   if (!resp.ok) {
     let detail = '';
     try { const j = await resp.json(); detail = j?.error?.message || JSON.stringify(j); } catch { detail = await resp.text().catch(()=> ''); }
-    const hints = { 400:'The API key looks invalid or the request was malformed — re-check the key.', 403:'The API key was rejected — re-check it at aistudio.google.com/apikey.', 429:'Rate limited — wait a minute and try again.', 503:'Gemini is overloaded — try again shortly.' };
+    const zeroQuota = /limit:\s*0\b/.test(detail);
+    const hints = { 400:'The API key looks invalid or the request was malformed — re-check the key.', 403:'The API key was rejected — re-check it at aistudio.google.com/apikey.', 429: zeroQuota ? 'This model has no free quota on your account/region. Try again after a minute, or if it repeats, this model may need to be swapped for another (e.g. gemini-1.5-flash-8b) at aistudio.google.com/apikey.' : 'Rate limited — wait a minute and try again.', 503:'Gemini is overloaded — try again shortly.' };
     throw new Error(`API error ${resp.status}. ${hints[resp.status] || ''}\n${detail}`.trim());
   }
   const data = await resp.json();
