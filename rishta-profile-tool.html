@@ -13,7 +13,8 @@
     --plum:#6E1E3C; --plum2:#8E2A4D; --gold:#B5893B; --gold2:#D4AF61;
     --cream:#FDF7F1; --ink:#3A1220; --line:#E8DCC8; --ok:#2E7D32; --bad:#B3261E; --na:#8A8A8A;
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
+  *{box-sizing:border-box; margin:0; padding:0; min-width:0;}
+  html, body{overflow-x:hidden; max-width:100%;}
   body{font-family:'Poppins',system-ui,-apple-system,'Segoe UI',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh;}
   header.app{background:linear-gradient(120deg,var(--plum) 0%,var(--plum2) 100%); color:#fff; padding:18px 28px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
   header.app .logo{width:46px;height:46px;border-radius:50%;border:2px solid var(--gold2);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--gold2);font-size:15px;letter-spacing:1px;}
@@ -69,9 +70,11 @@
   .photodrop.drag{background:#F6ECD8;}
   .photodrop img{max-width:100%; max-height:260px; border-radius:10px; margin-top:12px;}
 
-  .avatar-pick{display:flex; align-items:center; gap:14px;}
+  .avatar-pick{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
   .avatar-pick .circ{width:74px;height:74px;border-radius:50%;border:3px solid var(--gold2);background:#F1E6D2 center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:24px;overflow:hidden;flex-shrink:0;}
   .avatar-pick .circ img{width:100%;height:100%;object-fit:cover;}
+  .avatar-pick > div:not(.circ){flex:1; min-width:200px; max-width:100%;}
+  input[type="file"]{width:100%; max-width:100%;}
 
   .empty{border:1.5px dashed var(--gold); background:#FFFDF6; border-radius:14px; padding:38px 24px; text-align:center; color:#7a6340;}
   .empty b{color:var(--plum); display:block; font-size:15px; margin-bottom:6px;}
@@ -137,6 +140,18 @@
   .sizeopt .tag{font-size:10px; color:var(--gold); font-weight:600;}
   .dlbtns{display:flex; gap:10px; flex-wrap:wrap;}
   .fullimgprev{width:100%; max-width:320px; border-radius:12px; border:2px solid var(--gold2); display:block; margin:0 auto 14px;}
+
+  @media (max-width:640px){
+    .modes button{min-width:0;}
+    .step{padding:0 10px;}
+    .step:not(:last-child)::after{width:14px; right:-2px;}
+    .sibrow{grid-template-columns:1fr 1fr; gap:8px;}
+    .sibrow .rm{grid-column:1/-1; justify-self:end;}
+    .hrow{flex-wrap:wrap;}
+    header.app{padding:14px 16px;}
+    nav.tabs{margin-left:0; width:100%;}
+    main{padding:16px 12px 60px;}
+  }
 </style>
 </head>
 <body>
@@ -221,7 +236,7 @@
           <div class="circ" id="pphoto-circ">👤</div>
           <div>
             <label class="fld">Person's photo</label>
-            <input type="file" id="pphoto-input" accept="image/*" style="width:auto">
+            <input type="file" id="pphoto-input" accept="image/*">
           </div>
         </div>
         <h3 style="margin-top:0">Basic Info</h3>
@@ -1502,17 +1517,11 @@ async function drawSummary(c, p, size){
     ['Siblings',p.siblings&&p.siblings.length?p.siblings.length+' total':null]].filter(([,v])=>v);
   const addrPairs=[['City',ad.city],['Locality',ad.locality]].filter(([,v])=>v);
 
-  // measure required height first
-  let need = 26 + 48+42+22+248+58; // FR + hero header approx top section (photo row dominates in practice)
-  need = 26; // will recompute with real header height below after drawing to a scratch pass; simpler: build generously then trim via known formula
-  const fullW0 = W - 2*26 - 88;
-  let est = 26 + 480 /*hero header*/ + 60 + (Math.ceil(stats.length/3)*126 + (Math.ceil(stats.length/3)-1)*15) + 60;
-  if (keyPairs.length) est += boxHeight(Math.ceil(keyPairs.length/2)) + 50;
-  if (famPairs.length) est += boxHeight(Math.ceil(famPairs.length/2)) + 50;
-  if (addrPairs.length) est += boxHeight(Math.ceil(addrPairs.length/2)) + 50;
-  est += 150 + 50; // looking-for box
-  est += 200 + 54 + 30; // contact footer + tagline
-  const H = size==='crop' ? 1350 : Math.max(1500, est+80);
+  // Full Portrait is a fixed-size template — it must NOT shrink when a profile has less
+  // info filled in. Looking For / Contact / tagline are anchored to the bottom below,
+  // so a sparse profile just gets a bit more breathing room above them, never a smaller canvas.
+  const FULL_H = 2050;
+  const H = size==='crop' ? 1350 : FULL_H;
 
   c.canvas.width=W; c.canvas.height=H;
   c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
@@ -1556,23 +1565,26 @@ async function drawSummary(c, p, size){
     }
   }
 
-  quoteBox(c,xFull,y,fullW,150,'LOOKING FOR',info.highlight);
-  y+=150+50;
-
-  y=contactFooter(c,W,y,contactNo);
-  y+=54;
-  c.textAlign='center';c.fillStyle='rgba(58,18,32,.55)';c.font='500 17px Poppins, sans-serif';
-  c.fillText('City Marriage Bureau  ·  Confidential  ·  Trusted Matchmaking',W/2,y);
-
-  // trim canvas to actual content height for the 'full' variant so there's no dead space
-  if (size!=='crop'){
-    const used = Math.min(H, y+60);
-    if (used < H-40){
-      const trimmed = document.createElement('canvas'); trimmed.width=W; trimmed.height=used;
-      trimmed.getContext('2d').drawImage(c.canvas,0,0);
-      c.canvas.width=W; c.canvas.height=used;
-      c.drawImage(trimmed,0,0);
-    }
+  if (size==='crop'){
+    quoteBox(c,xFull,y,fullW,150,'LOOKING FOR',info.highlight);
+    y+=150+50;
+    y=contactFooter(c,W,y,contactNo);
+    y+=54;
+    c.textAlign='center';c.fillStyle='rgba(58,18,32,.55)';c.font='500 17px Poppins, sans-serif';
+    c.fillText('City Marriage Bureau  ·  Confidential  ·  Trusted Matchmaking',W/2,y);
+  } else {
+    // Full Portrait: anchor Looking For / Contact / tagline to a fixed spot near the
+    // bottom of the fixed-size canvas, so a sparse profile just gets more breathing
+    // room above them instead of a smaller output image.
+    const taglineY = H - 40;
+    const contactBoxY = taglineY - 54 - 200;
+    const quoteY = contactBoxY - 50 - 150;
+    const safeQuoteY = Math.max(y + 20, quoteY);
+    quoteBox(c,xFull,safeQuoteY,fullW,150,'LOOKING FOR',info.highlight);
+    const safeContactY = Math.max(safeQuoteY + 150 + 50, contactBoxY);
+    const contactBottom = contactFooter(c,W,safeContactY,contactNo);
+    c.textAlign='center';c.fillStyle='rgba(58,18,32,.55)';c.font='500 17px Poppins, sans-serif';
+    c.fillText('City Marriage Bureau  ·  Confidential  ·  Trusted Matchmaking',W/2,contactBottom+54);
   }
 }
 
