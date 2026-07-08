@@ -6,7 +6,7 @@
 <title>City Marriage Bureau — Rishta Profile Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --plum:#6E1E3C; --plum2:#8E2A4D; --gold:#B5893B; --gold2:#D4AF61;
@@ -136,6 +136,7 @@
 
   /* square card variant (on-screen preview mirrors the 1:1 download) */
   .squareimg{width:420px; max-width:100%; border-radius:20px; box-shadow:0 12px 40px rgba(58,18,32,.22); display:block; background:var(--cream);}
+  .cardimg{width:420px; max-width:100%; border-radius:20px; box-shadow:0 12px 40px rgba(58,18,32,.22); display:block; background:var(--cream);}
   .cardlabel{font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px;}
   .dlrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;}
   .prevwrap > div{max-width:100%;}
@@ -995,18 +996,17 @@ function renderPreview(){
   $('prev-square-wrap').style.display = p ? '' : 'none';
   $('prev-select').parentElement.style.display = profiles.length ? '' : 'none';
   if (!p) { $('vcard-holder').innerHTML = ''; $('prev-square-img').removeAttribute('src'); return; }
-  $('vcard-holder').innerHTML = vcardHTML(p, 'vcard');
-  updateSquareImg('prev-square-img', p);
+  if (!$('prev-portrait-img')) $('vcard-holder').innerHTML = '<img id="prev-portrait-img" class="cardimg" alt="Portrait card">';
+  paintCard($('prev-portrait-img'), p, 'portrait');
+  paintCard($('prev-square-img'), p, 'square');
 }
 
-// Render the square canvas and show it in an <img> so the preview exactly matches the download.
-let squareToken = 0;
-async function updateSquareImg(imgId, p){
-  const my = ++squareToken;
-  try {
-    const url = await renderCanvas(p, 'square');
-    if (my === squareToken) { const el = $(imgId); if (el) el.src = url; }
-  } catch (e) { /* ignore transient render errors */ }
+// Render a card format on the canvas and show it in an <img> so the on-screen
+// preview is pixel-identical to the downloaded PNG. Per-image guard against races.
+async function paintCard(imgEl, p, variant){
+  if (!imgEl) return;
+  const t = (imgEl.__t = (imgEl.__t || 0) + 1);
+  try { const url = await renderCanvas(p, variant); if (imgEl.__t === t) imgEl.src = url; } catch (e) {}
 }
 
 /* Live instant cards in the New Profile tab — re-render as the form is typed into */
@@ -1025,8 +1025,9 @@ function renderLiveCard(){
     return;
   }
   setDl(false);
-  holder.innerHTML = vcardHTML(p, 'vcard-live');
-  updateSquareImg('live-square-img', p);
+  if (!$('live-portrait-img')) holder.innerHTML = '<img id="live-portrait-img" class="cardimg" alt="Portrait card preview">';
+  paintCard($('live-portrait-img'), p, 'portrait');
+  paintCard($('live-square-img'), p, 'square');
 }
 
 function vcardHTML(p, domId){
@@ -1089,30 +1090,50 @@ function loadImg(src){
 
 const PAL = { PLUM:'#6E1E3C', PLUM2:'#8E2A4D', GOLD:'#B5893B', GOLD2:'#D4AF61', CREAM:'#FBF6EE', INK:'#3A1220' };
 const FN = w => `${w} Poppins, sans-serif`;
+const PF = w => `${w} "Playfair Display", serif`;   // serif display (names)
+const CG = w => `${w} "Cormorant Garamond", serif`; // serif body (detail values)
 let waImg = null;
 async function waLogo(){ if (!waImg) { try { waImg = await loadImg(WA_DATAURL); } catch { waImg = null; } } return waImg; }
 async function fontsReady(){
-  try { await Promise.all(['800 50px Poppins','700 28px Poppins','700 24px Poppins','600 22px Poppins','500 26px Poppins','400 22px Poppins','italic 400 24px Poppins'].map(f => document.fonts.load(f))); } catch {}
+  try { await Promise.all([
+    '700 34px Poppins','700 20px Poppins','700 16px Poppins','700 14px Poppins','400 22px Poppins','800 40px Poppins',
+    '800 56px "Playfair Display"','700 26px "Playfair Display"','800 46px "Playfair Display"',
+    '600 30px "Cormorant Garamond"'
+  ].map(f => document.fonts.load(f))); } catch {}
 }
+function spaced(s, n){ return s.split('').join(' '.repeat(n)); }
+function diamond(ctx, x, y, s, col){ ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI/4); ctx.fillStyle = col; ctx.fillRect(-s/2, -s/2, s, s); ctx.restore(); }
+function divider(ctx, cx, y, half, col){ ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(cx-half, y); ctx.lineTo(cx-14, y); ctx.moveTo(cx+14, y); ctx.lineTo(cx+half, y); ctx.stroke(); diamond(ctx, cx, y, 9, col); }
 
-// Draw the white "DM if interested" WhatsApp footer. Returns nothing; fills [0,y]..[W,y+h].
-function drawCTA(ctx, wa, W, y, h){
+// Framed boutique WhatsApp footer (full — portrait). Fills [0,y]..[W,y+h].
+function framedFooter(ctx, W, y, h){
   ctx.fillStyle = '#EADFC9'; ctx.fillRect(0, y, W, 2);
-  ctx.fillStyle = '#fff'; ctx.fillRect(0, y + 2, W, h - 2);
-  const logo = Math.min(76, h * 0.5);
-  ctx.textAlign = 'left';
-  ctx.font = FN('800 ' + Math.round(h*0.26) + 'px'); const numW = ctx.measureText(contactNo).width;
-  ctx.font = FN('400 22px'); const capW = ctx.measureText("DM if you're interested in this profile").width;
-  const groupW = logo + 22 + Math.max(numW, capW);
-  const gx = (W - groupW) / 2, gcy = y + h/2 + 2;
-  if (wa) ctx.drawImage(wa, gx, gcy - logo/2, logo, logo);
-  ctx.fillStyle = '#5d4a34'; ctx.font = FN('400 22px');
-  ctx.fillText("DM if you're interested in this profile", gx + logo + 22, gcy - 8);
-  ctx.fillStyle = PAL.PLUM; ctx.font = FN('800 ' + Math.round(h*0.26) + 'px');
-  ctx.fillText(contactNo, gx + logo + 22, gcy + Math.round(h*0.26));
+  ctx.strokeStyle = PAL.GOLD2; ctx.lineWidth = 2; rr(ctx, 46, y+22, W-92, h-44, 14); ctx.stroke();
+  ctx.strokeStyle = 'rgba(181,137,59,.5)'; ctx.lineWidth = 1; rr(ctx, 54, y+30, W-108, h-60, 10); ctx.stroke();
+  const cy = y + h/2;
+  ctx.textAlign = 'center'; ctx.fillStyle = PAL.GOLD; ctx.font = FN('700 17px');
+  ctx.fillText('✦   ' + spaced('WHATSAPP', 2) + '   ✦', W/2, y + 56);
+  ctx.font = PF('800 46px'); const nw = ctx.measureText(contactNo).width;
+  if (waImg) ctx.drawImage(waImg, W/2 - nw/2 - 56, cy - 6, 52, 52);
+  ctx.textAlign = 'left'; ctx.fillStyle = PAL.PLUM; ctx.font = PF('800 46px');
+  ctx.fillText(contactNo, W/2 - nw/2 + 8, cy + 30);
+  ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(110,30,60,.7)'; ctx.font = FN('400 16px');
+  ctx.fillText('DM for proposals & inquiries', W/2, y + h - 26);
+}
+// Compact framed footer (square — tighter). Fills [0,y]..[W,y+h].
+function framedFooterCompact(ctx, W, y, h){
+  ctx.fillStyle = '#EADFC9'; ctx.fillRect(0, y, W, 2);
+  ctx.strokeStyle = PAL.GOLD2; ctx.lineWidth = 2; rr(ctx, 40, y+12, W-80, h-24, 12); ctx.stroke();
+  ctx.textAlign = 'center'; ctx.fillStyle = PAL.GOLD; ctx.font = FN('700 15px');
+  ctx.fillText('✦  ' + spaced('WHATSAPP', 2) + '  ✦', W/2, y + Math.round(h*0.36));
+  ctx.font = PF('700 36px'); const nw = ctx.measureText(contactNo).width;
+  const by = y + Math.round(h*0.74);
+  if (waImg) ctx.drawImage(waImg, W/2 - nw/2 - 48, by - 34, 44, 44);
+  ctx.textAlign = 'left'; ctx.fillStyle = PAL.PLUM; ctx.font = PF('700 36px');
+  ctx.fillText(contactNo, W/2 - nw/2 + 2, by);
 }
 
-async function drawPhotoCircle(ctx, p, cx, cy, R){
+async function drawPhotoCircle(ctx, p, cx, cy, R, dbl){
   ctx.save();
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.closePath();
   ctx.fillStyle = '#F1E6D2'; ctx.fill(); ctx.clip();
@@ -1123,17 +1144,27 @@ async function drawPhotoCircle(ctx, p, cx, cy, R){
   ctx.restore();
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
   ctx.lineWidth = R*0.075; ctx.strokeStyle = PAL.GOLD2; ctx.stroke();
+  if (dbl) { ctx.beginPath(); ctx.arc(cx, cy, R+10, 0, Math.PI*2); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(181,137,59,.6)'; ctx.stroke(); }
+}
+
+// Gold emblem crest with the "CMB" monogram.
+function drawEmblem(ctx, cx, cy, r){
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fillStyle = PAL.PLUM; ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = PAL.GOLD2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, r+8, 0, Math.PI*2); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(181,137,59,.6)'; ctx.stroke();
+  ctx.textAlign = 'center'; ctx.fillStyle = PAL.GOLD2; ctx.font = PF('800 ' + Math.round(r*0.68) + 'px'); ctx.fillText('CMB', cx, cy + r*0.25);
 }
 
 async function renderCanvas(p, variant){
   await fontsReady();
-  const wa = await waLogo();
-  return variant === 'square' ? drawSquare(p, wa) : drawPortrait(p, wa);
+  await waLogo();
+  return variant === 'square' ? drawSquare(p) : drawPortrait(p);
 }
 
-async function drawPortrait(p, wa){
+/* ===== DESIGN: ROYAL EMBLEM — portrait (dynamic height) ===== */
+async function drawPortrait(p){
   const { PLUM, PLUM2, GOLD, GOLD2, CREAM, INK } = PAL;
-  const W = 1080;
+  const W = 1080, cx = W/2;
   const meas = document.createElement('canvas').getContext('2d');
   const details = [
     ['EDUCATION', p.education], ['PROFESSION', p.profession],
@@ -1143,183 +1174,183 @@ async function drawPortrait(p, wa){
     ['CITY', p.city], ['PROPERTY', p.property],
     ['FATHER', p.father], ['MOTHER', p.mother], ['SIBLINGS', p.siblings]
   ].filter(([,v]) => v);
-  const detailRows = Math.ceil(details.length / 2);
+  const detRows = Math.ceil(details.length / 2);
   const req = requirementInfo(p);
   const reqRows = Math.ceil(req.items.length / 2);
+  meas.font = FN('400 22px');
+  const otherLines = req.other ? wrapLines(meas, req.other, W - 200, 3) : [];
+  meas.font = CG('italic 600 30px');
+  const aboutLines = p.about ? wrapLines(meas, '“' + p.about + '”', W - 200, 2) : [];
 
-  // Measure the looking-for box height
-  meas.font = FN('400 23px');
-  const otherLines = req.other ? wrapLines(meas, req.other, W - 170, 3) : [];
-  let lookH = 40 + 44; // top pad + title
-  if (req.items.length) { lookH += reqRows * 88; if (req.other) lookH += 34 + otherLines.length * 32; }
-  else if (req.other) { lookH += otherLines.length * 32; }
-  else lookH += 48;
-  lookH += 30;
-
-  const aboutLines = p.about ? (meas.font = FN('italic 400 24px'), wrapLines(meas, '“' + p.about + '”', W - 140, 2)) : [];
-  const aboutH = p.about ? 20 + aboutLines.length * 34 : 0;
-
-  const chipY = 690, chipH = 110;
-  const dy = chipY + chipH + 66;
-  const afterDetails = dy + detailRows * 92 + 4;
-  const boxY = afterDetails + aboutH + 24;
-  const ctaH = 150;
-  const H = boxY + lookH + 26 + ctaH;
+  // vertical layout anchors
+  const div2 = 668, detStart = 858;
+  const detBottom = detStart + detRows * 94;
+  const aboutH = p.about ? aboutLines.length * 36 + 14 : 0;
+  const panelTop = detBottom + aboutH + 20;
+  let panelH;
+  if (req.items.length) { panelH = 84 + reqRows * 56 + (req.other ? 34 + otherLines.length * 30 : 0) + 24; }
+  else if (req.other) { panelH = 84 + otherLines.length * 30 + 24; }
+  else panelH = 138;
+  const footerH = 184;
+  const footerY = panelTop + panelH + 26;
+  const H = footerY + footerH + 30;
 
   const cnv = document.createElement('canvas'); cnv.width = W; cnv.height = H;
   const ctx = cnv.getContext('2d');
   ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
 
-  // Header band
-  const grad = ctx.createLinearGradient(0, 0, W, 340);
-  grad.addColorStop(0, PLUM); grad.addColorStop(1, PLUM2);
-  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, 340);
-  ctx.fillStyle = GOLD2; ctx.fillRect(0, 336, W, 4);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = GOLD2; ctx.font = FN('700 34px');
-  ctx.fillText('C I T Y   M A R R I A G E   B U R E A U', W/2, 96);
-  ctx.fillStyle = '#E8CFA4'; ctx.font = FN('400 22px');
-  ctx.fillText('T R U S T E D   R I S H T A   S E R V I C E', W/2, 136);
-
-  await drawPhotoCircle(ctx, p, W/2, 340, 140);
-
-  // Name + ID
-  ctx.textAlign = 'center';
-  ctx.fillStyle = PLUM; let ns = 58; const nm = p.name || 'New Profile';
-  ctx.font = FN(`800 ${ns}px`); while (ctx.measureText(nm).width > W - 120 && ns > 30) { ns -= 2; ctx.font = FN(`800 ${ns}px`); }
-  ctx.fillText(nm, W/2, 340 + 140 + 92);
-  ctx.font = FN('700 28px'); const idW = ctx.measureText(p.catalogId).width + 56;
-  rr(ctx, W/2 - idW/2, 340 + 140 + 122, idW, 52, 26); ctx.fillStyle = GOLD2; ctx.fill();
-  ctx.fillStyle = PLUM; ctx.fillText(p.catalogId, W/2, 340 + 140 + 158);
-
-  // Stat chips
-  const stats = [['AGE', p.age != null ? p.age + ' yrs' : '—'], ['HEIGHT', p.heightDisplay || '—'], ['INCOME', p.income || '—'], ['RESIDENCE', p.residence || p.city || '—']];
-  const chipW = (W - 100 - 3*18) / 4;
-  stats.forEach(([l, v], i) => {
-    const x = 50 + i * (chipW + 18);
-    rr(ctx, x, chipY, chipW, chipH, 16); ctx.fillStyle = '#fff'; ctx.fill();
-    ctx.lineWidth = 3; ctx.strokeStyle = GOLD2; ctx.stroke();
-    ctx.fillStyle = GOLD; ctx.font = FN('700 19px'); ctx.fillText(l, x + chipW/2, chipY + 38);
-    ctx.fillStyle = PLUM; let fs = 27; ctx.font = FN(`700 ${fs}px`);
-    while (ctx.measureText(String(v)).width > chipW - 22 && fs > 15) { fs -= 2; ctx.font = FN(`700 ${fs}px`); }
-    ctx.fillText(String(v), x + chipW/2, chipY + 80);
+  // Outer double gold frame + corner flourishes
+  ctx.strokeStyle = GOLD2; ctx.lineWidth = 3; rr(ctx, 28, 28, W-56, H-56, 18); ctx.stroke();
+  ctx.strokeStyle = 'rgba(181,137,59,.55)'; ctx.lineWidth = 1.5; rr(ctx, 40, 40, W-80, H-80, 12); ctx.stroke();
+  [[64,64,1,1],[W-64,64,-1,1],[64,H-64,1,-1],[W-64,H-64,-1,-1]].forEach(([x,y,sx,sy]) => {
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y+22*sy); ctx.quadraticCurveTo(x, y, x+22*sx, y); ctx.stroke();
+    diamond(ctx, x+30*sx, y+30*sy, 6, GOLD2);
   });
 
-  // Details grid
+  // Emblem + brand
+  drawEmblem(ctx, cx, 118, 44);
+  ctx.textAlign = 'center'; ctx.fillStyle = PLUM; ctx.font = FN('700 26px'); ctx.fillText(spaced('CITY MARRIAGE BUREAU', 1), cx, 208);
+  ctx.fillStyle = GOLD; ctx.font = FN('500 14px'); ctx.fillText(spaced('TRUSTED RISHTA SERVICE', 3), cx, 236);
+  divider(ctx, cx, 266, 150, GOLD2);
+
+  await drawPhotoCircle(ctx, p, cx, 416, 120, true);
+
+  // Name (serif) + id
+  ctx.fillStyle = PLUM; let ns = 56; const nm = p.name || 'New Profile';
+  ctx.font = PF(`800 ${ns}px`); while (ctx.measureText(nm).width > W - 170 && ns > 30) { ns -= 2; ctx.font = PF(`800 ${ns}px`); }
+  ctx.textAlign = 'center'; ctx.fillText(nm, cx, 604);
+  ctx.fillStyle = GOLD; ctx.font = FN('700 20px'); ctx.fillText(spaced('·  ' + p.catalogId + '  ·', 2), cx, 640);
+  divider(ctx, cx, div2, 120, GOLD2);
+
+  // Stats — borderless, gold rules between
+  const stats = [['AGE', p.age != null ? p.age + ' yrs' : '—'], ['HEIGHT', p.heightDisplay || '—'], ['INCOME', p.income || '—'], ['RESIDENCE', p.residence || p.city || '—']];
+  const sLab = 716, sVal = 758, cw = (W - 160) / 4;
+  stats.forEach(([l, v], i) => {
+    const x = 80 + i * cw + cw/2;
+    ctx.textAlign = 'center'; ctx.fillStyle = GOLD; ctx.font = FN('700 15px'); ctx.fillText(l, x, sLab);
+    ctx.fillStyle = PLUM; let fs = 26; ctx.font = PF(`700 ${fs}px`);
+    while (ctx.measureText(String(v)).width > cw - 16 && fs > 15) { fs -= 2; ctx.font = PF(`700 ${fs}px`); }
+    ctx.fillText(String(v), x, sVal);
+    if (i < 3) { ctx.strokeStyle = 'rgba(181,137,59,.4)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(80+(i+1)*cw, sLab-16); ctx.lineTo(80+(i+1)*cw, sVal+8); ctx.stroke(); }
+  });
+  divider(ctx, cx, 806, 120, GOLD2);
+
+  // Details — serif values
   ctx.textAlign = 'left';
   details.forEach(([l, v], i) => {
     const col = i % 2, row = Math.floor(i / 2);
-    const x = 60 + col * (W/2 - 40), y = dy + row * 92;
-    ctx.fillStyle = GOLD; ctx.font = FN('700 20px'); ctx.fillText(l, x, y);
-    ctx.fillStyle = INK; ctx.font = FN('500 27px'); ctx.fillText(wrapLines(ctx, v, W/2 - 100, 1)[0] || '', x, y + 36);
+    const x = 90 + col * (W/2 - 50), y = detStart + row * 94;
+    ctx.fillStyle = GOLD; ctx.font = FN('700 16px'); ctx.fillText(l, x, y);
+    ctx.fillStyle = INK; ctx.font = CG('600 30px'); ctx.fillText(wrapLines(ctx, v, W/2 - 100, 1)[0] || '', x, y + 38);
   });
 
   // About
-  if (p.about) { ctx.fillStyle = '#5d4a34'; ctx.font = FN('italic 400 24px'); aboutLines.forEach((ln, i) => ctx.fillText(ln, 70, afterDetails + 26 + i * 34)); }
+  if (p.about) { ctx.textAlign = 'center'; ctx.fillStyle = '#5d4a34'; ctx.font = CG('italic 600 30px'); aboutLines.forEach((ln, i) => ctx.fillText(ln, cx, detBottom + 24 + i * 36)); }
 
-  // Looking-for box (headed)
-  const lg = ctx.createLinearGradient(50, boxY, W - 50, boxY + lookH);
+  // Requirements panel (plum, gold inner frame)
+  const lg = ctx.createLinearGradient(60, panelTop, W-60, panelTop);
   lg.addColorStop(0, PLUM); lg.addColorStop(1, PLUM2);
-  rr(ctx, 50, boxY, W - 100, lookH, 20); ctx.fillStyle = lg; ctx.fill();
+  rr(ctx, 60, panelTop, W-120, panelH, 16); ctx.fillStyle = lg; ctx.fill();
+  ctx.strokeStyle = 'rgba(212,175,97,.5)'; ctx.lineWidth = 1.5; rr(ctx, 72, panelTop+12, W-144, panelH-24, 10); ctx.stroke();
+  ctx.textAlign = 'center'; ctx.fillStyle = GOLD2; ctx.font = FN('700 19px');
+  ctx.fillText(spaced((p.gender === 'female' ? "WHAT SHE'S LOOKING FOR" : "WHAT HE'S LOOKING FOR"), 1), cx, panelTop + 48);
   ctx.textAlign = 'left';
-  ctx.fillStyle = GOLD2; ctx.font = FN('700 22px');
-  ctx.fillText((p.gender === 'female' ? "WHAT SHE'S LOOKING FOR" : "WHAT HE'S LOOKING FOR"), 84, boxY + 50);
   if (req.items.length) {
-    const colW = (W - 168) / 2;
+    const colW = (W - 200) / 2;
     req.items.forEach(([l, v], i) => {
       const col = i % 2, row = Math.floor(i / 2);
-      const x = 84 + col * colW, iy = boxY + 50 + 40 + row * 88;
-      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 16px'); ctx.fillText(l.toUpperCase(), x, iy);
-      ctx.fillStyle = '#fff'; ctx.font = FN('700 27px'); ctx.fillText(wrapLines(ctx, v, colW - 24, 1)[0] || '', x, iy + 34);
+      const x = 100 + col * colW, y = panelTop + 88 + row * 56;
+      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 14px'); ctx.fillText(l.toUpperCase(), x, y);
+      ctx.fillStyle = '#fff'; ctx.font = PF('700 24px'); ctx.fillText(wrapLines(ctx, v, colW - 20, 1)[0] || '', x, y + 30);
     });
     if (req.other) {
-      const oy = boxY + 50 + 40 + reqRows * 88;
-      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 16px'); ctx.fillText('OTHER DEMANDS', 84, oy);
-      ctx.fillStyle = '#F5E8D0'; ctx.font = FN('400 23px'); otherLines.forEach((ln, i) => ctx.fillText(ln, 84, oy + 30 + i * 32));
+      const oy = panelTop + 88 + reqRows * 56 + 6;
+      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 14px'); ctx.fillText('OTHER DEMANDS', 100, oy);
+      ctx.fillStyle = '#F5E8D0'; ctx.font = FN('400 22px'); otherLines.forEach((ln, i) => ctx.fillText(ln, 100, oy + 28 + i * 30));
     }
   } else if (req.other) {
-    ctx.fillStyle = '#F5E8D0'; ctx.font = FN('400 23px'); otherLines.forEach((ln, i) => ctx.fillText(ln, 84, boxY + 90 + i * 32));
+    ctx.fillStyle = '#F5E8D0'; ctx.font = FN('400 22px'); otherLines.forEach((ln, i) => ctx.fillText(ln, 100, panelTop + 92 + i * 30));
   } else {
-    ctx.fillStyle = GOLD2; ctx.font = FN('800 30px');
-    wrapLines(ctx, req.highlight, W - 170, 2).forEach((ln, i) => ctx.fillText(ln, 84, boxY + 96 + i * 40));
+    ctx.textAlign = 'center'; ctx.fillStyle = GOLD2; ctx.font = PF('700 28px');
+    wrapLines(ctx, req.highlight, W - 200, 2).forEach((ln, i) => ctx.fillText(ln, cx, panelTop + 96 + i * 38));
   }
 
-  drawCTA(ctx, wa, W, H - ctaH, ctaH);
+  framedFooter(ctx, W, footerY, footerH);
   return cnv.toDataURL('image/png');
 }
 
-async function drawSquare(p, wa){
+/* ===== DESIGN: ROYAL EMBLEM — square 1080×1080 ===== */
+async function drawSquare(p){
   const { PLUM, PLUM2, GOLD, GOLD2, CREAM, INK } = PAL;
-  const S = 1080;
+  const S = 1080, cx = S/2;
   const cnv = document.createElement('canvas'); cnv.width = S; cnv.height = S;
   const ctx = cnv.getContext('2d');
   ctx.fillStyle = CREAM; ctx.fillRect(0, 0, S, S);
 
-  // Header band
-  const g = ctx.createLinearGradient(0, 0, S, 250);
-  g.addColorStop(0, PLUM); g.addColorStop(1, PLUM2);
-  ctx.fillStyle = g; ctx.fillRect(0, 0, S, 250); ctx.fillStyle = GOLD2; ctx.fillRect(0, 246, S, 4);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = GOLD2; ctx.font = FN('700 30px'); ctx.fillText('C I T Y   M A R R I A G E   B U R E A U', S/2, 80);
-  ctx.fillStyle = '#E8CFA4'; ctx.font = FN('400 18px'); ctx.fillText('T R U S T E D   R I S H T A   S E R V I C E', S/2, 114);
+  // Single gold frame + corner diamonds
+  ctx.strokeStyle = GOLD2; ctx.lineWidth = 3; rr(ctx, 24, 24, S-48, S-48, 16); ctx.stroke();
+  ctx.strokeStyle = 'rgba(181,137,59,.5)'; ctx.lineWidth = 1.5; rr(ctx, 34, 34, S-68, S-68, 11); ctx.stroke();
 
-  await drawPhotoCircle(ctx, p, S/2, 250, 108);
+  drawEmblem(ctx, cx, 96, 34);
+  ctx.textAlign = 'center'; ctx.fillStyle = PLUM; ctx.font = FN('700 24px'); ctx.fillText(spaced('CITY MARRIAGE BUREAU', 1), cx, 172);
+  ctx.fillStyle = GOLD; ctx.font = FN('500 13px'); ctx.fillText(spaced('TRUSTED RISHTA SERVICE', 3), cx, 198);
+  divider(ctx, cx, 224, 150, GOLD2);
 
-  // Name + ID
-  ctx.textAlign = 'center';
+  await drawPhotoCircle(ctx, p, cx, 338, 98, true);
+
   ctx.fillStyle = PLUM; let ns = 50; const nm = p.name || 'New Profile';
-  ctx.font = FN(`800 ${ns}px`); while (ctx.measureText(nm).width > S - 140 && ns > 26) { ns -= 2; ctx.font = FN(`800 ${ns}px`); }
-  ctx.fillText(nm, S/2, 250 + 108 + 66);
-  ctx.font = FN('700 24px'); const idW = ctx.measureText(p.catalogId).width + 48;
-  rr(ctx, S/2 - idW/2, 250 + 108 + 92, idW, 46, 23); ctx.fillStyle = GOLD2; ctx.fill();
-  ctx.fillStyle = PLUM; ctx.fillText(p.catalogId, S/2, 250 + 108 + 123);
+  ctx.font = PF(`800 ${ns}px`); while (ctx.measureText(nm).width > S - 150 && ns > 26) { ns -= 2; ctx.font = PF(`800 ${ns}px`); }
+  ctx.textAlign = 'center'; ctx.fillText(nm, cx, 494);
+  ctx.fillStyle = GOLD; ctx.font = FN('700 18px'); ctx.fillText(spaced('~  ' + p.catalogId + '  ~', 2), cx, 528);
+  divider(ctx, cx, 556, 130, GOLD2);
 
-  // Stat chips
+  // Stats — borderless, gold rules
   const stats = [['AGE', p.age != null ? p.age + ' yrs' : '—'], ['HEIGHT', p.heightDisplay || '—'], ['INCOME', p.income || '—'], ['RESIDENCE', p.residence || p.city || '—']];
-  const sy = 496, sw = (S - 80 - 3*16) / 4, sh = 88;
+  const sLab = 600, sVal = 640, cw = (S - 120) / 4;
   stats.forEach(([l, v], i) => {
-    const x = 40 + i * (sw + 16);
-    rr(ctx, x, sy, sw, sh, 14); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = GOLD2; ctx.stroke();
-    ctx.fillStyle = GOLD; ctx.font = FN('700 16px'); ctx.fillText(l, x + sw/2, sy + 32);
-    ctx.fillStyle = PLUM; let fs = 24; ctx.font = FN(`700 ${fs}px`);
-    while (ctx.measureText(String(v)).width > sw - 16 && fs > 12) { fs -= 2; ctx.font = FN(`700 ${fs}px`); }
-    ctx.fillText(String(v), x + sw/2, sy + 66);
+    const x = 60 + i * cw + cw/2;
+    ctx.textAlign = 'center'; ctx.fillStyle = GOLD; ctx.font = FN('700 14px'); ctx.fillText(l, x, sLab);
+    ctx.fillStyle = PLUM; let fs = 25; ctx.font = PF(`700 ${fs}px`);
+    while (ctx.measureText(String(v)).width > cw - 14 && fs > 13) { fs -= 2; ctx.font = PF(`700 ${fs}px`); }
+    ctx.fillText(String(v), x, sVal);
+    if (i < 3) { ctx.strokeStyle = 'rgba(181,137,59,.4)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(60+(i+1)*cw, sLab-16); ctx.lineTo(60+(i+1)*cw, sVal+8); ctx.stroke(); }
   });
 
-  // Details (curated, up to 4)
+  // Details (curated up to 4), serif values
   const det = [['EDUCATION', p.education], ['PROFESSION', p.profession], ['CASTE', p.caste], ['SECT', p.sect], ['MARITAL', MARITAL_LABEL[p.maritalStatus] + (p.children ? ' · ' + p.children : '')], ['CITY', p.city || p.residence]].filter(([,v]) => v).slice(0, 4);
-  const dyS = sy + sh + 46; ctx.textAlign = 'left';
+  const dyS = 688; ctx.textAlign = 'left';
   det.forEach(([l, v], i) => {
     const col = i % 2, row = Math.floor(i / 2);
-    const x = 48 + col * (S/2 - 20), y = dyS + row * 66;
-    ctx.fillStyle = GOLD; ctx.font = FN('700 16px'); ctx.fillText(l, x, y);
-    ctx.fillStyle = INK; ctx.font = FN('500 24px'); ctx.fillText(wrapLines(ctx, v, S/2 - 60, 1)[0] || '', x, y + 30);
+    const x = 66 + col * (S/2 - 30), y = dyS + row * 60;
+    ctx.fillStyle = GOLD; ctx.font = FN('700 15px'); ctx.fillText(l, x, y);
+    ctx.fillStyle = INK; ctx.font = CG('600 27px'); ctx.fillText(wrapLines(ctx, v, S/2 - 70, 1)[0] || '', x, y + 30);
   });
 
-  // Requirements strip (headed cells)
+  // Requirements panel (headed cells)
   const req = requirementInfo(p);
-  const ctaH = 140;
-  const boxTop = dyS + 2 * 66 + 8, boxBot = S - ctaH - 14, boxH = boxBot - boxTop;
-  const lg = ctx.createLinearGradient(40, boxTop, S - 40, boxTop + boxH);
+  const footerH = 122, footerY = S - 22 - footerH;
+  const panelTop = 798, panelBot = footerY - 12, panelH = panelBot - panelTop;
+  const lg = ctx.createLinearGradient(46, panelTop, S-46, panelTop);
   lg.addColorStop(0, PLUM); lg.addColorStop(1, PLUM2);
-  rr(ctx, 40, boxTop, S - 80, boxH, 16); ctx.fillStyle = lg; ctx.fill();
-  ctx.textAlign = 'left';
-  ctx.fillStyle = GOLD2; ctx.font = FN('700 18px');
-  ctx.fillText((p.gender === 'female' ? "WHAT SHE'S LOOKING FOR" : "WHAT HE'S LOOKING FOR"), 66, boxTop + 36);
+  rr(ctx, 46, panelTop, S-92, panelH, 14); ctx.fillStyle = lg; ctx.fill();
+  ctx.strokeStyle = 'rgba(212,175,97,.5)'; ctx.lineWidth = 1.2; rr(ctx, 56, panelTop+10, S-112, panelH-20, 9); ctx.stroke();
+  ctx.textAlign = 'center'; ctx.fillStyle = GOLD2; ctx.font = FN('700 16px');
+  ctx.fillText(spaced((p.gender === 'female' ? "WHAT SHE'S LOOKING FOR" : "WHAT HE'S LOOKING FOR"), 1), cx, panelTop + 40);
   const items = req.items.slice(0, 4);
+  ctx.textAlign = 'left';
   if (items.length) {
-    const cw = (S - 132) / items.length;
+    const iw = (S - 160) / items.length;
     items.forEach(([l, v], i) => {
-      const x = 66 + i * cw;
-      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 14px'); ctx.fillText(l.toUpperCase(), x, boxTop + 74);
-      ctx.fillStyle = '#fff'; ctx.font = FN('700 22px'); ctx.fillText(wrapLines(ctx, v, cw - 14, 1)[0] || '', x, boxTop + 104);
+      const x = 80 + i * iw;
+      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 13px'); ctx.fillText(l.toUpperCase(), x, panelTop + 78);
+      ctx.fillStyle = '#fff'; ctx.font = PF('700 22px'); ctx.fillText(wrapLines(ctx, v, iw - 12, 1)[0] || '', x, panelTop + 108);
     });
   } else {
-    ctx.fillStyle = GOLD2; ctx.font = FN('800 26px');
-    wrapLines(ctx, req.highlight, S - 140, 2).forEach((ln, i) => ctx.fillText(ln, 66, boxTop + 78 + i * 34));
+    ctx.textAlign = 'center'; ctx.fillStyle = GOLD2; ctx.font = PF('700 24px');
+    wrapLines(ctx, req.highlight, S - 160, 2).forEach((ln, i) => ctx.fillText(ln, cx, panelTop + 82 + i * 32));
   }
 
-  drawCTA(ctx, wa, S, S - ctaH, ctaH);
+  framedFooterCompact(ctx, S, footerY, footerH);
   return cnv.toDataURL('image/png');
 }
 
