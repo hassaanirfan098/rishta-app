@@ -849,7 +849,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             </div>
             <div class="dlbtns">
               <button class="btn gold" onclick="downloadCarouselPdf()">⬇ Download PDF (all 5)</button>
-              <button class="btn ghost" onclick="downloadCarouselImages()">⬇ Download Images Individually</button>
+              <button class="btn ghost" onclick="downloadCarouselImages()">⬇ Download Images (ZIP)</button>
             </div>
           </div>
           <div class="dlcard">
@@ -2403,14 +2403,82 @@ function triggerDownload(url, name){
 }
 function currentProfile(){ return profiles.find(x => x.id === $('prev-select').value); }
 
+/* ---------- minimal ZIP writer (STORE / no compression) ----------
+   Browsers silently block or drop several auto-triggered downloads fired in a
+   row from one click (Chrome in particular caps it and skips the rest unless
+   the user explicitly allows "multiple downloads" for the page — easy to miss,
+   and looked like random skipped files). Bundling all slide images into one
+   ZIP means only a single download ever fires, so nothing gets dropped. */
+const ZIP_CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function zipCrc32(bytes){
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = ZIP_CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function zipU16(n){ return [n & 0xFF, (n >>> 8) & 0xFF]; }
+function zipU32(n){ return [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF]; }
+function makeZip(files){
+  // files: [{ name, data: Uint8Array }]
+  const now = new Date();
+  const time = ((now.getHours()&0x1F)<<11) | ((now.getMinutes()&0x3F)<<5) | ((now.getSeconds()>>1)&0x1F);
+  const date = (((now.getFullYear()-1980)&0x7F)<<9) | (((now.getMonth()+1)&0xF)<<5) | (now.getDate()&0x1F);
+  const localParts = [], centralParts = [];
+  let offset = 0;
+  for (const f of files){
+    const nameBytes = new TextEncoder().encode(f.name);
+    const crc = zipCrc32(f.data), size = f.data.length;
+    const local = new Uint8Array([
+      0x50,0x4B,0x03,0x04, 20,0, 0,0, 0,0,
+      ...zipU16(time), ...zipU16(date),
+      ...zipU32(crc), ...zipU32(size), ...zipU32(size),
+      ...zipU16(nameBytes.length), ...zipU16(0)
+    ]);
+    localParts.push(local, nameBytes, f.data);
+    const central = new Uint8Array([
+      0x50,0x4B,0x01,0x02, 20,0, 20,0, 0,0, 0,0,
+      ...zipU16(time), ...zipU16(date),
+      ...zipU32(crc), ...zipU32(size), ...zipU32(size),
+      ...zipU16(nameBytes.length), ...zipU16(0), ...zipU16(0), ...zipU16(0), ...zipU16(0),
+      ...zipU32(0), ...zipU32(offset)
+    ]);
+    centralParts.push(central, nameBytes);
+    offset += local.length + nameBytes.length + f.data.length;
+  }
+  const centralStart = offset;
+  const centralSize = centralParts.reduce((s,p)=>s+p.length, 0);
+  const end = new Uint8Array([
+    0x50,0x4B,0x05,0x06, 0,0, 0,0,
+    ...zipU16(files.length), ...zipU16(files.length),
+    ...zipU32(centralSize), ...zipU32(centralStart),
+    ...zipU16(0)
+  ]);
+  return new Blob([...localParts, ...centralParts, end], { type: 'application/zip' });
+}
+
 async function downloadCarouselImages(){
   const p = currentProfile(); if (!p) return;
   try {
     const canvases = await renderAllSlides(p, carouselSize);
+    const files = [];
     for (let i=0;i<canvases.length;i++){
-      triggerDownload(canvases[i].toDataURL('image/png'), cardFileName(p, (i+1)+'-'+SLIDE_DRAWERS[i][0].toLowerCase().replace(/\s+/g,'-')));
-      await new Promise(r => setTimeout(r, 350));
+      const blob = await new Promise(res => canvases[i].toBlob(res, 'image/png'));
+      files.push({
+        name: (i+1)+'-'+SLIDE_DRAWERS[i][0].toLowerCase().replace(/\s+/g,'-')+'.png',
+        data: new Uint8Array(await blob.arrayBuffer())
+      });
     }
+    const zipBlob = makeZip(files);
+    const url = URL.createObjectURL(zipBlob);
+    triggerDownload(url, cardFileName(p, 'images').replace(/\.png$/,'.zip'));
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
   } catch (e) {
     banner('global-banner','error','Could not generate the images: ' + esc(e.message));
   }
