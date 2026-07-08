@@ -487,7 +487,10 @@ const store = (() => {
 })();
 
 /* ============================================================ STATE ============================================================ */
-const MODEL = 'gemini-1.5-flash';
+// Which Gemini models are actually available differs per API key/project and changes over
+// time on Google's end, so instead of hardcoding a model name (which has already gone stale
+// twice), the app discovers a working one from this key's own model list and remembers it.
+let resolvedModel = null;
 let profiles = [];
 let counters = { m: 0, f: 0 };
 let apiKey = '';
@@ -591,6 +594,43 @@ NORMALIZATION RULES:
 7. requirements describes what THIS person's family demands in a spouse — never mix with the person's own attributes.
 8. Numbers must be JSON numbers. Do not add keys outside the schema.`;
 
+// Which models a Gemini key can actually use varies per key/project and changes on Google's
+// end, so we ask the key itself (ListModels) rather than hardcode a name that goes stale.
+async function listGeminiModels(){
+  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=100`);
+  if (!resp.ok) {
+    let detail = ''; try { const j = await resp.json(); detail = j?.error?.message || JSON.stringify(j); } catch { detail = await resp.text().catch(()=> ''); }
+    throw new Error(`Could not list Gemini models for this key (API error ${resp.status}). ${detail}`.trim());
+  }
+  const data = await resp.json();
+  return (data.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent'));
+}
+function pickBestModel(models){
+  const names = models.map(m => m.name.replace(/^models\//,''));
+  const rank = n => {
+    if (/embedding|aqa|imagen|vision|tts|image-gen/i.test(n)) return -1; // not usable for our text+JSON extraction
+    if (/flash-lite/i.test(n)) return 4;
+    if (/flash-8b/i.test(n)) return 3.5;
+    if (/flash/i.test(n)) return 3;
+    if (/pro/i.test(n)) return 2;
+    return 1;
+  };
+  return names.filter(n => rank(n) > 0).sort((a,b) => rank(b) - rank(a))[0] || null;
+}
+async function resolveModel(force){
+  if (resolvedModel && !force) return resolvedModel;
+  if (!force) { const cached = await store.get('settings:geminiModel'); if (cached) { resolvedModel = cached; return cached; } }
+  const models = await listGeminiModels();
+  const best = pickBestModel(models);
+  if (!best) throw new Error('No model on this Gemini key supports content generation. Check the key at aistudio.google.com/apikey.');
+  resolvedModel = best;
+  await store.set('settings:geminiModel', best);
+  return best;
+}
+function generateContent(modelId, body){
+  return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${encodeURIComponent(apiKey)}`,
+    { method:'POST', headers:{ 'content-type':'application/json' }, body: JSON.stringify(body) });
+}
 // userContent: array of Claude-style content blocks — {type:'text',text} or
 // {type:'image',source:{type:'base64',media_type,data}} — converted to Gemini's part shape below.
 async function callGemini(userContent){
@@ -603,19 +643,25 @@ async function callGemini(userContent){
     systemInstruction: { parts: [{ text: EXTRACTION_SYSTEM }] },
     generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 2000 }
   };
+
+  let modelId = await resolveModel();
   let resp;
-  try {
-    resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
-      { method:'POST', headers:{ 'content-type':'application/json' }, body: JSON.stringify(body) });
-  } catch (e) {
-    throw new Error('Network error — could not reach the Gemini API. (' + e.message + ')');
+  try { resp = await generateContent(modelId, body); }
+  catch (e) { throw new Error('Network error — could not reach the Gemini API. (' + e.message + ')'); }
+
+  if (resp.status === 404) {
+    // this key's available models changed since we last cached one — rediscover and retry once
+    modelId = await resolveModel(true);
+    try { resp = await generateContent(modelId, body); }
+    catch (e) { throw new Error('Network error — could not reach the Gemini API. (' + e.message + ')'); }
   }
+
   if (!resp.ok) {
     let detail = '';
     try { const j = await resp.json(); detail = j?.error?.message || JSON.stringify(j); } catch { detail = await resp.text().catch(()=> ''); }
     const zeroQuota = /limit:\s*0\b/.test(detail);
-    const hints = { 400:'The API key looks invalid or the request was malformed — re-check the key.', 403:'The API key was rejected — re-check it at aistudio.google.com/apikey.', 429: zeroQuota ? 'This model has no free quota on your account/region. Try again after a minute, or if it repeats, this model may need to be swapped for another (e.g. gemini-1.5-flash-8b) at aistudio.google.com/apikey.' : 'Rate limited — wait a minute and try again.', 503:'Gemini is overloaded — try again shortly.' };
-    throw new Error(`API error ${resp.status}. ${hints[resp.status] || ''}\n${detail}`.trim());
+    const hints = { 400:'The API key looks invalid or the request was malformed — re-check the key.', 403:'The API key was rejected — re-check it at aistudio.google.com/apikey.', 429: zeroQuota ? `This model (${modelId}) has no free quota on your account/region right now.` : 'Rate limited — wait a minute and try again.', 503:'Gemini is overloaded — try again shortly.' };
+    throw new Error(`API error ${resp.status} (model: ${modelId}). ${hints[resp.status] || ''}\n${detail}`.trim());
   }
   const data = await resp.json();
   const cand = (data.candidates || [])[0];
@@ -635,6 +681,8 @@ function parseJsonLoose(text){
 async function saveApiKey(){
   apiKey = $('apikey').value.trim();
   await store.set('settings:apikey', apiKey);
+  resolvedModel = null;
+  await store.del('settings:geminiModel'); // re-discover a working model for the new key
   $('keystatus').textContent = apiKey ? '✓ Key saved on this device.' : 'Key cleared.';
 }
 async function saveContact(){
