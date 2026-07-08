@@ -6,11 +6,12 @@
 <title>City Marriage Bureau — Rishta Profile Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
     --plum:#6E1E3C; --plum2:#8E2A4D; --gold:#B5893B; --gold2:#D4AF61;
-    --cream:#FBF6EE; --ink:#3A1220; --line:#E8DCC8; --ok:#2E7D32; --bad:#B3261E; --na:#8A8A8A;
+    --cream:#FDF7F1; --ink:#3A1220; --line:#E8DCC8; --ok:#2E7D32; --bad:#B3261E; --na:#8A8A8A;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{font-family:'Poppins',system-ui,-apple-system,'Segoe UI',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh;}
@@ -75,6 +76,26 @@
   .empty{border:1.5px dashed var(--gold); background:#FFFDF6; border-radius:14px; padding:38px 24px; text-align:center; color:#7a6340;}
   .empty b{color:var(--plum); display:block; font-size:15px; margin-bottom:6px;}
 
+  /* ---------------- step wizard ---------------- */
+  .stepper{display:flex;align-items:center;justify-content:center;gap:0;padding:6px 0 22px;flex-wrap:wrap;}
+  .step{display:flex;align-items:center;gap:9px;padding:0 22px;position:relative;}
+  .step .circ2{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;border:2px solid var(--gold2);color:var(--gold);background:#fff;flex-shrink:0;}
+  .step.active .circ2{background:var(--plum);border-color:var(--plum);color:#fff;}
+  .step.done .circ2{background:var(--gold2);border-color:var(--gold2);color:#fff;}
+  .step .slbl{font-size:13.5px;font-weight:600;color:#9a8a90;}
+  .step.active .slbl{color:var(--plum);}
+  .step.done .slbl{color:var(--gold);}
+  .step:not(:last-child)::after{content:'';position:absolute;right:-8px;top:14px;width:30px;height:2px;background:#e7d9c9;}
+  .wizpage{display:none;}
+  .wizpage.active{display:block;}
+  .navrow{display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:12px; flex-wrap:wrap;}
+
+  .sibrow{display:grid; grid-template-columns:1.1fr 1fr 1fr 1.6fr 40px; gap:10px; align-items:end; margin-bottom:10px;}
+  .sibrow input, .sibrow select{width:100%;}
+  .addsib{display:inline-flex; align-items:center; gap:8px; color:var(--plum); font-weight:700; font-size:13px; cursor:pointer; margin-top:6px; background:none; border:none; font-family:inherit;}
+  .addsib .plus{width:22px;height:22px;border-radius:50%;background:var(--gold2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .rm{width:32px;height:32px;border-radius:8px;border:1.4px solid var(--line);background:#fff;color:#b55;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;}
+
   /* profile list */
   .filters{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-bottom:16px;}
   .plist{display:grid; grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); gap:14px;}
@@ -101,47 +122,21 @@
   .chip.na{color:var(--na); border-color:#D5D5D5; background:#F7F7F7;}
   .dirlabel{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--gold); margin-top:10px;}
 
-  /* ============ PREVIEW CARD (DOM) ============ */
-  .prevwrap{display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;}
-  .vcard{width:420px; max-width:100%; background:var(--cream); border-radius:20px; overflow:hidden; box-shadow:0 12px 40px rgba(58,18,32,.22); border:1px solid #EADFC9;}
-  .vcard .band{background:linear-gradient(135deg,var(--plum) 0%,var(--plum2) 100%); padding:22px 20px 68px; text-align:center; position:relative;}
-  .vcard .brand{color:var(--gold2); font-size:12px; letter-spacing:3px; text-transform:uppercase; font-weight:700;}
-  .vcard .brand small{display:block; color:#E8CFA4; font-size:9px; letter-spacing:2px; margin-top:2px; font-weight:400;}
-  .vcard .photo{width:128px; height:128px; border-radius:50%; border:4px solid var(--gold2); background:#F1E6D2 center/cover no-repeat; margin:-64px auto 0; position:relative; z-index:2; display:flex; align-items:center; justify-content:center; font-size:44px; color:var(--gold); overflow:hidden;}
-  .vcard .photo img{width:100%; height:100%; object-fit:cover;}
-  .vcard .name{ text-align:center; font-size:24px; font-weight:800; color:var(--plum); margin-top:12px; padding:0 16px;}
-  .vcard .cid{text-align:center; margin-top:5px;}
-  .vcard .cid span{background:var(--gold2); color:var(--plum); font-weight:700; font-size:12px; border-radius:999px; padding:3px 14px; letter-spacing:1px;}
-  .vcard .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:16px 16px 4px;}
-  .vcard .stat{background:#fff; border:1.5px solid var(--gold2); border-radius:12px; text-align:center; padding:9px 4px;}
-  .vcard .stat .l{font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--gold); font-weight:700;}
-  .vcard .stat .v{font-size:12.5px; font-weight:700; color:var(--plum); margin-top:2px; word-break:break-word;}
-  .vcard .details{padding:14px 20px 6px; display:grid; grid-template-columns:1fr 1fr; gap:9px 16px;}
-  .vcard .dt .l{font-size:9.5px; text-transform:uppercase; letter-spacing:1px; color:var(--gold); font-weight:700;}
-  .vcard .dt .v{font-size:12.5px; color:var(--ink); font-weight:500;}
-  .vcard .about{padding:6px 20px 4px; font-size:12px; color:#5d4a34; font-style:italic; line-height:1.55;}
-  .vcard .looking{margin:14px 16px 18px; background:linear-gradient(135deg,var(--plum) 0%,var(--plum2) 100%); border-radius:14px; padding:14px 16px; color:#F5E8D0;}
-  .vcard .looking .t{font-size:10.5px; text-transform:uppercase; letter-spacing:2px; color:var(--gold2); font-weight:700; margin-bottom:6px;}
-  .vcard .looking .hl{font-weight:800; color:var(--gold2); font-size:13.5px; line-height:1.5;}
-  .vcard .looking .rest{font-size:11.5px; line-height:1.6; margin-top:5px;}
-  .vcard .looking .rgrid{display:grid; grid-template-columns:1fr 1fr; gap:9px 14px;}
-  .vcard .looking .rl{font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:#E4C98F; font-weight:700;}
-  .vcard .looking .rv{font-size:13px; font-weight:700; color:#fff; margin-top:1px;}
-  .vcard .looking .other{margin-top:10px;}
-  .vcard .looking .other .rv{font-size:11.5px; font-weight:400; line-height:1.55; color:#F5E8D0;}
-  .vcard .cta{display:flex; align-items:center; justify-content:center; gap:11px; padding:13px 18px; border-top:1px solid #EADFC9; background:#fff;}
-  .vcard .cta svg{width:34px; height:34px; flex-shrink:0;}
-  .vcard .cta .l1{font-size:10.5px; color:#5d4a34;}
-  .vcard .cta .l2{font-size:16px; font-weight:800; color:var(--plum); letter-spacing:.4px;}
-
-  /* square card variant (on-screen preview mirrors the 1:1 download) */
-  .squareimg{width:420px; max-width:100%; border-radius:20px; box-shadow:0 12px 40px rgba(58,18,32,.22); display:block; background:var(--cream);}
-  .cardimg{width:420px; max-width:100%; border-radius:20px; box-shadow:0 12px 40px rgba(58,18,32,.22); display:block; background:var(--cream);}
-  .cardlabel{font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px;}
-  .dlrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;}
-  .prevwrap > div{max-width:100%;}
-  .vcard .foot{border-top:1px solid #EADFC9; padding:10px; text-align:center; font-size:10px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; font-weight:600;}
-  @media (max-width:640px){ .vcard .stats{grid-template-columns:repeat(2,1fr);} }
+  /* preview / download page */
+  .dlgrid{display:grid; grid-template-columns:1.15fr 1fr; gap:22px; align-items:start;}
+  @media (max-width:900px){ .dlgrid{grid-template-columns:1fr;} }
+  .dlcard{background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px;}
+  .dlcard h3{font-family:'DM Serif Display',serif; font-weight:400; color:var(--plum); font-size:20px; margin-bottom:2px;}
+  .dlcard .sub{font-size:12px; color:#8a7a70; margin-bottom:14px;}
+  .thumbrow{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .thumbrow canvas{width:64px; height:64px; border-radius:8px; border:2px solid var(--gold2); object-fit:cover; background:var(--plum);}
+  .sizeopts{display:flex; gap:10px; margin-bottom:14px;}
+  .sizeopt{flex:1; border:1.6px solid var(--line); border-radius:12px; padding:9px 10px; text-align:center; cursor:pointer; font-size:12.5px;}
+  .sizeopt.on{border-color:var(--plum); background:#fbf2f5;}
+  .sizeopt .dim{font-weight:700; color:var(--ink);}
+  .sizeopt .tag{font-size:10px; color:var(--gold); font-weight:600;}
+  .dlbtns{display:flex; gap:10px; flex-wrap:wrap;}
+  .fullimgprev{width:100%; max-width:320px; border-radius:12px; border:2px solid var(--gold2); display:block; margin:0 auto 14px;}
 </style>
 </head>
 <body>
@@ -150,12 +145,12 @@
   <div class="logo">CMB</div>
   <div>
     <h1>City Marriage Bureau</h1>
-    <p>Rishta Profile Tool — intake · matching · shareable cards</p>
+    <p>Rishta Profile Tool — intake · matching · Instagram-ready cards</p>
   </div>
   <nav class="tabs">
     <button id="tabbtn-new" class="active" onclick="showTab('new')">➕ New Profile</button>
     <button id="tabbtn-match" onclick="showTab('match')">💞 Matching Space</button>
-    <button id="tabbtn-preview" onclick="showTab('preview')">🪪 Profile Preview</button>
+    <button id="tabbtn-preview" onclick="showTab('preview')">🪪 Preview &amp; Download</button>
   </nav>
 </header>
 
@@ -173,13 +168,13 @@
     <label for="contact">Bureau WhatsApp no.</label>
     <input type="text" id="contact" placeholder="+92 321 2266621" autocomplete="off">
     <button class="btn sm gold" onclick="saveContact()">Save number</button>
-    <span class="status" id="contactstatus">Shown on every card's "DM if interested" footer.</span>
+    <span class="status" id="contactstatus">Shown on every card's contact slide.</span>
   </div>
 
   <!-- ============================== TAB: NEW PROFILE ============================== -->
   <section class="tab active" id="tab-new">
     <div class="modes">
-      <button id="modebtn-form" class="active" onclick="showMode('form')"><span class="t">📝 Form</span><span class="d">Type the details field by field (verbal intake)</span></button>
+      <button id="modebtn-form" class="active" onclick="showMode('form')"><span class="t">📝 Form</span><span class="d">Step-by-step manual intake</span></button>
       <button id="modebtn-message" onclick="showMode('message')"><span class="t">💬 Message</span><span class="d">Paste a WhatsApp rishta message — auto-extract</span></button>
       <button id="modebtn-photo" onclick="showMode('photo')"><span class="t">📷 Photo</span><span class="d">Upload a photo of a profile card / register page</span></button>
     </div>
@@ -187,7 +182,7 @@
     <!-- message mode input -->
     <div class="panel" id="mode-message" style="display:none">
       <h2>Paste WhatsApp message</h2>
-      <textarea id="msg-input" rows="10" placeholder="Paste the full rishta message here — Roman Urdu, English, mixed, any format. Example:&#10;&#10;*Rishta for son*&#10;Name: Ahmed Raza&#10;Age 29, Height: 5.7&#10;McS from Punjab University&#10;Income: Alhamdulillah&#10;..."></textarea>
+      <textarea id="msg-input" rows="10" placeholder="Paste the full rishta message here — Roman Urdu, English, mixed, any format."></textarea>
       <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
         <button class="btn" id="msg-extract-btn" onclick="extractFromMessage()">✨ Extract profile</button>
         <span class="status" id="msg-status" style="font-size:12.5px;color:#8a6d3b;"></span>
@@ -210,93 +205,132 @@
       <div class="banner error" id="photo-error"></div>
     </div>
 
-    <!-- ================= REVIEW CARD (shared by all modes) ================= -->
-    <div class="panel" id="review-panel">
-      <div class="banner info" id="review-banner">✅ Extracted — review below, correct anything inline, then Save. Fields I was unsure about are noted under <b>Raw notes</b>.</div>
-      <h2 id="review-title">Profile details</h2>
+    <div class="banner info" id="review-banner">✅ Extracted — step through Personal / Family / Requirements below, correct anything, then Save.</div>
 
-      <div class="avatar-pick" style="margin-bottom:16px;">
-        <div class="circ" id="pphoto-circ">👤</div>
-        <div>
-          <label class="fld">Person's photo (for the preview card)</label>
-          <input type="file" id="pphoto-input" accept="image/*" style="width:auto">
+    <!-- ================= 3-STEP WIZARD (shared review surface for all 3 intake modes) ================= -->
+    <div class="panel" id="wizard-panel">
+      <div class="stepper">
+        <div class="step active" id="stepdot-1"><div class="circ2">1</div><div class="slbl">Personal Details</div></div>
+        <div class="step" id="stepdot-2"><div class="circ2">2</div><div class="slbl">Family Details</div></div>
+        <div class="step" id="stepdot-3"><div class="circ2">3</div><div class="slbl">Requirements</div></div>
+      </div>
+
+      <!-- STEP 1: PERSONAL -->
+      <div class="wizpage active" id="wizpage-1">
+        <div class="avatar-pick" style="margin-bottom:16px;">
+          <div class="circ" id="pphoto-circ">👤</div>
+          <div>
+            <label class="fld">Person's photo</label>
+            <input type="file" id="pphoto-input" accept="image/*" style="width:auto">
+          </div>
         </div>
-      </div>
-
-      <div class="grid">
-        <div><label class="fld">Full name *</label><input id="f-name"></div>
-        <div><label class="fld">Gender *</label>
-          <select id="f-gender"><option value="">—</option><option value="male">Male</option><option value="female">Female</option></select></div>
-        <div><label class="fld">Age</label><input id="f-age" type="number" min="16" max="80"></div>
-        <div><label class="fld">Height</label>
-          <div class="hrow">
-            <select id="f-feet"><option value="">ft</option><option>4</option><option>5</option><option>6</option><option>7</option></select>
-            <select id="f-inches"><option value="">in</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select>
-          </div></div>
-        <div><label class="fld">Complexion</label><input id="f-complexion" placeholder="Fair / Wheatish / ..."></div>
-        <div><label class="fld">Marital status</label>
-          <select id="f-marital" onchange="toggleChildren()">
-            <option value="never_married">Never married</option>
-            <option value="divorced">Divorced</option>
-            <option value="separated">Separated</option>
-            <option value="widowed">Widowed</option>
-          </select></div>
-        <div id="children-wrap" style="display:none"><label class="fld">Children (if any)</label><input id="f-children" placeholder="e.g. 1 beta, 1 beti"></div>
-        <div><label class="fld">Education</label><input id="f-education" placeholder="M.Sc, MBA, BS CS ..."></div>
-        <div><label class="fld">Profession</label><input id="f-profession"></div>
-        <div><label class="fld">Income</label><input id="f-income" placeholder="Rs 150k/month or Undisclosed"></div>
-        <div><label class="fld">Caste</label><input id="f-caste"></div>
-        <div><label class="fld">Sect</label><input id="f-sect" placeholder="Sunni / Shia / ..."></div>
-        <div><label class="fld">City</label><input id="f-city"></div>
-        <div><label class="fld">Current residence / country</label><input id="f-residence" placeholder="Lahore, Pakistan / Dubai, UAE"></div>
-        <div><label class="fld">Property</label><input id="f-property" placeholder="Own house, plot ..."></div>
-        <div><label class="fld">Father</label><input id="f-father" placeholder="Retd. Govt officer"></div>
-        <div><label class="fld">Mother</label><input id="f-mother" placeholder="Housewife"></div>
-        <div><label class="fld">Siblings</label><input id="f-siblings" placeholder="2 brothers, 1 sister"></div>
-        <div class="wide"><label class="fld">About him/her</label><textarea id="f-about" rows="2"></textarea></div>
-      </div>
-
-      <h3>Requirements (what they're looking for)</h3>
-      <div class="grid">
-        <div><label class="fld">Age from</label><input id="r-agemin" type="number" min="16" max="80"></div>
-        <div><label class="fld">Age to</label><input id="r-agemax" type="number" min="16" max="80"></div>
-        <div><label class="fld">Height from</label><input id="r-heightmin" placeholder="e.g. 5'2"></div>
-        <div><label class="fld">Height to</label><input id="r-heightmax" placeholder="e.g. 5'8"></div>
-        <div><label class="fld">Caste demand</label><input id="r-caste" placeholder="Same caste / Syed / any"></div>
-        <div><label class="fld">Education demand</label><input id="r-education" placeholder="Min. Bachelors"></div>
-        <div class="wide"><label class="fld">Other demands</label><textarea id="r-other" rows="2" placeholder="Deendar family, no dowry demand, settled abroad preferred..."></textarea></div>
-      </div>
-
-      <div id="rawnote-wrap" style="display:none; margin-top:14px;">
-        <label class="fld">Raw notes (original text preserved where I was unsure)</label>
-        <textarea id="f-rawnote" rows="2" style="background:#FCF6E8;"></textarea>
-      </div>
-
-      <div style="margin-top:20px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-        <button class="btn gold" style="font-size:15px; padding:13px 34px;" onclick="saveProfile()">💾 Save Profile</button>
-        <button class="btn ghost sm" onclick="clearForm()">Clear form</button>
-        <span id="save-status" style="font-size:13px; color:#2E7D32; font-weight:600;"></span>
-      </div>
-    </div>
-
-    <!-- live instant card preview -->
-    <div class="panel" id="live-panel">
-      <h2>Instant card preview</h2>
-      <p style="font-size:12.5px;color:#7a6a55;margin-bottom:14px;">Two branded cards build themselves as you fill the details above — a tall portrait card and a 1:1 square card. Download whichever you like, even before saving.</p>
-      <div class="prevwrap">
-        <div>
-          <div class="cardlabel">📱 Portrait card</div>
-          <div id="live-card-holder"></div>
+        <h3 style="margin-top:0">Basic Info</h3>
+        <div class="grid">
+          <div><label class="fld">Full name *</label><input id="f-name"></div>
+          <div><label class="fld">Gender *</label>
+            <select id="f-gender"><option value="">—</option><option value="male">Male</option><option value="female">Female</option></select></div>
+          <div><label class="fld">Age</label><input id="f-age" type="number" min="16" max="80"></div>
+          <div><label class="fld">Height</label>
+            <div class="hrow">
+              <select id="f-feet"><option value="">ft</option><option>4</option><option>5</option><option>6</option><option>7</option></select>
+              <select id="f-inches"><option value="">in</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select>
+            </div></div>
+          <div><label class="fld">Marital status</label>
+            <select id="f-marital"><option value="single">Single</option><option value="divorced">Divorced</option><option value="widowed">Widowed</option></select></div>
+          <div><label class="fld">Disability</label>
+            <select id="f-disability"><option value="No">No</option><option value="Yes">Yes</option></select></div>
         </div>
-        <div>
-          <div class="cardlabel">⬜ Square card (1:1)</div>
-          <img id="live-square-img" class="squareimg" alt="Square card preview">
+        <div class="note">Left blank? That field's heading is automatically hidden on the generated post — no empty gaps.</div>
+
+        <h3>Education</h3>
+        <div class="grid">
+          <div><label class="fld">Qualification</label><input id="f-qualification" placeholder="BSCS, M.Sc, MBA ..."></div>
+          <div><label class="fld">Institution</label><input id="f-institution"></div>
         </div>
+
+        <h3>Job Details</h3>
+        <div class="grid">
+          <div><label class="fld">Profession</label><input id="f-profession"></div>
+          <div><label class="fld">Work location</label><input id="f-worklocation"></div>
+          <div><label class="fld">Future plans</label><input id="f-futureplans"></div>
+          <div><label class="fld">Income</label><input id="f-income" placeholder="leave blank if undisclosed"></div>
+        </div>
+
+        <h3>Religion Details</h3>
+        <div class="grid">
+          <div><label class="fld">Religion</label><input id="f-religion" value="Islam"></div>
+          <div><label class="fld">Caste</label><input id="f-caste"></div>
+          <div><label class="fld">Sect</label><input id="f-sect"></div>
+          <div><label class="fld">Nationality</label><input id="f-nationality" value="Pakistani"></div>
+        </div>
+
+        <h3>Property Details</h3>
+        <div class="grid">
+          <div><label class="fld">Ownership</label><input id="f-ownership" placeholder="Own home / Rented"></div>
+          <div><label class="fld">Size</label><input id="f-propsize" placeholder="5 Marla, 4-Storey"></div>
+          <div><label class="fld">Vehicle</label><input id="f-vehicle"></div>
+          <div><label class="fld">Additional property</label><input id="f-propadditional"></div>
+        </div>
+
+        <h3>Address</h3>
+        <div class="grid">
+          <div><label class="fld">City</label><input id="f-city"></div>
+          <div><label class="fld">Locality</label><input id="f-locality"></div>
+        </div>
+
+        <div class="navrow"><span></span><button class="btn gold" onclick="wizGo(2)">Next: Family Details →</button></div>
       </div>
-      <div class="dlrow">
-        <button class="btn gold" id="live-dl-portrait" onclick="downloadLive('portrait')">⬇️ Portrait</button>
-        <button class="btn gold" id="live-dl-square" onclick="downloadLive('square')">⬇️ Square</button>
-        <button class="btn" id="live-dl-both" onclick="downloadLive('both')">⬇️ Download both</button>
+
+      <!-- STEP 2: FAMILY -->
+      <div class="wizpage" id="wizpage-2">
+        <h3 style="margin-top:0">Parents</h3>
+        <div class="grid">
+          <div><label class="fld">Father's occupation</label><input id="f-father"></div>
+          <div><label class="fld">Mother's occupation</label><input id="f-mother"></div>
+        </div>
+
+        <h3>Siblings <span style="font-weight:400;color:#8a7a70;text-transform:none;letter-spacing:0;">— repeatable, add as many as needed</span></h3>
+        <div id="sib-list"></div>
+        <button class="addsib" onclick="addSibling()"><span class="plus">+</span> Add Sibling</button>
+
+        <div class="navrow"><button class="btn ghost" onclick="wizGo(1)">← Back</button><button class="btn gold" onclick="wizGo(3)">Next: Requirements →</button></div>
+      </div>
+
+      <!-- STEP 3: REQUIREMENTS -->
+      <div class="wizpage" id="wizpage-3">
+        <h3 style="margin-top:0">Basic Preferences</h3>
+        <div class="grid">
+          <div><label class="fld">Age from</label><input id="r-agemin" type="number" min="16" max="80"></div>
+          <div><label class="fld">Age to</label><input id="r-agemax" type="number" min="16" max="80"></div>
+          <div><label class="fld">Min height</label><input id="r-heightmin" placeholder="e.g. 5'2"></div>
+          <div><label class="fld">City preference</label><input id="r-city"></div>
+          <div><label class="fld">Caste preference</label><input id="r-caste" placeholder="leave blank if open"></div>
+        </div>
+        <h3>Background &amp; Lifestyle</h3>
+        <div class="grid">
+          <div><label class="fld">Sect preference</label><input id="r-sect"></div>
+          <div><label class="fld">Qualification preference</label><input id="r-qualification"></div>
+          <div><label class="fld">Habits preference</label><input id="r-habits" placeholder="Non-smoker preferred"></div>
+          <div><label class="fld">Divorced / widowed acceptance</label><input id="r-divorcedwidowed" placeholder="Open to consider / Not acceptable"></div>
+          <div><label class="fld">Working woman acceptable?</label>
+            <select id="r-workingwoman"><option value="">—</option><option value="Acceptable">Acceptable</option><option value="Not acceptable">Not acceptable</option></select></div>
+        </div>
+        <h3>Other Demands</h3>
+        <div class="grid"><div class="wide"><textarea id="r-other" rows="2" placeholder="Deendar family, no dowry demand, settled abroad preferred..."></textarea></div></div>
+
+        <div id="rawnote-wrap" style="display:none; margin-top:14px;">
+          <label class="fld">Raw notes (original text preserved where extraction was unsure)</label>
+          <textarea id="f-rawnote" rows="2" style="background:#FCF6E8;"></textarea>
+        </div>
+
+        <div class="navrow">
+          <button class="btn ghost" onclick="wizGo(2)">← Back</button>
+          <div style="display:flex;gap:12px;align-items:center;">
+            <button class="btn gold" style="font-size:15px; padding:13px 34px;" onclick="saveProfile()">✓ Save Profile</button>
+            <button class="btn ghost sm" onclick="clearForm()">Clear form</button>
+          </div>
+        </div>
+        <div style="margin-top:8px;"><span id="save-status" style="font-size:13px; color:#2E7D32; font-weight:600;"></span></div>
       </div>
     </div>
   </section>
@@ -310,10 +344,17 @@
           <select id="fl-gender" onchange="renderList()"><option value="">All</option><option value="male">Male</option><option value="female">Female</option></select></div>
         <div><label class="fld">Age from</label><input id="fl-agemin" type="number" oninput="renderList()"></div>
         <div><label class="fld">Age to</label><input id="fl-agemax" type="number" oninput="renderList()"></div>
-        <div><label class="fld">Caste</label><input id="fl-caste" placeholder="contains..." oninput="renderList()"></div>
-        <div><label class="fld">City</label><input id="fl-city" placeholder="contains..." oninput="renderList()"></div>
+        <div><label class="fld">Height min</label><input id="fl-heightmin" placeholder="5'2" oninput="renderList()"></div>
         <div><label class="fld">Marital status</label>
-          <select id="fl-marital" onchange="renderList()"><option value="">All</option><option value="never_married">Never married</option><option value="divorced">Divorced</option><option value="separated">Separated</option><option value="widowed">Widowed</option></select></div>
+          <select id="fl-marital" onchange="renderList()"><option value="">All</option><option value="single">Single</option><option value="divorced">Divorced</option><option value="widowed">Widowed</option></select></div>
+        <div><label class="fld">City</label><input id="fl-city" placeholder="contains..." oninput="renderList()"></div>
+        <div><label class="fld">Caste</label><input id="fl-caste" placeholder="contains..." oninput="renderList()"></div>
+        <div><label class="fld">Sect</label><input id="fl-sect" placeholder="contains..." oninput="renderList()"></div>
+        <div><label class="fld">Nationality</label><input id="fl-nationality" placeholder="contains..." oninput="renderList()"></div>
+        <div><label class="fld">Qualification</label><input id="fl-qualification" placeholder="contains..." oninput="renderList()"></div>
+        <div><label class="fld">Habits</label><input id="fl-habits" placeholder="e.g. non-smoker" oninput="renderList()"></div>
+        <div><label class="fld">Working woman?</label>
+          <select id="fl-workingwoman" onchange="renderList()"><option value="">Any</option><option value="Acceptable">Acceptable only</option></select></div>
         <div><label class="fld">Search</label><input id="fl-search" placeholder="name or ID..." oninput="renderList()"></div>
       </div>
       <div id="plist" class="plist"></div>
@@ -332,46 +373,51 @@
     </div>
   </section>
 
-  <!-- ============================== TAB: PREVIEW ============================== -->
+  <!-- ============================== TAB: PREVIEW & DOWNLOAD ============================== -->
   <section class="tab" id="tab-preview">
     <div class="panel">
-      <h2>Shareable profile card</h2>
-      <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:18px;">
-        <div style="min-width:260px;"><label class="fld">Choose profile</label>
-          <select id="prev-select" onchange="renderPreview()"></select></div>
-        <div class="dlrow" id="prev-dl-row" style="margin-top:0;">
-          <button class="btn gold" onclick="downloadSel('portrait')">⬇️ Portrait</button>
-          <button class="btn gold" onclick="downloadSel('square')">⬇️ Square</button>
-          <button class="btn" onclick="downloadSel('both')">⬇️ Download both</button>
-        </div>
-      </div>
+      <h2>Preview &amp; Download</h2>
+      <div style="min-width:260px; margin-bottom:18px;"><label class="fld">Choose profile</label>
+        <select id="prev-select" onchange="renderPreview()"></select></div>
       <div id="prev-empty" class="empty" style="display:none">
         <b>Nothing to preview yet</b>
-        Save a profile first from the <a href="#" onclick="showTab('new');return false;">New Profile</a> tab, then come back here to see and download its branded card.
+        Save a profile first from the <a href="#" onclick="showTab('new');return false;">New Profile</a> tab, then come back here.
       </div>
-      <div class="prevwrap">
-        <div>
-          <div class="cardlabel">📱 Portrait card</div>
-          <div id="vcard-holder"></div>
-        </div>
-        <div id="prev-square-wrap">
-          <div class="cardlabel">⬜ Square card (1:1)</div>
-          <img id="prev-square-img" class="squareimg" alt="Square card preview">
+      <div id="prev-content" style="display:none">
+        <div class="dlgrid">
+          <div class="dlcard">
+            <h3>Carousel Post (5 slides)</h3>
+            <div class="sub">Cover · Personal · Family · Requirements · Contact</div>
+            <div class="thumbrow" id="carousel-thumbs"></div>
+            <div class="sizeopts">
+              <div class="sizeopt on" id="carousel-size-square" onclick="setCarouselSize('square')"><div class="dim">1080 × 1080</div><div class="tag">SQUARE</div></div>
+              <div class="sizeopt" id="carousel-size-portrait" onclick="setCarouselSize('portrait')"><div class="dim">1080 × 1350</div><div class="tag">PORTRAIT (4:5)</div></div>
+            </div>
+            <div class="dlbtns">
+              <button class="btn gold" onclick="downloadCarouselPdf()">⬇ Download PDF (all 5)</button>
+              <button class="btn ghost" onclick="downloadCarouselImages()">⬇ Download Images Individually</button>
+            </div>
+          </div>
+          <div class="dlcard">
+            <h3>Single Summary Card</h3>
+            <div class="sub">One portrait post — only the essential fields</div>
+            <img id="summary-thumb" class="fullimgprev" alt="Summary card preview">
+            <div class="sizeopts">
+              <div class="sizeopt on" id="summary-size-full" onclick="setSummarySize('full')"><div class="dim">Full Portrait</div><div class="tag">TALLEST FIT</div></div>
+              <div class="sizeopt" id="summary-size-crop" onclick="setSummarySize('crop')"><div class="dim">1080 × 1350</div><div class="tag">4:5 CROP</div></div>
+            </div>
+            <div class="dlbtns"><button class="btn gold" style="width:100%" onclick="downloadSummary()">⬇ Download Summary Card</button></div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 </main>
 
-<canvas id="dlcanvas" width="1080" height="1400" style="display:none"></canvas>
-
 <script>
 "use strict";
 /* ============================================================
    STORAGE — window.storage compatible wrapper.
-   If a native window.storage exists (claude.ai artifact runtime),
-   it's used directly. Otherwise the SAME interface is provided
-   backed by IndexedDB (NOT localStorage).
    ============================================================ */
 const store = (() => {
   const native = (typeof window.storage === 'object' && window.storage !== null &&
@@ -390,7 +436,6 @@ const store = (() => {
     };
     return S;
   }
-  // IndexedDB fallback (local browser use)
   let dbp = null;
   function db(){
     if (dbp) return dbp;
@@ -402,7 +447,7 @@ const store = (() => {
     });
     return dbp;
   }
-  const mem = new Map(); // in-session safety net if IndexedDB fails
+  const mem = new Map();
   async function op(mode, fn){
     try {
       const d = await db();
@@ -428,13 +473,16 @@ const store = (() => {
 
 /* ============================================================ STATE ============================================================ */
 const MODEL = 'claude-sonnet-4-6';
-let profiles = [];              // loaded profile objects
-let counters = { m: 0, f: 0 };  // catalog id counters
+let profiles = [];
+let counters = { m: 0, f: 0 };
 let apiKey = '';
 let contactNo = '+92 321 2266621';
-let keylessMode = false;        // claude.ai artifact runtime → no key needed
-let pendingPersonPhoto = null;  // dataURL for person photo in review card
-let pendingCardPhoto = null;    // {dataUrl, mediaType} for photo-mode extraction
+let keylessMode = false;
+let pendingPersonPhoto = null;
+let pendingCardPhoto = null;
+let sibCount = 0;
+let carouselSize = 'square';   // 'square' | 'portrait'
+let summarySize = 'full';      // 'full' | 'crop'
 
 /* ============================================================ HELPERS ============================================================ */
 const $ = id => document.getElementById(id);
@@ -453,7 +501,6 @@ function heightDisplay(inches){
   return ft + '′' + inch + '″';
 }
 function parseHeightStr(s){
-  // Accepts: 5'7 / 5.7 / 5-7 / 5 ft 7 / 67 / 170cm  → inches
   if (s == null) return null;
   if (typeof s === 'number') return s > 30 ? Math.round(s) : null;
   s = String(s).trim().toLowerCase();
@@ -468,7 +515,7 @@ function parseHeightStr(s){
   if (m){ const n = parseInt(m[1],10); return (n >= 40 && n <= 90) ? n : null; }
   return null;
 }
-const MARITAL_LABEL = { never_married:'Never married', divorced:'Divorced', separated:'Separated', widowed:'Widowed' };
+const MARITAL_LABEL = { single:'Single', divorced:'Divorced', widowed:'Widowed' };
 
 function resizeImage(file, maxEdge){
   return new Promise((resolve, reject) => {
@@ -493,55 +540,45 @@ function resizeImage(file, maxEdge){
 }
 
 /* ============================================================ CLAUDE API ============================================================ */
-const EXTRACTION_SYSTEM = `You extract matrimonial (rishta) profile data for a marriage bureau in Pakistan. Input is either a raw WhatsApp-style text message or a photo of a profile card / register page (read ALL handwritten and printed text in it). Messages mix English, Urdu script, and Roman Urdu.
+const EXTRACTION_SYSTEM = `You extract matrimonial (rishta) profile data for a marriage bureau in Pakistan. Input is either a raw WhatsApp-style text message or a photo of a profile card / register page. Messages mix English, Urdu script, and Roman Urdu.
 
-Return ONLY a single JSON object — no markdown fences, no commentary — with exactly these keys (use null when the information is genuinely absent; never invent data):
+Return ONLY a single JSON object — no markdown fences, no commentary — with exactly these keys (use null when genuinely absent; never invent data):
 
 {
   "name": string|null,
-  "gender": "male"|"female"|null,        // infer from context: "rishta for son/beta/larka" => male; "daughter/beti/larki" => female
+  "gender": "male"|"female"|null,
   "age": number|null,
   "height_inches": number|null,
-  "complexion": string|null,
-  "marital_status": "never_married"|"divorced"|"separated"|"widowed"|null,   // "single"/"kunwara"/"shaadi nahi hui" => never_married; "khula"/"talaq yafta" => divorced
-  "children": string|null,               // e.g. "1 son, 1 daughter (beta 5y)" — only if mentioned
-  "education": string|null,              // normalized, e.g. "M.Sc" not "McS"
-  "profession": string|null,
-  "income": string|null,
-  "caste": string|null,                  // zaat/biradari, e.g. Rajput, Jutt, Arain, Syed, Sheikh, Mughal
-  "sect": string|null,                   // maslak, e.g. Sunni, Shia, Deobandi, Barelvi, Ahl-e-Hadith
-  "city": string|null,
-  "residence": string|null,              // current residence incl. country, e.g. "Dubai, UAE" or "Lahore, Pakistan"
-  "property": string|null,
+  "marital_status": "single"|"divorced"|"widowed"|null,
+  "disability": string|null,
+  "education": { "qualification": string|null, "institution": string|null },
+  "job": { "profession": string|null, "work_location": string|null, "future_plans": string|null, "income": string|null },
+  "religion": { "religion": string|null, "caste": string|null, "sect": string|null, "nationality": string|null },
+  "property": { "ownership": string|null, "size": string|null, "vehicle": string|null, "additional": string|null },
+  "address": { "city": string|null, "locality": string|null },
   "father": string|null,
   "mother": string|null,
-  "siblings": string|null,
-  "about": string|null,                  // short free-text description of the person if present
+  "siblings": [ { "relation": "Brother"|"Sister", "age_bracket": string|null, "marital_status": string|null, "profession_education": string|null } ],
   "requirements": {
-    "age_min": number|null, "age_max": number|null,
-    "height_min_inches": number|null, "height_max_inches": number|null,
-    "caste": string|null, "education": string|null,
-    "other": string|null                 // all remaining demands verbatim-ish: family type, dowry, city, deendar, etc.
+    "age_min": number|null, "age_max": number|null, "height_min_inches": number|null,
+    "city": string|null, "caste": string|null, "sect": string|null, "qualification": string|null,
+    "habits": string|null, "divorced_widowed": string|null, "working_woman": string|null, "other": string|null
   },
-  "raw_note": string|null                // see rules below
+  "raw_note": string|null
 }
 
-NORMALIZATION RULES — follow exactly:
-1. HEIGHT: In Pakistani rishta messages "5.7", "5,7" or "Height: 5.7" means 5 feet 7 inches — NEVER 5.7 feet. Convert all forms (5'7, 5 ft 7, 5-7, 170 cm) to total inches (5.7 => 67). Same for requirement ranges.
-2. INCOME: "Alhamdulillah", "Mashallah", "handsome", "acha khasa", "sufficient" or any pious/vague answer => income = "Undisclosed" and put the original phrase in raw_note.
-3. EDUCATION typos: normalize obvious garbles ("McS" => most likely "M.Sc" — or "MCS" if computer-science context) and record the original spelling in raw_note.
-4. ROMAN URDU: "shaadi shuda nahi" => never_married; "beta/beti" counts => children; "apna ghar / apna makan" => property "Own house"; "larki chahiye ..." / "requirements" / "demand" section => requirements. "Zaat" => caste. "Maslak" => sect.
-5. raw_note: one short string listing every uncertain interpretation as \`field: original text\`, separated by "; ". null if nothing was ambiguous.
-6. The requirements object describes what THIS person's family demands in a spouse — do not mix it with the person's own attributes.
-7. Numbers must be JSON numbers, not strings. Do not add keys that are not in the schema.`;
+NORMALIZATION RULES:
+1. HEIGHT: "5.7" / "Height: 5.7" means 5 feet 7 inches, never 5.7 ft. Convert 5'7, 5 ft 7, 5-7, 170cm to total inches.
+2. INCOME: "Alhamdulillah"/"Mashallah"/"handsome"/vague => income = "Undisclosed", original phrase into raw_note.
+3. EDUCATION typos: normalize obvious garbles ("McS" => "M.Sc" or "MCS" if CS context), record original in raw_note.
+4. ROMAN URDU: "shaadi shuda nahi" => single; "khula/talaq yafta" => divorced; "beta/beti" => count as siblings if referring to the person's own siblings; "apna ghar/makan" => property ownership "Own home"; "larki/larka chahiye" section => requirements. "Zaat" => caste, "Maslak" => sect.
+5. siblings: one entry per sibling mentioned, relation "Brother" or "Sister", age_bracket like "25-30" if inferable else null.
+6. raw_note: short string "field: original text" per uncertain item, separated by "; ". null if nothing ambiguous.
+7. requirements describes what THIS person's family demands in a spouse — never mix with the person's own attributes.
+8. Numbers must be JSON numbers. Do not add keys outside the schema.`;
 
 async function callClaude(userContent){
-  const body = {
-    model: MODEL,
-    max_tokens: 1500,
-    system: EXTRACTION_SYSTEM,
-    messages: [{ role: 'user', content: userContent }]
-  };
+  const body = { model: MODEL, max_tokens: 2000, system: EXTRACTION_SYSTEM, messages: [{ role: 'user', content: userContent }] };
   const headers = { 'content-type': 'application/json' };
   if (!keylessMode) {
     if (!apiKey) throw new Error('No API key set. Paste your Claude API key in the bar at the top and press "Save key".');
@@ -553,7 +590,7 @@ async function callClaude(userContent){
   try {
     resp = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers, body: JSON.stringify(body) });
   } catch (e) {
-    throw new Error('Network error — could not reach the Claude API. Check your internet connection. (' + e.message + ')');
+    throw new Error('Network error — could not reach the Claude API. (' + e.message + ')');
   }
   if (!resp.ok) {
     let detail = '';
@@ -574,7 +611,7 @@ function parseJsonLoose(text){
   catch (e) { throw new Error('The model response was not valid JSON (' + e.message + '):\n' + text.slice(0, 400)); }
 }
 
-/* ============================================================ API KEY ============================================================ */
+/* ============================================================ API KEY / CONTACT ============================================================ */
 async function saveApiKey(){
   apiKey = $('apikey').value.trim();
   await store.set('settings:apikey', apiKey);
@@ -583,8 +620,7 @@ async function saveApiKey(){
 async function saveContact(){
   contactNo = $('contact').value.trim() || '+92 321 2266621';
   await store.set('settings:contact', contactNo);
-  $('contactstatus').textContent = '✓ Number saved — it now appears on every card.';
-  renderLiveCard();
+  $('contactstatus').textContent = '✓ Number saved.';
   if ($('tab-preview').classList.contains('active')) renderPreview();
 }
 
@@ -601,15 +637,49 @@ function showMode(mode){
   for (const m of ['form','message','photo']) $('modebtn-'+m).classList.toggle('active', m === mode);
   $('mode-message').style.display = mode === 'message' ? '' : 'none';
   $('mode-photo').style.display   = mode === 'photo'   ? '' : 'none';
-  // In form mode the review card IS the form; in extract modes it appears after extraction.
-  $('review-panel').style.display = mode === 'form' ? '' : 'none';
-  $('live-panel').style.display = mode === 'form' ? '' : 'none';
   hideBanner('review-banner');
-  $('review-title').textContent = 'Profile details';
 }
-function toggleChildren(){
-  $('children-wrap').style.display = $('f-marital').value === 'never_married' ? 'none' : '';
+
+/* ============================================================ WIZARD NAV ============================================================ */
+function wizGo(step){
+  for (let i=1;i<=3;i++){
+    $('wizpage-'+i).classList.toggle('active', i===step);
+    const dot = $('stepdot-'+i);
+    dot.classList.toggle('active', i===step);
+    dot.classList.toggle('done', i<step);
+  }
+  $('wizard-panel').scrollIntoView({ behavior:'smooth' });
 }
+
+/* ============================================================ SIBLINGS (repeatable rows) ============================================================ */
+function addSibling(data){
+  const id = 'sib-' + (sibCount++);
+  const wrap = document.createElement('div');
+  wrap.className = 'sibrow';
+  wrap.id = id;
+  wrap.innerHTML = `
+    <div><label class="fld">Relation</label><select class="sib-relation"><option>Brother</option><option>Sister</option></select></div>
+    <div><label class="fld">Age bracket</label><input class="sib-age" placeholder="25-30"></div>
+    <div><label class="fld">Marital status</label><input class="sib-marital" placeholder="Married / Single"></div>
+    <div><label class="fld">Profession / education</label><input class="sib-prof"></div>
+    <div class="rm" onclick="document.getElementById('${id}').remove()">✕</div>`;
+  $('sib-list').appendChild(wrap);
+  if (data){
+    wrap.querySelector('.sib-relation').value = data.relation || 'Brother';
+    wrap.querySelector('.sib-age').value = data.ageBracket || '';
+    wrap.querySelector('.sib-marital').value = data.maritalStatus || '';
+    wrap.querySelector('.sib-prof').value = data.professionEducation || '';
+  }
+}
+function readSiblings(){
+  return [...$('sib-list').querySelectorAll('.sibrow')].map(row => ({
+    relation: row.querySelector('.sib-relation').value,
+    ageBracket: row.querySelector('.sib-age').value.trim() || null,
+    maritalStatus: row.querySelector('.sib-marital').value.trim() || null,
+    professionEducation: row.querySelector('.sib-prof').value.trim() || null
+  })).filter(s => s.ageBracket || s.maritalStatus || s.professionEducation);
+}
+function clearSiblings(){ $('sib-list').innerHTML = ''; }
 
 /* ============================================================ EXTRACTION FLOWS ============================================================ */
 async function extractFromMessage(){
@@ -627,7 +697,6 @@ async function extractFromMessage(){
     btn.disabled = false; $('msg-status').textContent = '';
   }
 }
-
 async function extractFromPhoto(){
   hideBanner('photo-error');
   if (!pendingCardPhoto) { banner('photo-error','error','Choose a photo first.'); return; }
@@ -655,45 +724,43 @@ function populateForm(d, sourceType){
     $('f-feet').value = Math.floor(d.height_inches/12);
     $('f-inches').value = Math.round(d.height_inches%12);
   }
-  set('f-complexion', d.complexion);
   if (d.marital_status && MARITAL_LABEL[d.marital_status]) $('f-marital').value = d.marital_status;
-  toggleChildren();
-  set('f-children', d.children);
-  set('f-education', d.education); set('f-profession', d.profession); set('f-income', d.income);
-  set('f-caste', d.caste); set('f-sect', d.sect); set('f-city', d.city); set('f-residence', d.residence);
-  set('f-property', d.property); set('f-father', d.father); set('f-mother', d.mother);
-  set('f-siblings', d.siblings); set('f-about', d.about);
+  set('f-disability', d.disability);
+  const e = d.education || {}; set('f-qualification', e.qualification); set('f-institution', e.institution);
+  const j = d.job || {}; set('f-profession', j.profession); set('f-worklocation', j.work_location); set('f-futureplans', j.future_plans); set('f-income', j.income);
+  const rl = d.religion || {}; set('f-religion', rl.religion); set('f-caste', rl.caste); set('f-sect', rl.sect); set('f-nationality', rl.nationality);
+  const pr = d.property || {}; set('f-ownership', pr.ownership); set('f-propsize', pr.size); set('f-vehicle', pr.vehicle); set('f-propadditional', pr.additional);
+  const ad = d.address || {}; set('f-city', ad.city); set('f-locality', ad.locality);
+  set('f-father', d.father); set('f-mother', d.mother);
+  clearSiblings();
+  (d.siblings || []).forEach(s => addSibling({ relation: s.relation, ageBracket: s.age_bracket, maritalStatus: s.marital_status, professionEducation: s.profession_education }));
   const r = d.requirements || {};
   set('r-agemin', r.age_min); set('r-agemax', r.age_max);
   if (r.height_min_inches != null) $('r-heightmin').value = heightDisplay(r.height_min_inches) || '';
-  if (r.height_max_inches != null) $('r-heightmax').value = heightDisplay(r.height_max_inches) || '';
-  set('r-caste', r.caste); set('r-education', r.education); set('r-other', r.other);
+  set('r-city', r.city); set('r-caste', r.caste); set('r-sect', r.sect); set('r-qualification', r.qualification);
+  set('r-habits', r.habits); set('r-divorcedwidowed', r.divorced_widowed); set('r-workingwoman', r.working_woman); set('r-other', r.other);
   if (d.raw_note) { $('rawnote-wrap').style.display = ''; $('f-rawnote').value = d.raw_note; }
-  $('review-panel').style.display = '';
-  $('review-panel').dataset.source = sourceType;
-  banner('review-banner','info','✅ Extracted from your ' + (sourceType === 'photo' ? 'photo' : 'message') + ' — review below, correct anything inline, then <b>Save Profile</b>.' + (d.raw_note ? ' Uncertain bits are preserved under <b>Raw notes</b>.' : ''));
-  $('review-banner').className = 'banner show info';
-  $('review-title').textContent = 'Review extracted profile';
-  $('live-panel').style.display = '';
-  renderLiveCard();
-  $('review-panel').scrollIntoView({ behavior:'smooth' });
+  banner('review-banner','info','✅ Extracted from your ' + (sourceType === 'photo' ? 'photo' : 'message') + ' — step through Personal / Family / Requirements below, correct anything, then <b>Save Profile</b>.');
+  wizGo(1);
+  $('wizard-panel').scrollIntoView({ behavior:'smooth' });
 }
 
 function clearForm(keepHidden){
-  for (const el of document.querySelectorAll('#review-panel input:not([type=file]), #review-panel textarea, #review-panel select')) el.value = '';
-  $('f-marital').value = 'never_married';
-  toggleChildren();
+  for (const el of document.querySelectorAll('#wizard-panel input:not([type=file]), #wizard-panel textarea, #wizard-panel select')) el.value = '';
+  $('f-marital').value = 'single';
+  $('f-disability').value = 'No';
+  $('f-religion').value = 'Islam';
+  $('f-nationality').value = 'Pakistani';
   pendingPersonPhoto = null;
   $('pphoto-circ').innerHTML = '👤';
   $('rawnote-wrap').style.display = 'none';
   $('save-status').textContent = '';
+  clearSiblings();
   if (!keepHidden) hideBanner('review-banner');
-  if (typeof renderLiveCard === 'function') renderLiveCard();
+  wizGo(1);
 }
 
-/* ============================================================ SAVE ============================================================ */
-// Reads the current form into a profile object WITHOUT saving — used by the
-// live instant-card preview, the pre-save download, and saveProfile itself.
+/* ============================================================ BUILD / SAVE ============================================================ */
 function buildDraftProfile(){
   const ft = $('f-feet').value, inch = $('f-inches').value;
   const heightInches = ft !== '' ? (parseInt(ft,10)*12 + (inch !== '' ? parseInt(inch,10) : 0)) : null;
@@ -703,35 +770,49 @@ function buildDraftProfile(){
     id: null,
     catalogId: g ? g.toUpperCase() + '-' + String(counters[g] + 1).padStart(2,'0') : 'NEW',
     createdAt: null,
-    sourceType: $('review-panel').dataset.source || 'form',
+    sourceType: 'form',
     photo: pendingPersonPhoto,
     name: $('f-name').value.trim(),
     gender,
     age: $('f-age').value ? parseInt($('f-age').value,10) : null,
     heightInches,
     heightDisplay: heightDisplay(heightInches),
-    complexion: $('f-complexion').value.trim() || null,
     maritalStatus: $('f-marital').value,
-    children: $('f-children').value.trim() || null,
-    education: $('f-education').value.trim() || null,
-    profession: $('f-profession').value.trim() || null,
-    income: $('f-income').value.trim() || null,
-    caste: $('f-caste').value.trim() || null,
-    sect: $('f-sect').value.trim() || null,
-    city: $('f-city').value.trim() || null,
-    residence: $('f-residence').value.trim() || null,
-    property: $('f-property').value.trim() || null,
+    disability: $('f-disability').value,
+    education: { qualification: $('f-qualification').value.trim() || null, institution: $('f-institution').value.trim() || null },
+    job: {
+      profession: $('f-profession').value.trim() || null,
+      workLocation: $('f-worklocation').value.trim() || null,
+      futurePlans: $('f-futureplans').value.trim() || null,
+      income: $('f-income').value.trim() || null
+    },
+    religion: {
+      religion: $('f-religion').value.trim() || null,
+      caste: $('f-caste').value.trim() || null,
+      sect: $('f-sect').value.trim() || null,
+      nationality: $('f-nationality').value.trim() || null
+    },
+    property: {
+      ownership: $('f-ownership').value.trim() || null,
+      size: $('f-propsize').value.trim() || null,
+      vehicle: $('f-vehicle').value.trim() || null,
+      additional: $('f-propadditional').value.trim() || null
+    },
+    address: { city: $('f-city').value.trim() || null, locality: $('f-locality').value.trim() || null },
     father: $('f-father').value.trim() || null,
     mother: $('f-mother').value.trim() || null,
-    siblings: $('f-siblings').value.trim() || null,
-    about: $('f-about').value.trim() || null,
+    siblings: readSiblings(),
     requirements: {
       ageMin: $('r-agemin').value ? parseInt($('r-agemin').value,10) : null,
       ageMax: $('r-agemax').value ? parseInt($('r-agemax').value,10) : null,
       heightMinInches: parseHeightStr($('r-heightmin').value),
-      heightMaxInches: parseHeightStr($('r-heightmax').value),
+      city: $('r-city').value.trim() || null,
       caste: $('r-caste').value.trim() || null,
-      education: $('r-education').value.trim() || null,
+      sect: $('r-sect').value.trim() || null,
+      qualification: $('r-qualification').value.trim() || null,
+      habits: $('r-habits').value.trim() || null,
+      divorcedWidowed: $('r-divorcedwidowed').value.trim() || null,
+      workingWoman: $('r-workingwoman').value || null,
       other: $('r-other').value.trim() || null
     },
     raw_note: $('f-rawnote').value.trim() || null
@@ -740,7 +821,7 @@ function buildDraftProfile(){
 
 async function saveProfile(){
   const profile = buildDraftProfile();
-  if (!profile.name || !profile.gender) { banner('global-banner','error','Name and gender are required before saving.'); window.scrollTo({top:0,behavior:'smooth'}); return; }
+  if (!profile.name || !profile.gender) { banner('global-banner','error','Name and gender are required before saving.'); wizGo(1); window.scrollTo({top:0,behavior:'smooth'}); return; }
   hideBanner('global-banner');
 
   const g = profile.gender === 'male' ? 'm' : 'f';
@@ -761,12 +842,12 @@ async function saveProfile(){
     return;
   }
   profiles.push(profile);
-  $('save-status').textContent = '✓ Saved as ' + profile.catalogId + ' (auto-approved)';
-  banner('global-banner','success','✅ <b>' + esc(profile.name) + '</b> saved as <b>' + profile.catalogId + '</b>. Find them in the Matching Space, or download their card from Profile Preview.');
+  const savedName = profile.name, savedId = profile.catalogId;
   clearForm();
   $('msg-input').value = '';
   resetPhotoMode();
-  renderLiveCard();
+  $('save-status').textContent = '✓ Saved as ' + savedId + ' (auto-approved)';
+  banner('global-banner','success','✅ <b>' + esc(savedName) + '</b> saved as <b>' + savedId + '</b>. Find them in the Matching Space, or download their card from Preview &amp; Download.');
 }
 
 async function deleteProfile(id){
@@ -799,13 +880,16 @@ function eduRank(s){
 }
 function normTxt(s){ return String(s || '').toLowerCase().replace(/[^a-z؀-ۿ]+/g,' ').trim(); }
 
-// Score how well `cand` satisfies `req`'s demands. Returns {chips:[], score, weight}
 function scoreDirection(req, cand){
   const chips = [];
   let score = 0, weight = 0;
   const R = req.requirements || {};
+  const candQual = cand.education && cand.education.qualification;
+  const candCaste = cand.religion && cand.religion.caste;
+  const candSect = cand.religion && cand.religion.sect;
+  const candCity = cand.address && cand.address.city;
+  const reqCity = req.address && req.address.city;
 
-  // Age
   if (R.ageMin != null || R.ageMax != null) {
     if (cand.age == null) chips.push({ s:'na', t:'Age unknown' });
     else {
@@ -816,59 +900,72 @@ function scoreDirection(req, cand){
       else chips.push({ s:'miss', t:`Age ${cand.age} outside ${lo}–${hi === 200 ? '∞' : hi}` });
     }
   }
-  // Height
-  if (R.heightMinInches != null || R.heightMaxInches != null) {
+  if (R.heightMinInches != null) {
     if (cand.heightInches == null) chips.push({ s:'na', t:'Height unknown' });
     else {
       weight += 2;
-      const lo = R.heightMinInches ?? 0, hi = R.heightMaxInches ?? 999;
       const hd = cand.heightDisplay || heightDisplay(cand.heightInches);
-      if (cand.heightInches >= lo && cand.heightInches <= hi) { score += 2; chips.push({ s:'hit', t:`Height ${hd} in range` }); }
-      else if (cand.heightInches >= lo - 1 && cand.heightInches <= hi + 1) { score += 1; chips.push({ s:'partial', t:`Height ${hd} ~1″ off` }); }
-      else chips.push({ s:'miss', t:`Height ${hd} out of range` });
+      if (cand.heightInches >= R.heightMinInches) { score += 2; chips.push({ s:'hit', t:`Height ${hd} meets minimum` }); }
+      else if (cand.heightInches >= R.heightMinInches - 1) { score += 1; chips.push({ s:'partial', t:`Height ${hd} ~1″ short` }); }
+      else chips.push({ s:'miss', t:`Height ${hd} below minimum` });
     }
   }
-  // Caste (only if demanded)
   if (R.caste) {
     const demand = normTxt(R.caste);
-    if (/(any|koi bhi|no demand|khula)/.test(demand)) chips.push({ s:'na', t:'Caste: any' });
-    else if (!cand.caste) { weight += 3; score += 1; chips.push({ s:'partial', t:`Caste demanded ${req.requirements.caste}, candidate's unknown` }); }
+    if (/(any|koi bhi|no demand|khula|open)/.test(demand)) chips.push({ s:'na', t:'Caste: any' });
+    else if (!candCaste) { weight += 3; score += 1; chips.push({ s:'partial', t:`Caste demanded ${R.caste}, candidate's unknown` }); }
     else {
       weight += 3;
-      const cc = normTxt(cand.caste);
-      const same = /(same|apni zaat|own caste)/.test(demand) ? normTxt(req.caste) : demand;
-      if (same && (cc.includes(same) || same.includes(cc))) { score += 3; chips.push({ s:'hit', t:`Caste ${cand.caste} ✓ (${R.caste})` }); }
-      else chips.push({ s:'miss', t:`Caste demanded ${R.caste} ≠ ${cand.caste}` });
+      const cc = normTxt(candCaste);
+      if (cc.includes(demand) || demand.includes(cc)) { score += 3; chips.push({ s:'hit', t:`Caste ${candCaste} ✓ (${R.caste})` }); }
+      else chips.push({ s:'miss', t:`Caste demanded ${R.caste} ≠ ${candCaste}` });
     }
   }
-  // Education (only if demanded)
-  if (R.education) {
-    const need = eduRank(R.education), have = eduRank(cand.education);
-    if (need == null) chips.push({ s:'na', t:'Edu demand unclear' });
-    else if (have == null) { weight += 2; score += 0.5; chips.push({ s:'partial', t:'Education unknown' }); }
+  if (R.sect) {
+    const demand = normTxt(R.sect);
+    if (/(any|open)/.test(demand)) chips.push({ s:'na', t:'Sect: any' });
+    else if (!candSect) { weight += 2; score += 0.5; chips.push({ s:'partial', t:'Sect unknown' }); }
     else {
       weight += 2;
-      if (have >= need) { score += 2; chips.push({ s:'hit', t:`Education ${cand.education} ≥ ${R.education}` }); }
-      else if (have === need - 1) { score += 1; chips.push({ s:'partial', t:`Education ${cand.education} slightly below ${R.education}` }); }
-      else chips.push({ s:'miss', t:`Education ${cand.education || '—'} below ${R.education}` });
+      if (normTxt(candSect).includes(demand) || demand.includes(normTxt(candSect))) { score += 2; chips.push({ s:'hit', t:`Sect ${candSect} ✓` }); }
+      else chips.push({ s:'miss', t:`Sect demanded ${R.sect} ≠ ${candSect}` });
     }
   }
-  // Location compatibility (own locations, symmetric context)
-  const c1 = normTxt(req.city), c2 = normTxt(cand.city);
-  const r1 = normTxt(req.residence), r2 = normTxt(cand.residence);
-  if ((c1 && c2) || (r1 && r2)) {
+  if (R.qualification) {
+    const need = eduRank(R.qualification), have = eduRank(candQual);
+    if (need == null) chips.push({ s:'na', t:'Qualification demand unclear' });
+    else if (have == null) { weight += 2; score += 0.5; chips.push({ s:'partial', t:'Qualification unknown' }); }
+    else {
+      weight += 2;
+      if (have >= need) { score += 2; chips.push({ s:'hit', t:`Qualification ${candQual} ≥ ${R.qualification}` }); }
+      else if (have === need - 1) { score += 1; chips.push({ s:'partial', t:`Qualification ${candQual} slightly below` }); }
+      else chips.push({ s:'miss', t:`Qualification below ${R.qualification}` });
+    }
+  }
+  if (R.city) {
     weight += 1;
-    if (c1 && c2 && (c1 === c2 || c1.includes(c2) || c2.includes(c1))) { score += 1; chips.push({ s:'hit', t:`Same city (${cand.city})` }); }
-    else if (r1 && r2 && (r1.includes('pakistan') === r2.includes('pakistan'))) { score += 0.5; chips.push({ s:'partial', t:'Different city, compatible country' }); }
-    else chips.push({ s:'miss', t:'Location mismatch' });
+    const rc = normTxt(R.city);
+    if (!candCity) chips.push({ s:'na', t:'City unknown' });
+    else if (normTxt(candCity).includes(rc) || rc.includes(normTxt(candCity)) || /any/.test(rc)) { score += 1; chips.push({ s:'hit', t:`City ${candCity} ✓` }); }
+    else chips.push({ s:'miss', t:`City demanded ${R.city} ≠ ${candCity}` });
+  } else if (reqCity && candCity) {
+    weight += 1;
+    if (normTxt(reqCity) === normTxt(candCity)) { score += 1; chips.push({ s:'hit', t:`Same city (${candCity})` }); }
+    else chips.push({ s:'partial', t:'Different city' });
+  }
+  if (R.divorcedWidowed && (cand.maritalStatus === 'divorced' || cand.maritalStatus === 'widowed')) {
+    weight += 2;
+    if (/open|accept|consider|ok/i.test(R.divorcedWidowed)) { score += 2; chips.push({ s:'hit', t:`${MARITAL_LABEL[cand.maritalStatus]} — accepted` }); }
+    else if (/not/i.test(R.divorcedWidowed)) chips.push({ s:'miss', t:`${MARITAL_LABEL[cand.maritalStatus]} — not accepted` });
+    else chips.push({ s:'partial', t:'Marital status preference unclear' });
   }
   if (weight === 0) chips.push({ s:'na', t:'No specific demands — neutral' });
   return { chips, score, weight };
 }
 
 function matchScore(a, b){
-  const dA = scoreDirection(a, b); // a's demands vs b
-  const dB = scoreDirection(b, a); // b's demands vs a
+  const dA = scoreDirection(a, b);
+  const dB = scoreDirection(b, a);
   const pcts = [];
   if (dA.weight > 0) pcts.push(dA.score / dA.weight);
   if (dB.weight > 0) pcts.push(dB.score / dB.weight);
@@ -878,19 +975,32 @@ function matchScore(a, b){
 
 function renderList(){
   const g = $('fl-gender').value, amin = $('fl-agemin').value, amax = $('fl-agemax').value;
+  const hmin = parseHeightStr($('fl-heightmin').value);
   const caste = normTxt($('fl-caste').value), city = normTxt($('fl-city').value);
+  const sect = normTxt($('fl-sect').value), nat = normTxt($('fl-nationality').value);
+  const qual = normTxt($('fl-qualification').value), habits = normTxt($('fl-habits').value);
+  const workingWoman = $('fl-workingwoman').value;
   const ms = $('fl-marital').value, q = normTxt($('fl-search').value);
-  const list = profiles.filter(p =>
-    (!g || p.gender === g) &&
-    (!amin || (p.age != null && p.age >= +amin)) &&
-    (!amax || (p.age != null && p.age <= +amax)) &&
-    (!caste || normTxt(p.caste).includes(caste)) &&
-    (!city || normTxt(p.city).includes(city) || normTxt(p.residence).includes(city)) &&
-    (!ms || p.maritalStatus === ms) &&
-    (!q || normTxt(p.name).includes(q) || normTxt(p.catalogId).includes(q))
-  );
+  const list = profiles.filter(p => {
+    const rl = p.religion || {}, ad = p.address || {}, ed = p.education || {}, rq = p.requirements || {};
+    return (!g || p.gender === g) &&
+      (!amin || (p.age != null && p.age >= +amin)) &&
+      (!amax || (p.age != null && p.age <= +amax)) &&
+      (hmin == null || (p.heightInches != null && p.heightInches >= hmin)) &&
+      (!caste || normTxt(rl.caste).includes(caste)) &&
+      (!city || normTxt(ad.city).includes(city) || normTxt(ad.locality).includes(city)) &&
+      (!sect || normTxt(rl.sect).includes(sect)) &&
+      (!nat || normTxt(rl.nationality).includes(nat)) &&
+      (!qual || normTxt(ed.qualification).includes(qual)) &&
+      (!habits || normTxt(rq.habits).includes(habits)) &&
+      (!workingWoman || rq.workingWoman === workingWoman) &&
+      (!ms || p.maritalStatus === ms) &&
+      (!q || normTxt(p.name).includes(q) || normTxt(p.catalogId).includes(q));
+  });
   $('plist-empty').style.display = profiles.length ? 'none' : '';
-  $('plist').innerHTML = list.map(p => `
+  $('plist').innerHTML = list.map(p => {
+    const ed = p.education || {}, jb = p.job || {}, rl = p.religion || {}, ad = p.address || {};
+    return `
     <div class="pcard">
       <div class="top">
         <div class="circ">${p.photo ? `<img src="${p.photo}">` : '👤'}</div>
@@ -898,13 +1008,14 @@ function renderList(){
           <div class="meta">${[p.age ? p.age + ' yrs' : null, p.heightDisplay, MARITAL_LABEL[p.maritalStatus]].filter(Boolean).join(' · ')}</div>
         </div>
       </div>
-      <div class="meta">${[p.caste, p.sect, p.education, p.profession].filter(Boolean).map(esc).join(' · ') || '—'}<br>${esc(p.residence || p.city || '')}</div>
+      <div class="meta">${[rl.caste, rl.sect, ed.qualification, jb.profession].filter(Boolean).map(esc).join(' · ') || '—'}<br>${esc(ad.city || '')}</div>
       <div class="acts">
         <button class="btn sm" onclick="openMatches('${p.id}')">💞 Matches</button>
         <button class="btn sm ghost" onclick="showTab('preview'); $('prev-select').value='${p.id}'; renderPreview();">🪪 Card</button>
         <button class="btn sm ghost" style="color:var(--bad);border-color:#E9B8B4;" onclick="deleteProfile('${p.id}')">🗑</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   if (profiles.length && !list.length)
     $('plist').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>No profiles match these filters</b>Loosen the filters above to see your ' + profiles.length + ' saved profile(s).</div>';
 }
@@ -921,14 +1032,16 @@ function openMatches(id){
   }
   const scored = pool.map(c => ({ c, ...matchScore(p, c) })).sort((x,y) => y.pct - x.pct);
   const pron = p.gender === 'male' ? 'His' : 'Her';
-  $('matches-body').innerHTML = scored.map(({ c, pct, dA, dB }) => `
+  $('matches-body').innerHTML = scored.map(({ c, pct, dA, dB }) => {
+    const ed = c.education || {}, rl = c.religion || {}, ad = c.address || {};
+    return `
     <div class="mcard">
       <div class="row1">
         <div class="pct">${pct}%<small>MATCH</small></div>
         <div class="circ" style="width:52px;height:52px;border-radius:50%;border:2.5px solid var(--gold2);overflow:hidden;display:flex;align-items:center;justify-content:center;background:#F1E6D2;color:var(--gold);flex-shrink:0;">${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover">` : '👤'}</div>
         <div>
           <span class="nm" style="font-weight:700;color:var(--plum)">${esc(c.name)}</span><span class="id" style="background:var(--gold2);color:var(--plum);font-size:11px;font-weight:700;border-radius:6px;padding:1px 8px;margin-left:6px;">${c.catalogId}</span>
-          <div class="meta" style="font-size:12px;color:#7a6a55;">${[c.age ? c.age+' yrs' : null, c.heightDisplay, c.caste, c.education, c.residence || c.city].filter(Boolean).map(esc).join(' · ')}</div>
+          <div class="meta" style="font-size:12px;color:#7a6a55;">${[c.age ? c.age+' yrs' : null, c.heightDisplay, rl.caste, ed.qualification, ad.city].filter(Boolean).map(esc).join(' · ')}</div>
         </div>
         <button class="btn sm ghost" style="margin-left:auto" onclick="showTab('preview'); $('prev-select').value='${c.id}'; renderPreview();">🪪 Card</button>
       </div>
@@ -936,50 +1049,553 @@ function openMatches(id){
       <div class="chips">${dA.chips.map(ch => `<span class="chip ${ch.s}">${ch.s==='hit'?'✓':ch.s==='miss'?'✗':ch.s==='partial'?'≈':'—'} ${esc(ch.t)}</span>`).join('')}</div>
       <div class="dirlabel">${esc(c.name.split(' ')[0])}'s side's demands → ${esc(p.name.split(' ')[0])}</div>
       <div class="chips">${dB.chips.map(ch => `<span class="chip ${ch.s}">${ch.s==='hit'?'✓':ch.s==='miss'?'✗':ch.s==='partial'?'≈':'—'} ${esc(ch.t)}</span>`).join('')}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   $('matches-panel').scrollIntoView({ behavior:'smooth' });
 }
 function closeMatches(){ $('matches-panel').style.display = 'none'; }
 
-/* ============================================================ PREVIEW ============================================================ */
-// Structured requirements: headed items ([label,value]) + free-text "other" + a one-line highlight.
-function requirementInfo(p){
-  const R = p.requirements || {};
-  const items = [];
-  const numRange = (lo, hi) => lo != null && hi != null ? lo + '–' + hi : lo != null ? lo + '+' : 'up to ' + hi;
-  const hRange = (lo, hi) => {
-    const a = heightDisplay(lo), b = heightDisplay(hi);
-    return a && b ? a + ' – ' + b : a ? a + ' & above' : 'up to ' + b;
-  };
-  if (R.ageMin != null || R.ageMax != null) items.push(['Age', numRange(R.ageMin, R.ageMax) + ' yrs']);
-  if (R.heightMinInches != null || R.heightMaxInches != null) items.push(['Height', hRange(R.heightMinInches, R.heightMaxInches)]);
-  if (R.caste) items.push(['Caste', R.caste]);
-  if (R.education) items.push(['Education', R.education]);
-  const bits = items.map(([l,v]) => l === 'Age' ? 'age ' + v : l === 'Height' ? 'height ' + v : l === 'Caste' ? v + ' family' : v);
-  const highlight = bits.length ? 'Seeking ' + bits.join(', ') : 'Open to suitable proposals';
-  return { items, other: R.other || '', highlight, hasAny: items.length > 0 || !!R.other };
-}
+/* ============================================================================================
+   CARD RENDERING — 5-slide Instagram carousel + single Summary Card.
+   Ported from the approved canvas mockups; every field/section is skipped when empty so the
+   generated post never shows a blank heading.
+   ============================================================================================ */
+const PLUM='#6E1E3C', PLUM2='#8E2A4D', GOLD='#B5893B', GOLD2='#D4AF61', CREAM='#FDF7F1', INK='#3A1220';
+const HFONT='"DM Serif Display", serif';
 const WA_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#25D366" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.359.101 11.945c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a11.96 11.96 0 005.71 1.454h.006c6.585 0 11.946-5.359 11.949-11.945a11.9 11.9 0 00-3.48-8.408"/></svg>';
 const WA_DATAURL = 'data:image/svg+xml;base64,' + btoa(WA_SVG);
-function lookingBoxHTML(p){
-  const heShe = p.gender === 'female' ? "What She's Looking For" : "What He's Looking For";
-  const req = requirementInfo(p);
-  let inner;
-  if (req.items.length) {
-    inner = '<div class="rgrid">' + req.items.map(([l,v]) =>
-      `<div><div class="rl">${l}</div><div class="rv">${esc(v)}</div></div>`).join('') + '</div>';
-    if (req.other) inner += `<div class="other"><div class="rl">Other demands</div><div class="rv">${esc(req.other)}</div></div>`;
-  } else if (req.other) {
-    inner = `<div class="other"><div class="rl">Requirements</div><div class="rv">${esc(req.other)}</div></div>`;
-  } else {
-    inner = `<div class="hl">${esc(req.highlight)}</div>`;
-  }
-  return `<div class="looking"><div class="t">${heShe}</div>${inner}</div>`;
+let waImg = null;
+function loadImg(src){ return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+async function waLogo(){ if (!waImg) { try { waImg = await loadImg(WA_DATAURL); } catch { waImg = null; } } return waImg; }
+async function fontsReady(){ try { await document.fonts.ready; } catch {} }
+
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function rrBottom(c,x,y,w,h,r){c.beginPath();c.moveTo(x,y);c.lineTo(x+w,y);c.lineTo(x+w,y+h-r);c.arcTo(x+w,y+h,x+w-r,y+h,r);c.lineTo(x+r,y+h);c.arcTo(x,y+h,x,y+h-r,r);c.lineTo(x,y);c.closePath();}
+function fitFont(c,text,mw,start,wgt,min){let s=start;c.font=wgt+' '+s+'px Poppins, sans-serif';while(c.measureText(text).width>mw&&s>min){s-=1;c.font=wgt+' '+s+'px Poppins, sans-serif';}return s;}
+function fitFont2(c,text,mw,start,wgt,fam,min){let s=start;c.font=wgt+' '+s+'px '+fam;while(c.measureText(text).width>mw&&s>min){s-=1;c.font=wgt+' '+s+'px '+fam;}return s;}
+function sp(s,n){return String(s).split('').join(' '.repeat(n));}
+
+function watermarkTexture(c,W,H){
+  c.save();c.globalAlpha=0.05;c.fillStyle=PLUM;c.font='700 25px Poppins, sans-serif';c.textAlign='center';
+  c.translate(W/2,H/2);c.rotate(-18*Math.PI/180);c.translate(-W/2,-H/2);
+  for(let row=-2;row<Math.ceil(H/110)+4;row++)for(let col=-1;col<Math.ceil(W/300)+2;col++)
+    c.fillText('CITY  MARRIAGE  BUREAU', col*360+(row%2)*100, row*128);
+  c.restore();
 }
-function ctaHTML(){
-  return `<div class="cta">${WA_SVG}<div><div class="l1">DM if you're interested in this profile</div><div class="l2">${esc(contactNo)}</div></div></div>`;
+function frame(c,W,H){
+  const FR=26,X0=FR,WW=W-2*FR;
+  c.strokeStyle=GOLD2;c.lineWidth=3;rr(c,FR,FR,WW,H-2*FR,26);c.stroke();
+  c.strokeStyle='rgba(181,137,59,.4)';c.lineWidth=1.2;rr(c,FR+9,FR+9,WW-18,H-2*FR-18,20);c.stroke();
+  return {FR,X0,WW};
+}
+function panel(c,x,y,w,h){
+  c.save();c.shadowColor='rgba(110,30,60,.10)';c.shadowBlur=10;c.shadowOffsetY=4;
+  rr(c,x,y,w,h,20);c.fillStyle='#fff';c.fill();c.restore();
+  rr(c,x,y,w,h,20);c.lineWidth=1.6;c.strokeStyle=GOLD2;c.stroke();
+}
+function sectionHeader(c,x,y,label){
+  c.textAlign='left';c.fillStyle=PLUM;c.font='400 27px '+HFONT;
+  c.fillText(label,x,y);c.fillText(label,x+0.6,y);
+}
+function fieldPair(c,x,y,colW,label,value,valSize){
+  const vs=valSize||20;
+  c.textAlign='left';c.fillStyle=GOLD;c.font='700 14px Poppins, sans-serif';c.fillText(String(label).toUpperCase(),x,y);
+  c.fillStyle=INK;c.font='400 '+vs+'px Poppins, sans-serif';
+  const words=String(value).split(/\s+/);let line='';const lines=[];
+  for(const w of words){const t=line?line+' '+w:w;if(c.measureText(t).width>colW-10&&line){lines.push(line);line=w;}else line=t;}
+  if(line)lines.push(line);
+  c.fillText(lines[0]||'',x,y+vs+2);
+}
+const boxHeight=rows=>123+(rows-1)*44;
+// rows: array of [ [label,value], [label,value]|null ] — null/empty fields are pre-filtered by the caller
+function fieldGrid(c,x,y,w,rows,pad){
+  pad=pad||24;
+  const colW=(w-2*pad-40)/2, x1=x+pad, x2=x1+colW+40;
+  let ry=y+78;
+  rows.forEach(r=>{
+    fieldPair(c,x1,ry,colW,r[0][0],r[0][1],19);
+    if(r[1]) fieldPair(c,x2,ry,colW,r[1][0],r[1][1],19);
+    ry+=44;
+  });
+}
+// group a flat list of [label,value] pairs (already filtered non-empty) into 2-per-row grid rows
+function pairsToRows(pairs){
+  const rows=[];
+  for(let i=0;i<pairs.length;i+=2) rows.push(pairs[i+1] ? [pairs[i],pairs[i+1]] : [pairs[i],null]);
+  return rows;
+}
+function compactHeader(c,W,X0,WW,FR,title,tag){
+  const headerH=196;
+  c.save();c.shadowColor='rgba(110,30,60,.3)';c.shadowBlur=18;c.shadowOffsetY=8;
+  const grad=c.createLinearGradient(X0,FR,X0+WW,FR+headerH);grad.addColorStop(0,PLUM);grad.addColorStop(1,PLUM2);
+  rrBottom(c,X0,FR,WW,headerH,30);c.fillStyle=grad;c.fill();c.restore();
+  const logoY=FR+44;
+  c.font='700 13px Poppins, sans-serif';
+  const wm=sp('CITY MARRIAGE BUREAU',1.1);const wmW=c.measureText(wm).width;
+  const logoR=14,gapLW=9,groupW=logoR*2+gapLW+wmW,gx=W/2-groupW/2;
+  c.beginPath();c.arc(gx+logoR,logoY,logoR,0,7);c.fillStyle=GOLD2;c.fill();
+  c.textAlign='center';c.fillStyle=PLUM;c.font='800 11px Poppins, sans-serif';c.fillText('CMB',gx+logoR,logoY+4);
+  c.textAlign='left';c.fillStyle='#fff';c.font='700 13px Poppins, sans-serif';
+  c.fillText(wm,gx+logoR*2+gapLW,logoY+4);
+  c.textAlign='center';c.fillStyle='#fff';c.font='400 46px '+HFONT;
+  c.fillText(title,W/2,FR+112);
+  c.fillStyle=GOLD2;c.font='700 16px Poppins, sans-serif';c.fillText(tag||'',W/2,FR+156);
+  return headerH;
+}
+function heroHeader(c,W,X0,WW,FR,profession,photo){
+  const meas=document.createElement('canvas').getContext('2d');
+  const photoD=248, photoX=X0+46, textX=photoX+photoD+38, textW=X0+WW-46-textX;
+  const LINE_GAP=13;
+  const prof = profession || 'City Marriage Bureau';
+  const marriageFS=fitFont2(meas,'MARRIAGE PROPOSAL',textW,56,'900',HFONT,32);
+  const reqForFS=fitFont2(meas,'REQUIRED FOR',textW,38,'800',HFONT,24);
+  const profFS=fitFont2(meas,prof,textW,46,'800',HFONT,22);
+  const textBlockH=marriageFS+LINE_GAP+reqForFS+LINE_GAP+profFS+14;
+
+  let hy=48; hy+=42+22; hy+=Math.max(photoD, textBlockH); hy+=58;
+  const headerH=hy;
+
+  c.save();c.shadowColor='rgba(110,30,60,.35)';c.shadowBlur=22;c.shadowOffsetY=10;
+  const grad=c.createLinearGradient(X0,FR,X0+WW,FR+headerH);grad.addColorStop(0,PLUM);grad.addColorStop(1,PLUM2);
+  rrBottom(c,X0,FR,WW,headerH,34);c.fillStyle=grad;c.fill();
+  c.restore();
+
+  let y=FR+48;
+  c.font='700 15px Poppins, sans-serif';
+  const wordmark=sp('CITY MARRIAGE BUREAU',1.1);
+  const wmW=c.measureText(wordmark).width;
+  const logoR=20, gapLW=12;
+  const groupW=logoR*2+gapLW+wmW;
+  const gx=W/2-groupW/2;
+  c.beginPath();c.arc(gx+logoR,y+logoR,logoR,0,7);c.fillStyle=GOLD2;c.fill();
+  c.textAlign='center';c.fillStyle=PLUM;c.font='800 14px Poppins, sans-serif';c.fillText('CMB',gx+logoR,y+logoR+5);
+  c.textAlign='left';c.fillStyle='#fff';c.font='700 15px Poppins, sans-serif';
+  c.fillText(wordmark,gx+logoR*2+gapLW,y+logoR+5);
+  y+=42+22;
+
+  const photoY=y;
+  rr(c,photoX,photoY,photoD,photoD,30);c.fillStyle='#F1E6D2';c.fill();c.save();
+  rr(c,photoX,photoY,photoD,photoD,30);c.clip();
+  if (photo) { try { const s=Math.max(photoD/photo.width,photoD/photo.height); c.drawImage(photo, photoX+photoD/2-photo.width*s/2, photoY+photoD/2-photo.height*s/2, photo.width*s, photo.height*s); } catch(e){} }
+  else { c.textAlign='center';c.fillStyle=GOLD;c.font='600 '+Math.round(photoD*0.55)+'px Poppins, sans-serif';c.fillText('👤',photoX+photoD/2,photoY+photoD/2+photoD*0.2); }
+  c.restore();
+  rr(c,photoX,photoY,photoD,photoD,30);c.lineWidth=6;c.strokeStyle=GOLD2;c.stroke();
+
+  const rowH=Math.max(photoD,textBlockH);
+  let ty=photoY+(rowH-textBlockH)/2;
+  c.textAlign='left';
+  try{c.letterSpacing='1px';}catch(e){}
+  c.font='900 '+marriageFS+'px '+HFONT;c.fillStyle='#fff';
+  c.fillText('MARRIAGE PROPOSAL',textX,ty+marriageFS);
+  ty+=marriageFS+LINE_GAP;
+  c.font='800 '+reqForFS+'px '+HFONT;c.fillStyle=GOLD2;
+  c.fillText('REQUIRED FOR',textX,ty+reqForFS);
+  try{c.letterSpacing='0px';}catch(e){}
+  ty+=reqForFS+LINE_GAP;
+  c.font='800 '+profFS+'px '+HFONT;
+  c.save();c.shadowColor='rgba(0,0,0,.28)';c.shadowBlur=10;c.shadowOffsetY=4;c.fillStyle='#fff';
+  try{c.letterSpacing='0.4px';}catch(e){}
+  c.fillText(prof,textX,ty+profFS);
+  c.restore();
+  const profBottom=ty+profFS;
+  const ulW=Math.min(96,textW*0.22);
+  c.strokeStyle=GOLD2;c.lineWidth=4;c.lineCap='round';
+  c.beginPath();c.moveTo(textX,profBottom+14);c.lineTo(textX+ulW,profBottom+14);c.stroke();
+
+  return headerH;
+}
+function swipeFooter(c,W,H,text){
+  const pillY=H-118, pillH=72;
+  c.font='700 24px Poppins, sans-serif';
+  const tw=c.measureText(text).width, pillW=tw+140, px=W/2-pillW/2;
+  c.save();c.shadowColor='rgba(181,137,59,.4)';c.shadowBlur=14;c.shadowOffsetY=5;
+  const pg=c.createLinearGradient(px,pillY,px+pillW,pillY);pg.addColorStop(0,GOLD);pg.addColorStop(1,GOLD2);
+  rr(c,px,pillY,pillW,pillH,pillH/2);c.fillStyle=pg;c.fill();c.restore();
+  c.textAlign='left';c.fillStyle='#fff';c.font='700 24px Poppins, sans-serif';
+  c.fillText(text,px+38,pillY+pillH/2+8);
+  const ax=px+pillW-52,ay=pillY+pillH/2;
+  c.beginPath();c.moveTo(ax-8,ay-13);c.lineTo(ax+10,ay);c.lineTo(ax-8,ay+13);
+  c.strokeStyle='#fff';c.lineWidth=6;c.lineCap='round';c.lineJoin='round';c.stroke();
+  return pillY;
+}
+function quoteBox(c,x,y,w,h,label,text){
+  c.save();c.shadowColor='rgba(110,30,60,.1)';c.shadowBlur=10;c.shadowOffsetY=4;
+  rr(c,x,y,w,h,18);c.fillStyle='#fff';c.fill();c.restore();
+  rr(c,x,y,w,h,18);c.lineWidth=1.6;c.strokeStyle=GOLD2;c.stroke();
+  c.textAlign='left';c.fillStyle=GOLD;c.font='700 14px Poppins, sans-serif';c.fillText(sp(label,1),x+26,y+34);
+  const fs=fitFont2(c,'“'+text+'”',w-52,30,'400',HFONT,18);
+  c.fillStyle=PLUM;c.font='400 '+fs+'px '+HFONT;
+  c.fillText('“'+text+'”',x+26,y+h-24);
+}
+function contactFooter(c,W,y,contact){
+  const boxW=Math.min(640,W-160),boxH=200,bx=W/2-boxW/2,cx=W/2;
+  c.save();c.shadowColor='rgba(110,30,60,.15)';c.shadowBlur=14;c.shadowOffsetY=5;
+  rr(c,bx,y,boxW,boxH,22);c.fillStyle='#fff';c.fill();c.restore();
+  rr(c,bx,y,boxW,boxH,22);c.lineWidth=2;c.strokeStyle=GOLD2;c.stroke();
+  const logoR=28,logoY=y+54;
+  c.beginPath();c.arc(cx,logoY,logoR,0,7);c.fillStyle=CREAM;c.fill();c.lineWidth=1.6;c.strokeStyle=GOLD2;c.stroke();
+  if(waImg) c.drawImage(waImg, cx-logoR*0.62, logoY-logoR*0.62, logoR*1.24, logoR*1.24);
+  c.textAlign='center';c.fillStyle=GOLD;c.font='700 13px Poppins, sans-serif';c.fillText(sp('DM US IF INTERESTED',.5),cx,y+118);
+  c.fillStyle=PLUM;c.font='400 36px '+HFONT;c.fillText(contact||'—',cx,y+164);
+  return y+boxH;
 }
 
+/* ---------- profile → display helpers (skip-if-empty everywhere) ---------- */
+function reqInfo(p){
+  const r = p.requirements || {};
+  const ageStr = (r.ageMin!=null||r.ageMax!=null) ? (r.ageMin!=null&&r.ageMax!=null ? r.ageMin+'–'+r.ageMax : r.ageMin!=null ? r.ageMin+'+' : 'up to '+r.ageMax) : null;
+  const pairs = [
+    ['Age Range', ageStr], ['Min Height', heightDisplay(r.heightMinInches)],
+    ['City Preference', r.city], ['Caste Preference', r.caste],
+    ['Sect Preference', r.sect], ['Qualification Pref.', r.qualification],
+    ['Habits Preference', r.habits], ['Divorced/Widowed', r.divorcedWidowed],
+    ['Working Woman', r.workingWoman]
+  ].filter(([,v]) => v);
+  const bits = [];
+  if (ageStr) bits.push('age '+ageStr+' yrs');
+  if (r.city) bits.push('from '+r.city);
+  if (r.sect) bits.push(r.sect);
+  if (r.habits) bits.push(r.habits.toLowerCase());
+  const highlight = bits.length ? bits.join(', ') : 'Open to suitable proposals';
+  return { pairs, other: r.other || null, highlight };
+}
+function sibLine(s){
+  return [s.professionEducation].filter(Boolean).join(' · ') || 'Details not specified';
+}
+
+/* ---------- SLIDE 1: COVER ---------- */
+async function drawCover(c, p, size){
+  const W=1080, H = size==='portrait' ? 1350 : 1080;
+  c.canvas.width=W; c.canvas.height=H;
+  c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
+  const FR=26, X0=FR, WW=W-2*FR;
+  c.strokeStyle=GOLD2;c.lineWidth=3;rr(c,FR,FR,WW,H-2*FR,26);c.stroke();
+  c.strokeStyle='rgba(181,137,59,.4)';c.lineWidth=1.2;rr(c,FR+9,FR+9,WW-18,H-2*FR-18,20);c.stroke();
+
+  let photoImg=null; if (p.photo) { try { photoImg = await loadImg(p.photo); } catch(e){} }
+  const headerH = heroHeader(c, W, X0, WW, FR, (p.job&&p.job.profession) || 'City Marriage Bureau', photoImg);
+
+  const stats=[['Male'===p.gender||p.gender==='male'?'Male':p.gender==='female'?'Female':null,'GENDER'],
+    [p.age!=null?p.age+' yrs':null,'AGE'],[p.heightDisplay,'HEIGHT'],
+    [MARITAL_LABEL[p.maritalStatus],'STATUS'],[p.education&&p.education.qualification,'QUALIFICATION'],
+    [p.address&&p.address.city,'CITY']].filter(([v])=>v);
+  const gridTop=FR+headerH+56, gap=15, sw=(WW-2*44-2*gap)/3, sh=126, rowGap=15;
+  stats.forEach(([v,l],i)=>{
+    const col=i%3,row=Math.floor(i/3);
+    const x=X0+44+col*(sw+gap), by=gridTop+row*(sh+rowGap);
+    c.save();c.shadowColor='rgba(110,30,60,.12)';c.shadowBlur=10;c.shadowOffsetY=4;
+    rr(c,x,by,sw,sh,18);c.fillStyle='#fff';c.fill();c.restore();
+    rr(c,x,by,sw,sh,18);c.lineWidth=2.2;c.strokeStyle=GOLD2;c.stroke();
+    c.textAlign='center';c.fillStyle=PLUM;let fs=fitFont(c,v,sw-20,28,'800',15);c.font='800 '+fs+'px Poppins, sans-serif';
+    c.fillText(v,x+sw/2,by+54);
+    c.fillStyle=GOLD;c.font='700 14px Poppins, sans-serif';c.fillText(sp(l,1),x+sw/2,by+90);
+  });
+  const rows=Math.ceil(stats.length/3);
+  const gridBottom=gridTop+rows*sh+(rows-1)*rowGap;
+
+  let pillLabel = 'SWIPE FOR PERSONAL DETAILS';
+  if (size==='portrait') {
+    const info=reqInfo(p);
+    const boxY=gridBottom+50, boxH=142;
+    quoteBox(c,X0+44,boxY,WW-88,boxH,'LOOKING FOR', info.highlight);
+    swipeFooter(c,W,H,pillLabel);
+  } else {
+    swipeFooter(c,W,H,pillLabel);
+  }
+}
+
+/* ---------- SLIDE 2: PERSONAL DETAILS ---------- */
+async function drawPersonal(c, p, size){
+  const W=1080, H = size==='portrait' ? 1350 : 1080;
+  c.canvas.width=W; c.canvas.height=H;
+  c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
+  const {FR,X0,WW}=frame(c,W,H);
+  const headerH=compactHeader(c,W,X0,WW,FR,'Personal Details',p.catalogId);
+
+  const fullW=WW-88, xFull=X0+44;
+  const boxGap=24, halfW=(fullW-boxGap)/2, xLeft=xFull, xRight=xFull+halfW+boxGap;
+  const pad=24;
+  let y=FR+headerH+(size==='portrait'?90:34);
+
+  const ed=p.education||{}, jb=p.job||{}, rl=p.religion||{}, pr=p.property||{}, ad=p.address||{};
+  const eduRows = pairsToRows([['Qualification',ed.qualification],['Institution',ed.institution],
+    ['Profession',jb.profession],['Work Location',jb.workLocation],['Future Plans',jb.futurePlans],['Income',jb.income]].filter(([,v])=>v));
+  if (eduRows.length){
+    const h1=boxHeight(eduRows.length);
+    panel(c,xFull,y,fullW,h1);
+    sectionHeader(c,xFull+pad,y+40,'Education & Career');
+    fieldGrid(c,xFull,y,fullW,eduRows);
+    y+=h1+(size==='portrait'?50:14);
+  }
+
+  const relRows = pairsToRows([['Religion',rl.religion],['Caste',rl.caste],['Sect',rl.sect],['Nationality',rl.nationality]].filter(([,v])=>v));
+  const propRows = pairsToRows([['Ownership',pr.ownership],['Size',pr.size],['Vehicle',pr.vehicle],['Additional',pr.additional]].filter(([,v])=>v));
+  if (relRows.length || propRows.length){
+    const h2=boxHeight(Math.max(relRows.length,propRows.length,1));
+    if (relRows.length){ panel(c,xLeft,y,halfW,h2); sectionHeader(c,xLeft+pad,y+40,'Religion'); fieldGrid(c,xLeft,y,halfW,relRows); }
+    if (propRows.length){ panel(c,xRight,y,halfW,h2); sectionHeader(c,xRight+pad,y+40,'Property'); fieldGrid(c,xRight,y,halfW,propRows); }
+    y+=h2+(size==='portrait'?50:14);
+  }
+
+  const addrPairs = [['City',ad.city],['Disability',p.disability!=='No'?p.disability:null],['Locality',ad.locality]].filter(([,v])=>v);
+  if (addrPairs.length){
+    const h3=boxHeight(Math.max(1,Math.ceil(addrPairs.length/2)));
+    panel(c,xFull,y,fullW,h3);
+    sectionHeader(c,xFull+pad,y+40,'Address');
+    fieldGrid(c,xFull,y,fullW,pairsToRows(addrPairs));
+    y+=h3;
+  }
+
+  if (size==='portrait'){
+    const capY=y+(H-118-y)/2;
+    c.strokeStyle=GOLD2;c.lineWidth=1.4;c.lineCap='round';
+    c.beginPath();c.moveTo(W/2-60,capY-14);c.lineTo(W/2+60,capY-14);c.stroke();
+    c.textAlign='center';c.fillStyle='rgba(58,18,32,.5)';c.font='500 16px Poppins, sans-serif';
+    c.fillText('Complete details continue on the next slides',W/2,capY+18);
+  }
+  swipeFooter(c,W,H,'SWIPE FOR FAMILY DETAILS');
+}
+
+/* ---------- SLIDE 3: FAMILY DETAILS ---------- */
+async function drawFamily(c, p, size){
+  const W=1080, H = size==='portrait' ? 1350 : 1080;
+  c.canvas.width=W; c.canvas.height=H;
+  c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
+  const {FR,X0,WW}=frame(c,W,H);
+  const headerH=compactHeader(c,W,X0,WW,FR,'Family Details',p.catalogId);
+
+  const fullW=WW-88, xFull=X0+44, pad=24;
+  let y=FR+headerH+(size==='portrait'?60:44);
+
+  const parentPairs=[["Father's Occupation",p.father],["Mother's Occupation",p.mother]].filter(([,v])=>v);
+  if (parentPairs.length){
+    const hP=boxHeight(Math.ceil(parentPairs.length/2));
+    panel(c,xFull,y,fullW,hP);
+    sectionHeader(c,xFull+pad,y+40,'Parents');
+    fieldGrid(c,xFull,y,fullW,pairsToRows(parentPairs));
+    y+=hP+30;
+  }
+
+  const sibs=p.siblings||[];
+  if (sibs.length){
+    const rowH=86;
+    const hS=78+(sibs.length-1)*rowH+59+24;
+    panel(c,xFull,y,fullW,hS);
+    sectionHeader(c,xFull+pad,y+40,'Siblings');
+    sibs.forEach((s,i)=>{
+      const rowTop=y+78+i*rowH;
+      c.textAlign='left';c.fillStyle=PLUM;c.font='400 26px '+HFONT;c.fillText(s.relation||'Sibling',xFull+pad,rowTop+22);
+      if (s.maritalStatus){
+        c.font='700 13px Poppins, sans-serif';const pillW=c.measureText(s.maritalStatus.toUpperCase()).width+30;
+        rr(c,xFull+fullW-pad-pillW,rowTop-6,pillW,30,15);c.fillStyle=GOLD2;c.fill();
+        c.fillStyle=PLUM;c.textAlign='center';c.fillText(sp(s.maritalStatus.toUpperCase(),.5),xFull+fullW-pad-pillW/2,rowTop+14);
+      }
+      c.textAlign='left';c.fillStyle=INK;c.font='400 19px Poppins, sans-serif';c.fillText(sibLine(s),xFull+pad,rowTop+54);
+      if(i<sibs.length-1){
+        c.strokeStyle='rgba(181,137,59,.3)';c.lineWidth=1;
+        c.beginPath();c.moveTo(xFull+pad,rowTop+rowH-14);c.lineTo(xFull+fullW-pad,rowTop+rowH-14);c.stroke();
+      }
+    });
+    y+=hS+26;
+  }
+
+  if (!parentPairs.length && !sibs.length){
+    c.textAlign='center';c.fillStyle='rgba(58,18,32,.45)';c.font='400 24px '+HFONT;
+    c.fillText('Family details not specified',W/2,y+80);
+  }
+
+  swipeFooter(c,W,H,'SWIPE FOR REQUIREMENTS');
+}
+
+/* ---------- SLIDE 4: REQUIREMENTS ---------- */
+async function drawRequirements(c, p, size){
+  const W=1080, H = size==='portrait' ? 1350 : 1080;
+  c.canvas.width=W; c.canvas.height=H;
+  c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
+  const {FR,X0,WW}=frame(c,W,H);
+  const headerH=compactHeader(c,W,X0,WW,FR,'Requirements',p.catalogId);
+
+  const fullW=WW-88, xFull=X0+44, pad=24;
+  let y=FR+headerH+(size==='portrait'?60:34);
+  const info=reqInfo(p);
+  const basic = pairsToRows(info.pairs.slice(0,4));
+  const rest = pairsToRows(info.pairs.slice(4));
+
+  if (basic.length){
+    const h1=boxHeight(basic.length);
+    panel(c,xFull,y,fullW,h1);
+    sectionHeader(c,xFull+pad,y+40,'Basic Preferences');
+    fieldGrid(c,xFull,y,fullW,basic);
+    y+=h1+26;
+  }
+  if (rest.length){
+    const h2=boxHeight(rest.length);
+    panel(c,xFull,y,fullW,h2);
+    sectionHeader(c,xFull+pad,y+40,'Background & Lifestyle');
+    fieldGrid(c,xFull,y,fullW,rest);
+    y+=h2+26;
+  }
+  if (!basic.length && !rest.length){
+    c.textAlign='center';c.fillStyle='rgba(58,18,32,.45)';c.font='400 24px '+HFONT;
+    c.fillText('Open to suitable proposals',W/2,y+40);
+    y+=90;
+  }
+  if (info.other){
+    const h3=124;
+    panel(c,xFull,y,fullW,h3);
+    sectionHeader(c,xFull+pad,y+40,'Other Demands');
+    c.textAlign='left';c.fillStyle=PLUM;c.font='400 30px '+HFONT;
+    c.fillText('“'+info.other+'”',xFull+pad,y+86);
+  }
+
+  swipeFooter(c,W,H,'SWIPE FOR CONTACT');
+}
+
+/* ---------- SLIDE 5: CONTACT / CLOSING ---------- */
+async function drawContact(c, p, size){
+  const W=1080, H = size==='portrait' ? 1350 : 1080;
+  c.canvas.width=W; c.canvas.height=H;
+  c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
+  frame(c,W,H);
+  const cx=W/2;
+
+  let y=size==='portrait'?250:210;
+  c.beginPath();c.arc(cx,y,64,0,7);c.fillStyle=PLUM;c.fill();c.lineWidth=3;c.strokeStyle=GOLD2;c.stroke();
+  c.beginPath();c.arc(cx,y,74,0,7);c.lineWidth=1.4;c.strokeStyle='rgba(181,137,59,.6)';c.stroke();
+  c.textAlign='center';c.fillStyle=GOLD2;c.font='800 34px Poppins, sans-serif';c.fillText('CMB',cx,y+12);
+
+  y+=130;
+  c.fillStyle=PLUM;c.font='400 64px '+HFONT;c.fillText('City Marriage Bureau',cx,y);
+  y+=54;
+  c.fillStyle=GOLD;c.font='600 22px Poppins, sans-serif';c.fillText(sp('TRUSTED RISHTA SERVICE',3),cx,y);
+
+  y+=70;
+  c.strokeStyle=GOLD2;c.lineWidth=2;c.lineCap='round';
+  c.beginPath();c.moveTo(cx-90,y);c.lineTo(cx+90,y);c.stroke();
+
+  y+=110;
+  c.fillStyle=INK;c.font='500 30px Poppins, sans-serif';
+  c.fillText('DM us if you’re interested in', cx, y);
+  y+=42;
+  c.fillText('this profile', cx, y);
+
+  y+=110;
+  y=contactFooter(c,W,y,contactNo);
+
+  y+=54;
+  c.fillStyle='rgba(58,18,32,.55)';c.font='500 18px Poppins, sans-serif';
+  c.fillText('City Marriage Bureau  ·  Confidential  ·  Trusted Matchmaking',cx,y);
+}
+
+/* ---------- SUMMARY CARD (full portrait / 4:5 crop) ---------- */
+async function drawSummary(c, p, size){
+  const W=1080;
+  let photoImg=null; if (p.photo) { try { photoImg = await loadImg(p.photo); } catch(e){} }
+  const ed=p.education||{}, jb=p.job||{}, rl=p.religion||{}, pr=p.property||{}, ad=p.address||{};
+  const info=reqInfo(p);
+  const stats=[[p.gender==='male'?'Male':p.gender==='female'?'Female':null,'GENDER'],
+    [p.age!=null?p.age+' yrs':null,'AGE'],[p.heightDisplay,'HEIGHT'],
+    [MARITAL_LABEL[p.maritalStatus],'STATUS'],[ed.qualification,'QUALIFICATION'],[ad.city,'CITY']].filter(([v])=>v);
+  const keyPairs=[['Profession',jb.profession],['Institution',ed.institution],['Religion',rl.religion],
+    ['Caste',rl.caste],['Sect',rl.sect],['Nationality',rl.nationality],['Property',pr.ownership],['Vehicle',pr.vehicle]].filter(([,v])=>v);
+  const famPairs=[["Father's Occupation",p.father],["Mother's Occupation",p.mother],
+    ['Siblings',p.siblings&&p.siblings.length?p.siblings.length+' total':null]].filter(([,v])=>v);
+  const addrPairs=[['City',ad.city],['Locality',ad.locality]].filter(([,v])=>v);
+
+  // measure required height first
+  let need = 26 + 48+42+22+248+58; // FR + hero header approx top section (photo row dominates in practice)
+  need = 26; // will recompute with real header height below after drawing to a scratch pass; simpler: build generously then trim via known formula
+  const fullW0 = W - 2*26 - 88;
+  let est = 26 + 480 /*hero header*/ + 60 + (Math.ceil(stats.length/3)*126 + (Math.ceil(stats.length/3)-1)*15) + 60;
+  if (keyPairs.length) est += boxHeight(Math.ceil(keyPairs.length/2)) + 50;
+  if (famPairs.length) est += boxHeight(Math.ceil(famPairs.length/2)) + 50;
+  if (addrPairs.length) est += boxHeight(Math.ceil(addrPairs.length/2)) + 50;
+  est += 150 + 50; // looking-for box
+  est += 200 + 54 + 30; // contact footer + tagline
+  const H = size==='crop' ? 1350 : Math.max(1500, est+80);
+
+  c.canvas.width=W; c.canvas.height=H;
+  c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
+  const {FR,X0,WW}=frame(c,W,H);
+  const headerH=heroHeader(c,W,X0,WW,FR,jb.profession,photoImg);
+
+  const fullW=WW-88, xFull=X0+44, pad=24;
+  let y=FR+headerH+60;
+
+  if (stats.length){
+    const gap=15, sw=(fullW-2*gap)/3, sh=126, rowGap=15;
+    stats.forEach(([v,l],i)=>{
+      const col=i%3,row=Math.floor(i/3);
+      const x=xFull+col*(sw+gap), by=y+row*(sh+rowGap);
+      c.save();c.shadowColor='rgba(110,30,60,.12)';c.shadowBlur=10;c.shadowOffsetY=4;
+      rr(c,x,by,sw,sh,18);c.fillStyle='#fff';c.fill();c.restore();
+      rr(c,x,by,sw,sh,18);c.lineWidth=2.2;c.strokeStyle=GOLD2;c.stroke();
+      c.textAlign='center';c.fillStyle=PLUM;let fs=fitFont(c,v,sw-20,28,'800',15);c.font='800 '+fs+'px Poppins, sans-serif';
+      c.fillText(v,x+sw/2,by+54);
+      c.fillStyle=GOLD;c.font='700 14px Poppins, sans-serif';c.fillText(sp(l,1),x+sw/2,by+90);
+    });
+    const rows=Math.ceil(stats.length/3);
+    y+=rows*126+(rows-1)*15+60;
+  }
+
+  if (size!=='crop'){
+    if (keyPairs.length){
+      const rows=pairsToRows(keyPairs); const h1=boxHeight(rows.length);
+      panel(c,xFull,y,fullW,h1); sectionHeader(c,xFull+pad,y+40,'Key Details'); fieldGrid(c,xFull,y,fullW,rows);
+      y+=h1+50;
+    }
+    if (famPairs.length){
+      const rows=pairsToRows(famPairs); const h2=boxHeight(rows.length);
+      panel(c,xFull,y,fullW,h2); sectionHeader(c,xFull+pad,y+40,'Family Snapshot'); fieldGrid(c,xFull,y,fullW,rows);
+      y+=h2+50;
+    }
+    if (addrPairs.length){
+      const rows=pairsToRows(addrPairs); const h3=boxHeight(rows.length);
+      panel(c,xFull,y,fullW,h3); sectionHeader(c,xFull+pad,y+40,'Address'); fieldGrid(c,xFull,y,fullW,rows);
+      y+=h3+50;
+    }
+  }
+
+  quoteBox(c,xFull,y,fullW,150,'LOOKING FOR',info.highlight);
+  y+=150+50;
+
+  y=contactFooter(c,W,y,contactNo);
+  y+=54;
+  c.textAlign='center';c.fillStyle='rgba(58,18,32,.55)';c.font='500 17px Poppins, sans-serif';
+  c.fillText('City Marriage Bureau  ·  Confidential  ·  Trusted Matchmaking',W/2,y);
+
+  // trim canvas to actual content height for the 'full' variant so there's no dead space
+  if (size!=='crop'){
+    const used = Math.min(H, y+60);
+    if (used < H-40){
+      const trimmed = document.createElement('canvas'); trimmed.width=W; trimmed.height=used;
+      trimmed.getContext('2d').drawImage(c.canvas,0,0);
+      c.canvas.width=W; c.canvas.height=used;
+      c.drawImage(trimmed,0,0);
+    }
+  }
+}
+
+const SLIDE_DRAWERS = [
+  ['Cover', drawCover],
+  ['Personal Details', drawPersonal],
+  ['Family Details', drawFamily],
+  ['Requirements', drawRequirements],
+  ['Contact', drawContact]
+];
+
+async function renderAllSlides(p, size){
+  await fontsReady(); await waLogo();
+  const canvases = [];
+  for (const [, fn] of SLIDE_DRAWERS) {
+    const cnv = document.createElement('canvas');
+    await fn(cnv.getContext('2d'), p, size);
+    canvases.push(cnv);
+  }
+  return canvases;
+}
+
+/* ============================================================ PREVIEW & DOWNLOAD WIRING ============================================================ */
 function refreshPreviewSelect(){
   const sel = $('prev-select');
   const cur = sel.value;
@@ -987,395 +1603,66 @@ function refreshPreviewSelect(){
   if (profiles.find(p => p.id === cur)) sel.value = cur;
   renderPreview();
 }
+function setCarouselSize(size){ carouselSize = size; $('carousel-size-square').classList.toggle('on', size==='square'); $('carousel-size-portrait').classList.toggle('on', size==='portrait'); renderPreview(); }
+function setSummarySize(size){ summarySize = size; $('summary-size-full').classList.toggle('on', size==='full'); $('summary-size-crop').classList.toggle('on', size==='crop'); renderPreview(); }
 
-function renderPreview(){
+let previewToken = 0;
+async function renderPreview(){
   const id = $('prev-select').value;
   const p = profiles.find(x => x.id === id);
   $('prev-empty').style.display = p ? 'none' : '';
-  $('prev-dl-row').style.display = p ? 'flex' : 'none';
-  $('prev-square-wrap').style.display = p ? '' : 'none';
+  $('prev-content').style.display = p ? '' : 'none';
   $('prev-select').parentElement.style.display = profiles.length ? '' : 'none';
-  if (!p) { $('vcard-holder').innerHTML = ''; $('prev-square-img').removeAttribute('src'); return; }
-  if (!$('prev-portrait-img')) $('vcard-holder').innerHTML = '<img id="prev-portrait-img" class="cardimg" alt="Portrait card">';
-  paintCard($('prev-portrait-img'), p, 'portrait');
-  paintCard($('prev-square-img'), p, 'square');
+  if (!p) return;
+  const t = ++previewToken;
+
+  const canvases = await renderAllSlides(p, carouselSize);
+  if (t !== previewToken) return;
+  const thumbs = $('carousel-thumbs');
+  thumbs.innerHTML = '';
+  canvases.forEach(cnv => { const t2 = document.createElement('canvas'); t2.width=64; t2.height=64; t2.getContext('2d').drawImage(cnv,0,0,64,64); thumbs.appendChild(t2); });
+
+  const scnv = document.createElement('canvas');
+  await drawSummary(scnv.getContext('2d'), p, summarySize);
+  if (t !== previewToken) return;
+  $('summary-thumb').src = scnv.toDataURL('image/png');
 }
 
-// Render a card format on the canvas and show it in an <img> so the on-screen
-// preview is pixel-identical to the downloaded PNG. Per-image guard against races.
-async function paintCard(imgEl, p, variant){
-  if (!imgEl) return;
-  const t = (imgEl.__t = (imgEl.__t || 0) + 1);
-  try { const url = await renderCanvas(p, variant); if (imgEl.__t === t) imgEl.src = url; } catch (e) {}
-}
-
-/* Live instant cards in the New Profile tab — re-render as the form is typed into */
-let liveTimer = null;
-function scheduleLiveCard(){ clearTimeout(liveTimer); liveTimer = setTimeout(renderLiveCard, 300); }
-function renderLiveCard(){
-  const holder = $('live-card-holder');
-  if (!holder) return;
-  const p = buildDraftProfile();
-  const hasAny = p.name || p.age != null || p.photo || p.caste || p.city || p.education;
-  const setDl = d => { for (const id of ['live-dl-portrait','live-dl-square','live-dl-both']) $(id).disabled = d; };
-  if (!hasAny) {
-    holder.innerHTML = '<div class="empty" style="width:420px;max-width:100%"><b>Your cards appear here instantly</b>Start filling the details above — the branded profile cards build themselves as you type.</div>';
-    $('live-square-img').removeAttribute('src');
-    setDl(true);
-    return;
-  }
-  setDl(false);
-  if (!$('live-portrait-img')) holder.innerHTML = '<img id="live-portrait-img" class="cardimg" alt="Portrait card preview">';
-  paintCard($('live-portrait-img'), p, 'portrait');
-  paintCard($('live-square-img'), p, 'square');
-}
-
-function vcardHTML(p, domId){
-  const details = [
-    ['Education', p.education], ['Profession', p.profession],
-    ['Caste', p.caste], ['Sect', p.sect],
-    ['Marital status', MARITAL_LABEL[p.maritalStatus] + (p.children ? ' · ' + p.children : '')],
-    ['Complexion', p.complexion],
-    ['City', p.city], ['Property', p.property],
-    ['Father', p.father], ['Mother', p.mother],
-    ['Siblings', p.siblings]
-  ].filter(([,v]) => v);
-  return `
-    <div class="vcard" id="${domId}">
-      <div class="band">
-        <div class="brand">City Marriage Bureau<small>Trusted Rishta Service</small></div>
-      </div>
-      <div class="photo">${p.photo ? `<img src="${p.photo}">` : '👤'}</div>
-      <div class="name">${esc(p.name || 'New Profile')}</div>
-      <div class="cid"><span>${p.catalogId}</span></div>
-      <div class="stats">
-        <div class="stat"><div class="l">Age</div><div class="v">${p.age != null ? p.age + ' yrs' : '—'}</div></div>
-        <div class="stat"><div class="l">Height</div><div class="v">${p.heightDisplay || '—'}</div></div>
-        <div class="stat"><div class="l">Income</div><div class="v">${esc(p.income || '—')}</div></div>
-        <div class="stat"><div class="l">Residence</div><div class="v">${esc(p.residence || p.city || '—')}</div></div>
-      </div>
-      <div class="details">${details.map(([l,v]) => `<div class="dt"><div class="l">${l}</div><div class="v">${esc(v)}</div></div>`).join('')}</div>
-      ${p.about ? `<div class="about">“${esc(p.about)}”</div>` : ''}
-      ${lookingBoxHTML(p)}
-      <div class="foot">City Marriage Bureau · Profile ${p.catalogId}</div>
-      ${ctaHTML()}
-    </div>`;
-}
-
-/* ============================================================ CANVAS DOWNLOAD ============================================================ */
-function rr(ctx, x, y, w, h, r){
-  ctx.beginPath();
-  ctx.moveTo(x+r, y);
-  ctx.arcTo(x+w, y, x+w, y+h, r); ctx.arcTo(x+w, y+h, x, y+h, r);
-  ctx.arcTo(x, y+h, x, y, r); ctx.arcTo(x, y, x+w, y, r);
-  ctx.closePath();
-}
-function wrapLines(ctx, text, maxW, maxLines){
-  const words = String(text).split(/\s+/);
-  const lines = []; let line = '';
-  for (const w of words) {
-    const test = line ? line + ' ' + w : w;
-    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
-    else line = test;
-    if (lines.length === maxLines) break;
-  }
-  if (line && lines.length < maxLines) lines.push(line);
-  if (lines.length === maxLines && words.join(' ').length > lines.join(' ').length)
-    lines[maxLines-1] = lines[maxLines-1].replace(/\s?\S*$/, '…');
-  return lines;
-}
-function loadImg(src){
-  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
-}
-
-const PAL = { PLUM:'#6E1E3C', PLUM2:'#8E2A4D', GOLD:'#B5893B', GOLD2:'#D4AF61', CREAM:'#FBF6EE', INK:'#3A1220' };
-const FN = w => `${w} Poppins, sans-serif`;
-const PF = w => `${w} "Playfair Display", serif`;   // serif display (names)
-const CG = w => `${w} "Cormorant Garamond", serif`; // serif body (detail values)
-let waImg = null;
-async function waLogo(){ if (!waImg) { try { waImg = await loadImg(WA_DATAURL); } catch { waImg = null; } } return waImg; }
-async function fontsReady(){
-  try { await Promise.all([
-    '700 34px Poppins','700 20px Poppins','700 16px Poppins','700 14px Poppins','400 22px Poppins','800 40px Poppins',
-    '800 56px "Playfair Display"','700 26px "Playfair Display"','800 46px "Playfair Display"',
-    '600 30px "Cormorant Garamond"'
-  ].map(f => document.fonts.load(f))); } catch {}
-}
-function spaced(s, n){ return s.split('').join(' '.repeat(n)); }
-function diamond(ctx, x, y, s, col){ ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI/4); ctx.fillStyle = col; ctx.fillRect(-s/2, -s/2, s, s); ctx.restore(); }
-function divider(ctx, cx, y, half, col){ ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(cx-half, y); ctx.lineTo(cx-14, y); ctx.moveTo(cx+14, y); ctx.lineTo(cx+half, y); ctx.stroke(); diamond(ctx, cx, y, 9, col); }
-
-// Framed boutique WhatsApp footer (full — portrait). Fills [0,y]..[W,y+h].
-function framedFooter(ctx, W, y, h){
-  ctx.fillStyle = '#EADFC9'; ctx.fillRect(0, y, W, 2);
-  ctx.strokeStyle = PAL.GOLD2; ctx.lineWidth = 2; rr(ctx, 46, y+22, W-92, h-44, 14); ctx.stroke();
-  ctx.strokeStyle = 'rgba(181,137,59,.5)'; ctx.lineWidth = 1; rr(ctx, 54, y+30, W-108, h-60, 10); ctx.stroke();
-  const cy = y + h/2;
-  ctx.textAlign = 'center'; ctx.fillStyle = PAL.GOLD; ctx.font = FN('700 17px');
-  ctx.fillText('✦   ' + spaced('WHATSAPP', 2) + '   ✦', W/2, y + 56);
-  ctx.font = PF('800 46px'); const nw = ctx.measureText(contactNo).width;
-  if (waImg) ctx.drawImage(waImg, W/2 - nw/2 - 56, cy - 6, 52, 52);
-  ctx.textAlign = 'left'; ctx.fillStyle = PAL.PLUM; ctx.font = PF('800 46px');
-  ctx.fillText(contactNo, W/2 - nw/2 + 8, cy + 30);
-  ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(110,30,60,.7)'; ctx.font = FN('400 16px');
-  ctx.fillText('DM for proposals & inquiries', W/2, y + h - 26);
-}
-// Compact framed footer (square — tighter). Fills [0,y]..[W,y+h].
-function framedFooterCompact(ctx, W, y, h){
-  ctx.fillStyle = '#EADFC9'; ctx.fillRect(0, y, W, 2);
-  ctx.strokeStyle = PAL.GOLD2; ctx.lineWidth = 2; rr(ctx, 40, y+12, W-80, h-24, 12); ctx.stroke();
-  ctx.textAlign = 'center'; ctx.fillStyle = PAL.GOLD; ctx.font = FN('700 15px');
-  ctx.fillText('✦  ' + spaced('WHATSAPP', 2) + '  ✦', W/2, y + Math.round(h*0.36));
-  ctx.font = PF('700 36px'); const nw = ctx.measureText(contactNo).width;
-  const by = y + Math.round(h*0.74);
-  if (waImg) ctx.drawImage(waImg, W/2 - nw/2 - 48, by - 34, 44, 44);
-  ctx.textAlign = 'left'; ctx.fillStyle = PAL.PLUM; ctx.font = PF('700 36px');
-  ctx.fillText(contactNo, W/2 - nw/2 + 2, by);
-}
-
-async function drawPhotoCircle(ctx, p, cx, cy, R, dbl){
-  ctx.save();
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.closePath();
-  ctx.fillStyle = '#F1E6D2'; ctx.fill(); ctx.clip();
-  if (p.photo) {
-    try { const img = await loadImg(p.photo); const s = Math.max(2*R/img.width, 2*R/img.height);
-      ctx.drawImage(img, cx - img.width*s/2, cy - img.height*s/2, img.width*s, img.height*s); } catch {}
-  } else { ctx.textAlign = 'center'; ctx.fillStyle = PAL.GOLD; ctx.font = FN('600 ' + Math.round(R*0.8) + 'px'); ctx.fillText('👤', cx, cy + R*0.3); }
-  ctx.restore();
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
-  ctx.lineWidth = R*0.075; ctx.strokeStyle = PAL.GOLD2; ctx.stroke();
-  if (dbl) { ctx.beginPath(); ctx.arc(cx, cy, R+10, 0, Math.PI*2); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(181,137,59,.6)'; ctx.stroke(); }
-}
-
-// Gold emblem crest with the "CMB" monogram.
-function drawEmblem(ctx, cx, cy, r){
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fillStyle = PAL.PLUM; ctx.fill();
-  ctx.lineWidth = 3; ctx.strokeStyle = PAL.GOLD2; ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx, cy, r+8, 0, Math.PI*2); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(181,137,59,.6)'; ctx.stroke();
-  ctx.textAlign = 'center'; ctx.fillStyle = PAL.GOLD2; ctx.font = PF('800 ' + Math.round(r*0.68) + 'px'); ctx.fillText('CMB', cx, cy + r*0.25);
-}
-
-async function renderCanvas(p, variant){
-  await fontsReady();
-  await waLogo();
-  return variant === 'square' ? drawSquare(p) : drawPortrait(p);
-}
-
-/* ===== DESIGN: ROYAL EMBLEM — portrait (dynamic height) ===== */
-async function drawPortrait(p){
-  const { PLUM, PLUM2, GOLD, GOLD2, CREAM, INK } = PAL;
-  const W = 1080, cx = W/2;
-  const meas = document.createElement('canvas').getContext('2d');
-  const details = [
-    ['EDUCATION', p.education], ['PROFESSION', p.profession],
-    ['CASTE', p.caste], ['SECT', p.sect],
-    ['MARITAL STATUS', MARITAL_LABEL[p.maritalStatus] + (p.children ? ' · ' + p.children : '')],
-    ['COMPLEXION', p.complexion],
-    ['CITY', p.city], ['PROPERTY', p.property],
-    ['FATHER', p.father], ['MOTHER', p.mother], ['SIBLINGS', p.siblings]
-  ].filter(([,v]) => v);
-  const detRows = Math.ceil(details.length / 2);
-  const req = requirementInfo(p);
-  const reqRows = Math.ceil(req.items.length / 2);
-  meas.font = FN('400 22px');
-  const otherLines = req.other ? wrapLines(meas, req.other, W - 200, 3) : [];
-  meas.font = CG('italic 600 30px');
-  const aboutLines = p.about ? wrapLines(meas, '“' + p.about + '”', W - 200, 2) : [];
-
-  // vertical layout anchors
-  const div2 = 668, detStart = 858;
-  const detBottom = detStart + detRows * 94;
-  const aboutH = p.about ? aboutLines.length * 36 + 14 : 0;
-  const panelTop = detBottom + aboutH + 20;
-  let panelH;
-  if (req.items.length) { panelH = 84 + reqRows * 56 + (req.other ? 34 + otherLines.length * 30 : 0) + 24; }
-  else if (req.other) { panelH = 84 + otherLines.length * 30 + 24; }
-  else panelH = 138;
-  const footerH = 184;
-  const footerY = panelTop + panelH + 26;
-  const H = footerY + footerH + 30;
-
-  const cnv = document.createElement('canvas'); cnv.width = W; cnv.height = H;
-  const ctx = cnv.getContext('2d');
-  ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
-
-  // Outer double gold frame + corner flourishes
-  ctx.strokeStyle = GOLD2; ctx.lineWidth = 3; rr(ctx, 28, 28, W-56, H-56, 18); ctx.stroke();
-  ctx.strokeStyle = 'rgba(181,137,59,.55)'; ctx.lineWidth = 1.5; rr(ctx, 40, 40, W-80, H-80, 12); ctx.stroke();
-  [[64,64,1,1],[W-64,64,-1,1],[64,H-64,1,-1],[W-64,H-64,-1,-1]].forEach(([x,y,sx,sy]) => {
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y+22*sy); ctx.quadraticCurveTo(x, y, x+22*sx, y); ctx.stroke();
-    diamond(ctx, x+30*sx, y+30*sy, 6, GOLD2);
-  });
-
-  // Emblem + brand
-  drawEmblem(ctx, cx, 118, 44);
-  ctx.textAlign = 'center'; ctx.fillStyle = PLUM; ctx.font = FN('700 26px'); ctx.fillText(spaced('CITY MARRIAGE BUREAU', 1), cx, 208);
-  ctx.fillStyle = GOLD; ctx.font = FN('500 14px'); ctx.fillText(spaced('TRUSTED RISHTA SERVICE', 3), cx, 236);
-  divider(ctx, cx, 266, 150, GOLD2);
-
-  await drawPhotoCircle(ctx, p, cx, 416, 120, true);
-
-  // Name (serif) + id
-  ctx.fillStyle = PLUM; let ns = 56; const nm = p.name || 'New Profile';
-  ctx.font = PF(`800 ${ns}px`); while (ctx.measureText(nm).width > W - 170 && ns > 30) { ns -= 2; ctx.font = PF(`800 ${ns}px`); }
-  ctx.textAlign = 'center'; ctx.fillText(nm, cx, 604);
-  ctx.fillStyle = GOLD; ctx.font = FN('700 20px'); ctx.fillText(spaced('·  ' + p.catalogId + '  ·', 2), cx, 640);
-  divider(ctx, cx, div2, 120, GOLD2);
-
-  // Stats — borderless, gold rules between
-  const stats = [['AGE', p.age != null ? p.age + ' yrs' : '—'], ['HEIGHT', p.heightDisplay || '—'], ['INCOME', p.income || '—'], ['RESIDENCE', p.residence || p.city || '—']];
-  const sLab = 716, sVal = 758, cw = (W - 160) / 4;
-  stats.forEach(([l, v], i) => {
-    const x = 80 + i * cw + cw/2;
-    ctx.textAlign = 'center'; ctx.fillStyle = GOLD; ctx.font = FN('700 15px'); ctx.fillText(l, x, sLab);
-    ctx.fillStyle = PLUM; let fs = 26; ctx.font = PF(`700 ${fs}px`);
-    while (ctx.measureText(String(v)).width > cw - 16 && fs > 15) { fs -= 2; ctx.font = PF(`700 ${fs}px`); }
-    ctx.fillText(String(v), x, sVal);
-    if (i < 3) { ctx.strokeStyle = 'rgba(181,137,59,.4)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(80+(i+1)*cw, sLab-16); ctx.lineTo(80+(i+1)*cw, sVal+8); ctx.stroke(); }
-  });
-  divider(ctx, cx, 806, 120, GOLD2);
-
-  // Details — serif values
-  ctx.textAlign = 'left';
-  details.forEach(([l, v], i) => {
-    const col = i % 2, row = Math.floor(i / 2);
-    const x = 90 + col * (W/2 - 50), y = detStart + row * 94;
-    ctx.fillStyle = GOLD; ctx.font = FN('700 16px'); ctx.fillText(l, x, y);
-    ctx.fillStyle = INK; ctx.font = CG('600 30px'); ctx.fillText(wrapLines(ctx, v, W/2 - 100, 1)[0] || '', x, y + 38);
-  });
-
-  // About
-  if (p.about) { ctx.textAlign = 'center'; ctx.fillStyle = '#5d4a34'; ctx.font = CG('italic 600 30px'); aboutLines.forEach((ln, i) => ctx.fillText(ln, cx, detBottom + 24 + i * 36)); }
-
-  // Requirements panel (plum, gold inner frame)
-  const lg = ctx.createLinearGradient(60, panelTop, W-60, panelTop);
-  lg.addColorStop(0, PLUM); lg.addColorStop(1, PLUM2);
-  rr(ctx, 60, panelTop, W-120, panelH, 16); ctx.fillStyle = lg; ctx.fill();
-  ctx.strokeStyle = 'rgba(212,175,97,.5)'; ctx.lineWidth = 1.5; rr(ctx, 72, panelTop+12, W-144, panelH-24, 10); ctx.stroke();
-  ctx.textAlign = 'center'; ctx.fillStyle = GOLD2; ctx.font = FN('700 19px');
-  ctx.fillText(spaced((p.gender === 'female' ? "WHAT SHE'S LOOKING FOR" : "WHAT HE'S LOOKING FOR"), 1), cx, panelTop + 48);
-  ctx.textAlign = 'left';
-  if (req.items.length) {
-    const colW = (W - 200) / 2;
-    req.items.forEach(([l, v], i) => {
-      const col = i % 2, row = Math.floor(i / 2);
-      const x = 100 + col * colW, y = panelTop + 88 + row * 56;
-      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 14px'); ctx.fillText(l.toUpperCase(), x, y);
-      ctx.fillStyle = '#fff'; ctx.font = PF('700 24px'); ctx.fillText(wrapLines(ctx, v, colW - 20, 1)[0] || '', x, y + 30);
-    });
-    if (req.other) {
-      const oy = panelTop + 88 + reqRows * 56 + 6;
-      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 14px'); ctx.fillText('OTHER DEMANDS', 100, oy);
-      ctx.fillStyle = '#F5E8D0'; ctx.font = FN('400 22px'); otherLines.forEach((ln, i) => ctx.fillText(ln, 100, oy + 28 + i * 30));
-    }
-  } else if (req.other) {
-    ctx.fillStyle = '#F5E8D0'; ctx.font = FN('400 22px'); otherLines.forEach((ln, i) => ctx.fillText(ln, 100, panelTop + 92 + i * 30));
-  } else {
-    ctx.textAlign = 'center'; ctx.fillStyle = GOLD2; ctx.font = PF('700 28px');
-    wrapLines(ctx, req.highlight, W - 200, 2).forEach((ln, i) => ctx.fillText(ln, cx, panelTop + 96 + i * 38));
-  }
-
-  framedFooter(ctx, W, footerY, footerH);
-  return cnv.toDataURL('image/png');
-}
-
-/* ===== DESIGN: ROYAL EMBLEM — square 1080×1080 ===== */
-async function drawSquare(p){
-  const { PLUM, PLUM2, GOLD, GOLD2, CREAM, INK } = PAL;
-  const S = 1080, cx = S/2;
-  const cnv = document.createElement('canvas'); cnv.width = S; cnv.height = S;
-  const ctx = cnv.getContext('2d');
-  ctx.fillStyle = CREAM; ctx.fillRect(0, 0, S, S);
-
-  // Single gold frame + corner diamonds
-  ctx.strokeStyle = GOLD2; ctx.lineWidth = 3; rr(ctx, 24, 24, S-48, S-48, 16); ctx.stroke();
-  ctx.strokeStyle = 'rgba(181,137,59,.5)'; ctx.lineWidth = 1.5; rr(ctx, 34, 34, S-68, S-68, 11); ctx.stroke();
-
-  drawEmblem(ctx, cx, 96, 34);
-  ctx.textAlign = 'center'; ctx.fillStyle = PLUM; ctx.font = FN('700 24px'); ctx.fillText(spaced('CITY MARRIAGE BUREAU', 1), cx, 172);
-  ctx.fillStyle = GOLD; ctx.font = FN('500 13px'); ctx.fillText(spaced('TRUSTED RISHTA SERVICE', 3), cx, 198);
-  divider(ctx, cx, 224, 150, GOLD2);
-
-  await drawPhotoCircle(ctx, p, cx, 338, 98, true);
-
-  ctx.fillStyle = PLUM; let ns = 50; const nm = p.name || 'New Profile';
-  ctx.font = PF(`800 ${ns}px`); while (ctx.measureText(nm).width > S - 150 && ns > 26) { ns -= 2; ctx.font = PF(`800 ${ns}px`); }
-  ctx.textAlign = 'center'; ctx.fillText(nm, cx, 494);
-  ctx.fillStyle = GOLD; ctx.font = FN('700 18px'); ctx.fillText(spaced('~  ' + p.catalogId + '  ~', 2), cx, 528);
-  divider(ctx, cx, 556, 130, GOLD2);
-
-  // Stats — borderless, gold rules
-  const stats = [['AGE', p.age != null ? p.age + ' yrs' : '—'], ['HEIGHT', p.heightDisplay || '—'], ['INCOME', p.income || '—'], ['RESIDENCE', p.residence || p.city || '—']];
-  const sLab = 600, sVal = 640, cw = (S - 120) / 4;
-  stats.forEach(([l, v], i) => {
-    const x = 60 + i * cw + cw/2;
-    ctx.textAlign = 'center'; ctx.fillStyle = GOLD; ctx.font = FN('700 14px'); ctx.fillText(l, x, sLab);
-    ctx.fillStyle = PLUM; let fs = 25; ctx.font = PF(`700 ${fs}px`);
-    while (ctx.measureText(String(v)).width > cw - 14 && fs > 13) { fs -= 2; ctx.font = PF(`700 ${fs}px`); }
-    ctx.fillText(String(v), x, sVal);
-    if (i < 3) { ctx.strokeStyle = 'rgba(181,137,59,.4)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(60+(i+1)*cw, sLab-16); ctx.lineTo(60+(i+1)*cw, sVal+8); ctx.stroke(); }
-  });
-
-  // Details (curated up to 4), serif values
-  const det = [['EDUCATION', p.education], ['PROFESSION', p.profession], ['CASTE', p.caste], ['SECT', p.sect], ['MARITAL', MARITAL_LABEL[p.maritalStatus] + (p.children ? ' · ' + p.children : '')], ['CITY', p.city || p.residence]].filter(([,v]) => v).slice(0, 4);
-  const dyS = 688; ctx.textAlign = 'left';
-  det.forEach(([l, v], i) => {
-    const col = i % 2, row = Math.floor(i / 2);
-    const x = 66 + col * (S/2 - 30), y = dyS + row * 60;
-    ctx.fillStyle = GOLD; ctx.font = FN('700 15px'); ctx.fillText(l, x, y);
-    ctx.fillStyle = INK; ctx.font = CG('600 27px'); ctx.fillText(wrapLines(ctx, v, S/2 - 70, 1)[0] || '', x, y + 30);
-  });
-
-  // Requirements panel (headed cells)
-  const req = requirementInfo(p);
-  const footerH = 122, footerY = S - 22 - footerH;
-  const panelTop = 798, panelBot = footerY - 12, panelH = panelBot - panelTop;
-  const lg = ctx.createLinearGradient(46, panelTop, S-46, panelTop);
-  lg.addColorStop(0, PLUM); lg.addColorStop(1, PLUM2);
-  rr(ctx, 46, panelTop, S-92, panelH, 14); ctx.fillStyle = lg; ctx.fill();
-  ctx.strokeStyle = 'rgba(212,175,97,.5)'; ctx.lineWidth = 1.2; rr(ctx, 56, panelTop+10, S-112, panelH-20, 9); ctx.stroke();
-  ctx.textAlign = 'center'; ctx.fillStyle = GOLD2; ctx.font = FN('700 16px');
-  ctx.fillText(spaced((p.gender === 'female' ? "WHAT SHE'S LOOKING FOR" : "WHAT HE'S LOOKING FOR"), 1), cx, panelTop + 40);
-  const items = req.items.slice(0, 4);
-  ctx.textAlign = 'left';
-  if (items.length) {
-    const iw = (S - 160) / items.length;
-    items.forEach(([l, v], i) => {
-      const x = 80 + i * iw;
-      ctx.fillStyle = '#E4C98F'; ctx.font = FN('700 13px'); ctx.fillText(l.toUpperCase(), x, panelTop + 78);
-      ctx.fillStyle = '#fff'; ctx.font = PF('700 22px'); ctx.fillText(wrapLines(ctx, v, iw - 12, 1)[0] || '', x, panelTop + 108);
-    });
-  } else {
-    ctx.textAlign = 'center'; ctx.fillStyle = GOLD2; ctx.font = PF('700 24px');
-    wrapLines(ctx, req.highlight, S - 160, 2).forEach((ln, i) => ctx.fillText(ln, cx, panelTop + 82 + i * 32));
-  }
-
-  framedFooterCompact(ctx, S, footerY, footerH);
-  return cnv.toDataURL('image/png');
-}
-
-function cardFileName(p, variant){
-  return 'CMB-' + p.catalogId + '-' + (p.name || 'profile').replace(/[^\w]+/g, '_') + (variant === 'square' ? '-square' : '') + '.png';
+function cardFileName(p, suffix){
+  return 'CMB-' + p.catalogId + '-' + (p.name || 'profile').replace(/[^\w]+/g, '_') + '-' + suffix + '.png';
 }
 function triggerDownload(url, name){
   const a = document.createElement('a'); a.download = name; a.href = url;
   document.body.appendChild(a); a.click(); a.remove();
 }
-async function downloadCardFor(p, variant){
-  if (variant === 'both') {
-    triggerDownload(await renderCanvas(p, 'portrait'), cardFileName(p, 'portrait'));
-    await new Promise(r => setTimeout(r, 450));
-    triggerDownload(await renderCanvas(p, 'square'), cardFileName(p, 'square'));
-    return;
+function currentProfile(){ return profiles.find(x => x.id === $('prev-select').value); }
+
+async function downloadCarouselImages(){
+  const p = currentProfile(); if (!p) return;
+  const canvases = await renderAllSlides(p, carouselSize);
+  for (let i=0;i<canvases.length;i++){
+    triggerDownload(canvases[i].toDataURL('image/png'), cardFileName(p, (i+1)+'-'+SLIDE_DRAWERS[i][0].toLowerCase().replace(/\s+/g,'-')));
+    await new Promise(r => setTimeout(r, 350));
   }
-  triggerDownload(await renderCanvas(p, variant), cardFileName(p, variant));
 }
-async function downloadSel(variant){
-  const p = profiles.find(x => x.id === $('prev-select').value);
-  if (p) await downloadCardFor(p, variant);
+async function downloadCarouselPdf(){
+  const p = currentProfile(); if (!p) return;
+  const canvases = await renderAllSlides(p, carouselSize);
+  const { jsPDF } = window.jspdf;
+  const first = canvases[0];
+  const pdf = new jsPDF({ orientation: first.width > first.height ? 'l' : 'p', unit: 'px', format: [first.width, first.height] });
+  canvases.forEach((cnv, i) => {
+    if (i > 0) pdf.addPage([cnv.width, cnv.height], cnv.width > cnv.height ? 'l' : 'p');
+    pdf.addImage(cnv.toDataURL('image/png'), 'PNG', 0, 0, cnv.width, cnv.height);
+  });
+  pdf.save(cardFileName(p, 'carousel').replace('.png', '.pdf'));
 }
-async function downloadLive(variant){
-  await downloadCardFor(buildDraftProfile(), variant);
+async function downloadSummary(){
+  const p = currentProfile(); if (!p) return;
+  const cnv = document.createElement('canvas');
+  await fontsReady(); await waLogo();
+  await drawSummary(cnv.getContext('2d'), p, summarySize);
+  triggerDownload(cnv.toDataURL('image/png'), cardFileName(p, 'summary-'+summarySize));
 }
 
 /* ============================================================ PHOTO MODE WIRING ============================================================ */
@@ -1413,23 +1700,16 @@ async function init(){
     const p = await store.get('profiles:' + id);
     if (p) profiles.push(p);
   }
-  toggleChildren();
   renderList();
   refreshPreviewSelect();
+  clearForm();
 
-  // person photo input
   $('pphoto-input').addEventListener('change', async e => {
     const f = e.target.files[0];
     if (!f) return;
     pendingPersonPhoto = await resizeImage(f, 512);
     $('pphoto-circ').innerHTML = `<img src="${pendingPersonPhoto}">`;
-    renderLiveCard();
   });
-  // live instant card: re-render as the form is typed into
-  $('review-panel').addEventListener('input', scheduleLiveCard);
-  $('review-panel').addEventListener('change', scheduleLiveCard);
-  renderLiveCard();
-  // card photo input + drag/drop
   $('photo-input').addEventListener('change', e => acceptCardPhoto(e.target.files[0]));
   const drop = $('photodrop');
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
