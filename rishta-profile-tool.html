@@ -676,8 +676,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             <select id="f-marital"><option value="single">Single</option><option value="divorced">Divorced</option><option value="widowed">Widowed</option></select></div>
           <div><label class="fld">Disability</label>
             <select id="f-disability"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+          <div><label class="fld">Contact number (candidate / guardian)</label><input id="f-contactphone" placeholder="+92 3XX XXXXXXX"></div>
         </div>
-        <div class="note">Left blank? That field's heading is automatically hidden on the generated post — no empty gaps.</div>
+        <div class="note">Left blank? That field's heading is automatically hidden on the generated post — no empty gaps. The contact number is never shown on the customer-facing form's own download — only your team can choose to include it, per download, from Preview &amp; Download.</div>
 
         <h3>Education</h3>
         <div class="grid">
@@ -792,6 +793,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         <div><label class="fld">Habits</label><input id="fl-habits" placeholder="e.g. non-smoker" oninput="renderList()"></div>
         <div><label class="fld">Working woman?</label>
           <select id="fl-workingwoman" onchange="renderList()"><option value="">Any</option><option value="Acceptable">Acceptable only</option></select></div>
+        <div><label class="fld">Contact number</label><input id="fl-contactphone" placeholder="search by number..." oninput="renderList()"></div>
         <div><label class="fld">Search</label><input id="fl-search" placeholder="name or ID..." oninput="renderList()"></div>
       </div>
       <div id="plist" class="plist"></div>
@@ -821,6 +823,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         Save a profile first from the <a href="#" onclick="showTab('new');return false;">New Profile</a> tab, then come back here.
       </div>
       <div id="prev-content" style="display:none">
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--plum); margin-bottom:16px; cursor:pointer;">
+          <input type="checkbox" id="include-contact-toggle" onchange="onIncludeContactToggle()" style="width:auto;">
+          Include candidate/guardian contact number in downloads
+        </label>
         <div class="dlgrid">
           <div class="dlcard">
             <h3>Carousel Post (5 slides)</h3>
@@ -997,7 +1003,7 @@ function profileToRow(p){
   return {
     id: p.id, catalog_id: p.catalogId, source_type: p.sourceType, photo: p.photo,
     name: p.name, gender: p.gender, age: p.age, height_inches: p.heightInches, height_display: p.heightDisplay,
-    marital_status: p.maritalStatus, disability: p.disability,
+    marital_status: p.maritalStatus, disability: p.disability, contact_phone: p.contactPhone,
     education: p.education, job: p.job, religion: p.religion, property: p.property, address: p.address,
     father: p.father, mother: p.mother, siblings: p.siblings, requirements: p.requirements, raw_note: p.raw_note
   };
@@ -1006,7 +1012,7 @@ function rowToProfile(r){
   return {
     id: r.id, catalogId: r.catalog_id, createdAt: r.created_at, sourceType: r.source_type, photo: r.photo,
     name: r.name, gender: r.gender, age: r.age, heightInches: r.height_inches, heightDisplay: r.height_display,
-    maritalStatus: r.marital_status, disability: r.disability,
+    maritalStatus: r.marital_status, disability: r.disability, contactPhone: r.contact_phone,
     education: r.education || {}, job: r.job || {}, religion: r.religion || {}, property: r.property || {}, address: r.address || {},
     father: r.father, mother: r.mother, siblings: r.siblings || [], requirements: r.requirements || {}, raw_note: r.raw_note
   };
@@ -1090,6 +1096,7 @@ let pendingCardPhoto = null;
 let sibCount = 0;
 let carouselSize = 'square';   // 'square' | 'portrait'
 let summarySize = 'full';      // 'full' | 'crop'
+let includeContactInDownload = false; // team-only opt-in — never available on the public customer form
 
 /* ============================================================ HELPERS ============================================================ */
 const $ = id => document.getElementById(id);
@@ -1158,6 +1165,7 @@ Return ONLY a single JSON object — no markdown fences, no commentary — with 
   "height_inches": number|null,
   "marital_status": "single"|"divorced"|"widowed"|null,
   "disability": string|null,
+  "contact_phone": string|null,          // candidate's or their guardian's phone/WhatsApp number, if mentioned
   "education": { "qualification": string|null, "institution": string|null },
   "job": { "profession": string|null, "work_location": string|null, "future_plans": string|null, "income": string|null },
   "religion": { "religion": string|null, "caste": string|null, "sect": string|null, "nationality": string|null },
@@ -1368,6 +1376,7 @@ function populateForm(d, sourceType){
   }
   if (d.marital_status && MARITAL_LABEL[d.marital_status]) $('f-marital').value = d.marital_status;
   set('f-disability', d.disability);
+  set('f-contactphone', d.contact_phone);
   const e = d.education || {}; set('f-qualification', e.qualification); set('f-institution', e.institution);
   const j = d.job || {}; set('f-profession', j.profession); set('f-worklocation', j.work_location); set('f-futureplans', j.future_plans); set('f-income', j.income);
   const rl = d.religion || {}; set('f-religion', rl.religion); set('f-caste', rl.caste); set('f-sect', rl.sect); set('f-nationality', rl.nationality);
@@ -1420,6 +1429,7 @@ function buildDraftProfile(){
     heightDisplay: heightDisplay(heightInches),
     maritalStatus: $('f-marital').value,
     disability: $('f-disability').value,
+    contactPhone: $('f-contactphone').value.trim() || null,
     education: { qualification: $('f-qualification').value.trim() || null, institution: $('f-institution').value.trim() || null },
     job: {
       profession: $('f-profession').value.trim() || null,
@@ -1619,6 +1629,7 @@ function renderList(){
   const sect = normTxt($('fl-sect').value), nat = normTxt($('fl-nationality').value);
   const qual = normTxt($('fl-qualification').value), habits = normTxt($('fl-habits').value);
   const workingWoman = $('fl-workingwoman').value;
+  const phone = $('fl-contactphone').value.replace(/\D+/g,'');
   const ms = $('fl-marital').value, q = normTxt($('fl-search').value);
   const list = profiles.filter(p => {
     const rl = p.religion || {}, ad = p.address || {}, ed = p.education || {}, rq = p.requirements || {};
@@ -1633,6 +1644,7 @@ function renderList(){
       (!qual || normTxt(ed.qualification).includes(qual)) &&
       (!habits || normTxt(rq.habits).includes(habits)) &&
       (!workingWoman || rq.workingWoman === workingWoman) &&
+      (!phone || (p.contactPhone || '').replace(/\D+/g,'').includes(phone)) &&
       (!ms || p.maritalStatus === ms) &&
       (!q || normTxt(p.name).includes(q) || normTxt(p.catalogId).includes(q));
   });
@@ -1647,7 +1659,7 @@ function renderList(){
           <div class="meta">${[p.age ? p.age + ' yrs' : null, p.heightDisplay, MARITAL_LABEL[p.maritalStatus]].filter(Boolean).join(' · ')}</div>
         </div>
       </div>
-      <div class="meta">${[rl.caste, rl.sect, ed.qualification, jb.profession].filter(Boolean).map(esc).join(' · ') || '—'}<br>${esc(ad.city || '')}</div>
+      <div class="meta">${[rl.caste, rl.sect, ed.qualification, jb.profession].filter(Boolean).map(esc).join(' · ') || '—'}<br>${esc(ad.city || '')}${p.contactPhone ? ' · 📞 ' + esc(p.contactPhone) : ''}</div>
       <div class="acts">
         <button class="btn sm" onclick="openMatches('${p.id}')">💞 Matches</button>
         <button class="btn sm ghost" onclick="showTab('preview'); $('prev-select').value='${p.id}'; renderPreview();">🪪 Card</button>
@@ -1878,6 +1890,18 @@ function contactFooter(c,W,y,contact){
   c.fillStyle=PLUM;c.font='400 36px '+HFONT;c.fillText(contact||'—',cx,y+164);
   return y+boxH;
 }
+// Candidate/guardian's own number — only ever drawn when the team explicitly opts in per
+// download (never on the public customer form's own copy). Distinct from contactFooter, which
+// is always the bureau's own WhatsApp.
+function candidateContactBox(c,W,y,phone){
+  const boxW=Math.min(640,W-160),boxH=140,bx=W/2-boxW/2,cx=W/2;
+  c.save();c.shadowColor='rgba(110,30,60,.15)';c.shadowBlur=14;c.shadowOffsetY=5;
+  rr(c,bx,y,boxW,boxH,22);c.fillStyle='#fff';c.fill();c.restore();
+  rr(c,bx,y,boxW,boxH,22);c.lineWidth=2;c.strokeStyle=GOLD2;c.stroke();
+  c.textAlign='center';c.fillStyle=GOLD;c.font='700 13px Poppins, sans-serif';c.fillText(sp('CANDIDATE / GUARDIAN CONTACT',.5),cx,y+50);
+  c.fillStyle=PLUM;c.font='400 36px '+HFONT;c.fillText(phone,cx,y+98);
+  return y+boxH;
+}
 
 /* ---------- profile → display helpers (skip-if-empty everywhere) ---------- */
 function reqInfo(p){
@@ -2097,31 +2121,41 @@ async function drawContact(c, p, size){
   c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
   frame(c,W,H);
   const cx=W/2;
+  // showing the candidate/guardian's own number (team opt-in only) needs extra room —
+  // portrait already has plenty of space; square gets tightened spacing to make room instead
+  // of growing past the standard 1080×1080 Instagram size.
+  const showCandidate = includeContactInDownload && !!p.contactPhone;
+  const tight = showCandidate && size!=='portrait';
 
-  let y=size==='portrait'?250:210;
+  let y=size==='portrait'?250:(tight?190:210);
   c.beginPath();c.arc(cx,y,64,0,7);c.fillStyle=PLUM;c.fill();c.lineWidth=3;c.strokeStyle=GOLD2;c.stroke();
   c.beginPath();c.arc(cx,y,74,0,7);c.lineWidth=1.4;c.strokeStyle='rgba(181,137,59,.6)';c.stroke();
   c.textAlign='center';c.fillStyle=GOLD2;c.font='800 34px Poppins, sans-serif';c.fillText('CMB',cx,y+12);
 
-  y+=130;
+  y+=tight?116:130;
   c.fillStyle=PLUM;c.font='400 64px '+HFONT;c.fillText('City Marriage Bureau',cx,y);
-  y+=54;
+  y+=tight?46:54;
   c.fillStyle=GOLD;c.font='600 22px Poppins, sans-serif';c.fillText(sp('TRUSTED RISHTA SERVICE',3),cx,y);
 
-  y+=70;
+  y+=tight?56:70;
   c.strokeStyle=GOLD2;c.lineWidth=2;c.lineCap='round';
   c.beginPath();c.moveTo(cx-90,y);c.lineTo(cx+90,y);c.stroke();
 
-  y+=110;
+  y+=tight?86:110;
   c.fillStyle=INK;c.font='500 30px Poppins, sans-serif';
   c.fillText('DM us if you’re interested in', cx, y);
   y+=42;
   c.fillText('this profile', cx, y);
 
-  y+=110;
+  y+=tight?80:110;
   y=contactFooter(c,W,y,contactNo);
 
-  y+=54;
+  if (showCandidate){
+    y+= size==='portrait' ? 40 : 26;
+    y=candidateContactBox(c,W,y,p.contactPhone);
+  }
+
+  y+=tight?30:54;
   c.fillStyle='rgba(58,18,32,.55)';c.font='500 18px Poppins, sans-serif';
   c.fillText('City Marriage Bureau  ·  Confidential  ·  Trusted Matchmaking',cx,y);
 }
@@ -2189,24 +2223,41 @@ async function drawSummary(c, p, size){
     }
   }
 
+  const showCandidate = includeContactInDownload && !!p.contactPhone;
+
   if (size==='crop'){
-    quoteBox(c,xFull,y,fullW,150,'LOOKING FOR',info.highlight);
-    y+=150+50;
-    y=contactFooter(c,W,y,contactNo);
-    y+=54;
+    // 1080×1350 is Instagram's actual max feed height, so when the candidate's own
+    // number also needs room, the "Looking For" teaser (least essential here) is
+    // dropped rather than growing past that platform limit.
+    if (showCandidate){
+      y=contactFooter(c,W,y,contactNo);
+      y+=26;
+      y=candidateContactBox(c,W,y,p.contactPhone);
+      y+=40;
+    } else {
+      quoteBox(c,xFull,y,fullW,150,'LOOKING FOR',info.highlight);
+      y+=150+50;
+      y=contactFooter(c,W,y,contactNo);
+      y+=54;
+    }
     c.textAlign='center';c.fillStyle='rgba(58,18,32,.55)';c.font='500 17px Poppins, sans-serif';
     c.fillText('City Marriage Bureau  ·  Confidential  ·  Trusted Matchmaking',W/2,y);
   } else {
-    // Full Portrait: anchor Looking For / Contact / tagline to a fixed spot near the
-    // bottom of the fixed-size canvas, so a sparse profile just gets more breathing
-    // room above them instead of a smaller output image.
+    // Full Portrait: anchor Looking For / Contact / (optional candidate box) / tagline to a
+    // fixed spot near the bottom of the fixed-size canvas, so a sparse profile just gets more
+    // breathing room above them instead of a smaller output image.
+    const candidateReserve = showCandidate ? 140+26 : 0;
     const taglineY = H - 40;
-    const contactBoxY = taglineY - 54 - 200;
+    const contactBoxY = taglineY - 54 - candidateReserve - 200;
     const quoteY = contactBoxY - 50 - 150;
     const safeQuoteY = Math.max(y + 20, quoteY);
     quoteBox(c,xFull,safeQuoteY,fullW,150,'LOOKING FOR',info.highlight);
     const safeContactY = Math.max(safeQuoteY + 150 + 50, contactBoxY);
-    const contactBottom = contactFooter(c,W,safeContactY,contactNo);
+    let contactBottom = contactFooter(c,W,safeContactY,contactNo);
+    if (showCandidate){
+      contactBottom += 26;
+      contactBottom = candidateContactBox(c,W,contactBottom,p.contactPhone);
+    }
     c.textAlign='center';c.fillStyle='rgba(58,18,32,.55)';c.font='500 17px Poppins, sans-serif';
     c.fillText('City Marriage Bureau  ·  Confidential  ·  Trusted Matchmaking',W/2,contactBottom+54);
   }
@@ -2241,6 +2292,7 @@ function refreshPreviewSelect(){
 }
 function setCarouselSize(size){ carouselSize = size; $('carousel-size-square').classList.toggle('on', size==='square'); $('carousel-size-portrait').classList.toggle('on', size==='portrait'); renderPreview(); }
 function setSummarySize(size){ summarySize = size; $('summary-size-full').classList.toggle('on', size==='full'); $('summary-size-crop').classList.toggle('on', size==='crop'); renderPreview(); }
+function onIncludeContactToggle(){ includeContactInDownload = $('include-contact-toggle').checked; renderPreview(); }
 
 let previewToken = 0;
 async function renderPreview(){

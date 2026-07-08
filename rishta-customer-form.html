@@ -614,8 +614,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             <select id="f-marital"><option value="single">Single</option><option value="divorced">Divorced</option><option value="widowed">Widowed</option></select></div>
           <div><label class="fld">Disability</label>
             <select id="f-disability"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+          <div><label class="fld">Contact number (yours or your guardian's)</label><input id="f-contactphone" placeholder="+92 3XX XXXXXXX"></div>
         </div>
-        <div class="note">Left blank? That field's heading is automatically hidden on the generated post — no empty gaps.</div>
+        <div class="note">This number is for the bureau's records only — it will never appear on your downloaded profile card.</div>
 
         <h3>Education</h3>
         <div class="grid">
@@ -805,7 +806,7 @@ function profileToRow(p){
   return {
     id: p.id, catalog_id: p.catalogId, source_type: p.sourceType, photo: p.photo,
     name: p.name, gender: p.gender, age: p.age, height_inches: p.heightInches, height_display: p.heightDisplay,
-    marital_status: p.maritalStatus, disability: p.disability,
+    marital_status: p.maritalStatus, disability: p.disability, contact_phone: p.contactPhone,
     education: p.education, job: p.job, religion: p.religion, property: p.property, address: p.address,
     father: p.father, mother: p.mother, siblings: p.siblings, requirements: p.requirements, raw_note: p.raw_note
   };
@@ -877,6 +878,7 @@ function buildDraftProfile(){
     heightDisplay: heightDisplay(heightInches),
     maritalStatus: $('f-marital').value,
     disability: $('f-disability').value,
+    contactPhone: $('f-contactphone').value.trim() || null,
     education: { qualification: $('f-qualification').value.trim() || null, institution: $('f-institution').value.trim() || null },
     job: {
       profession: $('f-profession').value.trim() || null,

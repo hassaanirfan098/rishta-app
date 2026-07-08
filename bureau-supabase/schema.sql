@@ -23,6 +23,7 @@ create table bureau_profiles (
   height_display text,
   marital_status text not null default 'single',
   disability text default 'No',
+  contact_phone text,                            -- candidate's or guardian's number; never shown on the public customer form's own download
   education jsonb default '{}'::jsonb,
   job jsonb default '{}'::jsonb,
   religion jsonb default '{}'::jsonb,
