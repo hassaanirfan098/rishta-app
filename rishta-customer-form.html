@@ -501,6 +501,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   .sibrow{display:grid; grid-template-columns:1.1fr 1fr 1fr 1.6fr 40px; gap:10px; align-items:end; margin-bottom:10px;}
   .sibrow input, .sibrow select{width:100%;}
+  .contactrow{display:grid; grid-template-columns:1fr 1.4fr 40px; gap:10px; align-items:end; margin-bottom:10px;}
+  .contactrow input{width:100%;}
   .addsib{display:inline-flex; align-items:center; gap:8px; color:var(--plum); font-weight:700; font-size:13px; cursor:pointer; margin-top:6px; background:none; border:none; font-family:inherit;}
   .addsib .plus{width:22px;height:22px;border-radius:50%;background:var(--gold2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;}
   .rm{width:32px;height:32px;border-radius:8px;border:1.4px solid var(--line);background:#fff;color:#b55;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;}
@@ -553,6 +555,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     .step:not(:last-child)::after{width:14px; right:-2px;}
     .sibrow{grid-template-columns:1fr 1fr; gap:8px;}
     .sibrow .rm{grid-column:1/-1; justify-self:end;}
+    .contactrow{grid-template-columns:1fr 1fr; gap:8px;}
+    .contactrow .rm{grid-column:1/-1; justify-self:end;}
     .hrow{flex-wrap:wrap;}
     header.app{padding:14px 16px;}
     nav.tabs{margin-left:0; width:100%;}
@@ -614,9 +618,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             <select id="f-marital"><option value="single">Single</option><option value="divorced">Divorced</option><option value="widowed">Widowed</option></select></div>
           <div><label class="fld">Disability</label>
             <select id="f-disability"><option value="No">No</option><option value="Yes">Yes</option></select></div>
-          <div><label class="fld">Contact number (yours or your guardian's)</label><input id="f-contactphone" placeholder="+92 3XX XXXXXXX"></div>
         </div>
-        <div class="note">This number is for the bureau's records only — it will never appear on your downloaded profile card.</div>
+
+        <h3>Contact numbers <span style="font-weight:400;color:#8a7a70;text-transform:none;letter-spacing:0;">— yours, your guardian's, or both</span></h3>
+        <div id="contact-list"></div>
+        <button class="addsib" onclick="addContact()"><span class="plus">+</span> Add Contact</button>
+        <datalist id="contact-label-suggestions">
+          <option value="Me"><option value="Father"><option value="Mother"><option value="Guardian"><option value="Brother"><option value="Sister"><option value="Relative"><option value="Friend">
+        </datalist>
+        <div class="note">These numbers are for the bureau's records only — they will never appear on your downloaded profile card.</div>
 
         <h3>Education</h3>
         <div class="grid">
@@ -806,7 +816,7 @@ function profileToRow(p){
   return {
     id: p.id, catalog_id: p.catalogId, source_type: p.sourceType, photo: p.photo,
     name: p.name, gender: p.gender, age: p.age, height_inches: p.heightInches, height_display: p.heightDisplay,
-    marital_status: p.maritalStatus, disability: p.disability, contact_phone: p.contactPhone,
+    marital_status: p.maritalStatus, disability: p.disability, contacts: p.contacts || [],
     education: p.education, job: p.job, religion: p.religion, property: p.property, address: p.address,
     father: p.father, mother: p.mother, siblings: p.siblings, requirements: p.requirements, raw_note: p.raw_note
   };
@@ -859,6 +869,26 @@ function readSiblings(){
   })).filter(s => s.ageBracket || s.maritalStatus || s.professionEducation);
 }
 
+/* ============================================================ CONTACT NUMBERS (repeatable rows) ============================================================ */
+let contactCount = 0;
+function addContact(data){
+  const id = 'contact-' + (contactCount++);
+  const wrap = document.createElement('div');
+  wrap.className = 'contactrow';
+  wrap.id = id;
+  wrap.innerHTML = `
+    <div><label class="fld">Who</label><input class="contact-label" list="contact-label-suggestions" placeholder="Me, Father, Mother..."></div>
+    <div><label class="fld">Phone number</label><input class="contact-phone" placeholder="+92 3XX XXXXXXX"></div>
+    <div class="rm" onclick="document.getElementById('${id}').remove()">✕</div>`;
+  $('contact-list').appendChild(wrap);
+}
+function readContacts(){
+  return [...$('contact-list').querySelectorAll('.contactrow')].map(row => ({
+    label: row.querySelector('.contact-label').value.trim() || null,
+    phone: row.querySelector('.contact-phone').value.trim() || null
+  })).filter(ct => ct.phone);
+}
+
 /* ============================================================ BUILD PROFILE FROM FORM ============================================================ */
 let pendingPersonPhoto = null;
 function buildDraftProfile(){
@@ -878,7 +908,7 @@ function buildDraftProfile(){
     heightDisplay: heightDisplay(heightInches),
     maritalStatus: $('f-marital').value,
     disability: $('f-disability').value,
-    contactPhone: $('f-contactphone').value.trim() || null,
+    contacts: readContacts(),
     education: { qualification: $('f-qualification').value.trim() || null, institution: $('f-institution').value.trim() || null },
     job: {
       profession: $('f-profession').value.trim() || null,
