@@ -173,10 +173,10 @@
   <div id="global-banner" class="banner"></div>
 
   <div class="keyrow" id="keyrow">
-    <label for="apikey">Gemini API key <span style="font-weight:400;color:var(--na);">(free)</span></label>
-    <input type="password" id="apikey" placeholder="AIza..." autocomplete="off">
+    <label for="apikey">Groq API key <span style="font-weight:400;color:var(--na);">(free)</span></label>
+    <input type="password" id="apikey" placeholder="gsk_..." autocomplete="off">
     <button class="btn sm gold" onclick="saveApiKey()">Save key</button>
-    <span class="status" id="keystatus">Needed for Message &amp; Photo extraction. Get a free key at <b>aistudio.google.com/apikey</b>. Stored only on this device.</span>
+    <span class="status" id="keystatus">Needed for Message extraction. Get a free key at <b>console.groq.com/keys</b>. Stored only on this device.</span>
   </div>
 
   <div class="keyrow" id="contactrow">
@@ -191,7 +191,7 @@
     <div class="modes">
       <button id="modebtn-form" class="active" onclick="showMode('form')"><span class="t">📝 Form</span><span class="d">Step-by-step manual intake</span></button>
       <button id="modebtn-message" onclick="showMode('message')"><span class="t">💬 Message</span><span class="d">Paste a WhatsApp rishta message — auto-extract</span></button>
-      <button id="modebtn-photo" onclick="showMode('photo')"><span class="t">📷 Photo</span><span class="d">Upload a photo of a profile card / register page</span></button>
+      <button id="modebtn-photo" onclick="showMode('photo')"><span class="t">📷 Photo</span><span class="d">Reference only — Groq can't read images, fill the form manually</span></button>
     </div>
 
     <!-- message mode input -->
@@ -208,16 +208,15 @@
     <!-- photo mode input -->
     <div class="panel" id="mode-photo" style="display:none">
       <h2>Upload profile card photo</h2>
+      <div class="banner info show" style="margin-bottom:14px;">📌 Groq's free models can't read images, so this photo isn't auto-extracted — it's kept here on-screen for reference while you type the details into the form below.</div>
       <div class="photodrop" id="photodrop" onclick="document.getElementById('photo-input').click()">
         <div>📄 Click or drag a photo of the profile card here<br><small>Paper form, register page, or screenshot — JPG / PNG / WEBP</small></div>
         <img id="photo-preview" style="display:none">
       </div>
       <input type="file" id="photo-input" accept="image/*" style="display:none">
-      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
-        <button class="btn" id="photo-extract-btn" onclick="extractFromPhoto()" disabled>✨ Read &amp; extract profile</button>
-        <span class="status" id="photo-status" style="font-size:12.5px;color:#8a6d3b;"></span>
+      <div style="margin-top:12px;">
+        <button class="btn gold" onclick="wizGo(1); $('wizard-panel').scrollIntoView({behavior:'smooth'});">📝 Fill the form below with these details →</button>
       </div>
-      <div class="banner error" id="photo-error"></div>
     </div>
 
     <div class="banner info" id="review-banner">✅ Extracted — step through Personal / Family / Requirements below, correct anything, then Save.</div>
@@ -487,9 +486,9 @@ const store = (() => {
 })();
 
 /* ============================================================ STATE ============================================================ */
-// Which Gemini models are actually available differs per API key/project and changes over
-// time on Google's end, so instead of hardcoding a model name (which has already gone stale
-// twice), the app discovers a working one from this key's own model list and remembers it.
+// Which Groq models are actually live changes over time (models get deprecated/renamed), so
+// instead of hardcoding a model name the app discovers a working one from the key's own
+// model list and remembers it.
 let resolvedModel = null;
 let profiles = [];
 let counters = { m: 0, f: 0 };
@@ -556,8 +555,8 @@ function resizeImage(file, maxEdge){
   });
 }
 
-/* ============================================================ CLAUDE API ============================================================ */
-const EXTRACTION_SYSTEM = `You extract matrimonial (rishta) profile data for a marriage bureau in Pakistan. Input is either a raw WhatsApp-style text message or a photo of a profile card / register page. Messages mix English, Urdu script, and Roman Urdu.
+/* ============================================================ GROQ API ============================================================ */
+const EXTRACTION_SYSTEM = `You extract matrimonial (rishta) profile data for a marriage bureau in Pakistan. Input is a raw WhatsApp-style text message that mixes English, Urdu script, and Roman Urdu.
 
 Return ONLY a single JSON object — no markdown fences, no commentary — with exactly these keys (use null when genuinely absent; never invent data):
 
@@ -594,78 +593,75 @@ NORMALIZATION RULES:
 7. requirements describes what THIS person's family demands in a spouse — never mix with the person's own attributes.
 8. Numbers must be JSON numbers. Do not add keys outside the schema.`;
 
-// Which models a Gemini key can actually use varies per key/project and changes on Google's
-// end, so we ask the key itself (ListModels) rather than hardcode a name that goes stale.
-async function listGeminiModels(){
-  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=100`);
+// Which Groq models are actually live changes over time (deprecations/renames happen often),
+// so we ask the key itself (list models) rather than hardcode a name that goes stale.
+const GROQ_BASE = 'https://api.groq.com/openai/v1';
+async function listGroqModels(){
+  const resp = await fetch(`${GROQ_BASE}/models`, { headers: { 'Authorization': 'Bearer ' + apiKey } });
   if (!resp.ok) {
     let detail = ''; try { const j = await resp.json(); detail = j?.error?.message || JSON.stringify(j); } catch { detail = await resp.text().catch(()=> ''); }
-    throw new Error(`Could not list Gemini models for this key (API error ${resp.status}). ${detail}`.trim());
+    throw new Error(`Could not list Groq models for this key (API error ${resp.status}). ${detail}`.trim());
   }
   const data = await resp.json();
-  return (data.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent'));
+  return (data.data || []).map(m => m.id);
 }
-function pickBestModel(models){
-  const names = models.map(m => m.name.replace(/^models\//,''));
+function pickBestModel(names){
   const rank = n => {
-    if (/embedding|aqa|imagen|vision|tts|image-gen/i.test(n)) return -1; // not usable for our text+JSON extraction
-    if (/flash-lite/i.test(n)) return 4;
-    if (/flash-8b/i.test(n)) return 3.5;
-    if (/flash/i.test(n)) return 3;
-    if (/pro/i.test(n)) return 2;
+    if (/whisper|tts|guard|moderation|prompt-guard/i.test(n)) return -1; // audio/moderation models, not chat/JSON extraction
+    if (/70b.*versatile/i.test(n)) return 4;
+    if (/70b/i.test(n)) return 3.5;
+    if (/8b.*instant/i.test(n)) return 3;
+    if (/instant/i.test(n)) return 2.5;
     return 1;
   };
   return names.filter(n => rank(n) > 0).sort((a,b) => rank(b) - rank(a))[0] || null;
 }
 async function resolveModel(force){
   if (resolvedModel && !force) return resolvedModel;
-  if (!force) { const cached = await store.get('settings:geminiModel'); if (cached) { resolvedModel = cached; return cached; } }
-  const models = await listGeminiModels();
-  const best = pickBestModel(models);
-  if (!best) throw new Error('No model on this Gemini key supports content generation. Check the key at aistudio.google.com/apikey.');
+  if (!force) { const cached = await store.get('settings:groqModel'); if (cached) { resolvedModel = cached; return cached; } }
+  const names = await listGroqModels();
+  const best = pickBestModel(names);
+  if (!best) throw new Error('No chat model on this Groq key was found. Check the key at console.groq.com/keys.');
   resolvedModel = best;
-  await store.set('settings:geminiModel', best);
+  await store.set('settings:groqModel', best);
   return best;
 }
-function generateContent(modelId, body){
-  return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${encodeURIComponent(apiKey)}`,
-    { method:'POST', headers:{ 'content-type':'application/json' }, body: JSON.stringify(body) });
+function chatCompletion(modelId, body){
+  return fetch(`${GROQ_BASE}/chat/completions`,
+    { method:'POST', headers:{ 'content-type':'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ model: modelId, ...body }) });
 }
-// userContent: array of Claude-style content blocks — {type:'text',text} or
-// {type:'image',source:{type:'base64',media_type,data}} — converted to Gemini's part shape below.
-async function callGemini(userContent){
-  if (!apiKey) throw new Error('No API key set. Paste your free Gemini API key in the bar at the top and press "Save key". Get one at aistudio.google.com/apikey.');
-  const parts = userContent.map(b => b.type === 'image'
-    ? { inlineData: { mimeType: b.source.media_type, data: b.source.data } }
-    : { text: b.text });
+// userContent: array of {type:'text',text} blocks (Groq's free models are text-only, so image
+// blocks are never sent — Photo mode is reference-only, see the UI note there).
+async function callGroq(userContent){
+  if (!apiKey) throw new Error('No API key set. Paste your free Groq API key in the bar at the top and press "Save key". Get one at console.groq.com/keys.');
+  const promptText = userContent.filter(b => b.type !== 'image').map(b => b.text).join('\n\n');
   const body = {
-    contents: [{ role: 'user', parts }],
-    systemInstruction: { parts: [{ text: EXTRACTION_SYSTEM }] },
-    generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 2000 }
+    messages: [{ role:'system', content: EXTRACTION_SYSTEM }, { role:'user', content: promptText }],
+    response_format: { type: 'json_object' },
+    temperature: 0.2,
+    max_tokens: 2000
   };
 
   let modelId = await resolveModel();
   let resp;
-  try { resp = await generateContent(modelId, body); }
-  catch (e) { throw new Error('Network error — could not reach the Gemini API. (' + e.message + ')'); }
+  try { resp = await chatCompletion(modelId, body); }
+  catch (e) { throw new Error('Network error — could not reach the Groq API. (' + e.message + ')'); }
 
   if (resp.status === 404) {
     // this key's available models changed since we last cached one — rediscover and retry once
     modelId = await resolveModel(true);
-    try { resp = await generateContent(modelId, body); }
-    catch (e) { throw new Error('Network error — could not reach the Gemini API. (' + e.message + ')'); }
+    try { resp = await chatCompletion(modelId, body); }
+    catch (e) { throw new Error('Network error — could not reach the Groq API. (' + e.message + ')'); }
   }
 
   if (!resp.ok) {
     let detail = '';
     try { const j = await resp.json(); detail = j?.error?.message || JSON.stringify(j); } catch { detail = await resp.text().catch(()=> ''); }
-    const zeroQuota = /limit:\s*0\b/.test(detail);
-    const hints = { 400:'The API key looks invalid or the request was malformed — re-check the key.', 403:'The API key was rejected — re-check it at aistudio.google.com/apikey.', 429: zeroQuota ? `This model (${modelId}) has no free quota on your account/region right now.` : 'Rate limited — wait a minute and try again.', 503:'Gemini is overloaded — try again shortly.' };
+    const hints = { 400:'The request was malformed or the model was decommissioned — try again (it will auto-pick another model).', 401:'The API key looks invalid — re-check it at console.groq.com/keys.', 429:'Rate limited — wait a minute and try again.', 503:'Groq is overloaded — try again shortly.' };
     throw new Error(`API error ${resp.status} (model: ${modelId}). ${hints[resp.status] || ''}\n${detail}`.trim());
   }
   const data = await resp.json();
-  const cand = (data.candidates || [])[0];
-  const text = ((cand && cand.content && cand.content.parts) || []).map(p => p.text || '').join('');
+  const text = data.choices?.[0]?.message?.content || '';
   return parseJsonLoose(text);
 }
 function parseJsonLoose(text){
@@ -682,7 +678,7 @@ async function saveApiKey(){
   apiKey = $('apikey').value.trim();
   await store.set('settings:apikey', apiKey);
   resolvedModel = null;
-  await store.del('settings:geminiModel'); // re-discover a working model for the new key
+  await store.del('settings:groqModel'); // re-discover a working model for the new key
   $('keystatus').textContent = apiKey ? '✓ Key saved on this device.' : 'Key cleared.';
 }
 async function saveContact(){
@@ -755,32 +751,14 @@ async function extractFromMessage(){
   const text = $('msg-input').value.trim();
   if (!text) { banner('msg-error','error','Paste a message first — the box is empty.'); return; }
   const btn = $('msg-extract-btn');
-  btn.disabled = true; $('msg-status').textContent = 'Reading the message with Gemini…';
+  btn.disabled = true; $('msg-status').textContent = 'Reading the message with Groq…';
   try {
-    const data = await callGemini([{ type:'text', text: 'Extract the rishta profile from this message:\n\n' + text }]);
+    const data = await callGroq([{ type:'text', text: 'Extract the rishta profile from this message:\n\n' + text }]);
     populateForm(data, 'message');
   } catch (e) {
     banner('msg-error','error', esc(e.message) + '\n\nYour pasted message is untouched — fix the issue and press Extract again.');
   } finally {
     btn.disabled = false; $('msg-status').textContent = '';
-  }
-}
-async function extractFromPhoto(){
-  hideBanner('photo-error');
-  if (!pendingCardPhoto) { banner('photo-error','error','Choose a photo first.'); return; }
-  const btn = $('photo-extract-btn');
-  btn.disabled = true; $('photo-status').textContent = 'Reading the card with Gemini (OCR + extraction)…';
-  try {
-    const b64 = pendingCardPhoto.dataUrl.split(',')[1];
-    const data = await callGemini([
-      { type:'image', source:{ type:'base64', media_type: pendingCardPhoto.mediaType, data: b64 } },
-      { type:'text', text:'Read this profile card photo and extract the rishta profile.' }
-    ]);
-    populateForm(data, 'photo');
-  } catch (e) {
-    banner('photo-error','error', esc(e.message) + '\n\nYour photo is still loaded — fix the issue and try again.');
-  } finally {
-    btn.disabled = false; $('photo-status').textContent = '';
   }
 }
 
@@ -1730,12 +1708,11 @@ async function downloadSummary(){
   triggerDownload(cnv.toDataURL('image/png'), cardFileName(p, 'summary-'+summarySize));
 }
 
-/* ============================================================ PHOTO MODE WIRING ============================================================ */
+/* ============================================================ PHOTO MODE WIRING (reference-only — Groq has no vision) ============================================================ */
 function resetPhotoMode(){
   pendingCardPhoto = null;
   $('photo-preview').style.display = 'none';
   $('photo-input').value = '';
-  $('photo-extract-btn').disabled = true;
 }
 async function acceptCardPhoto(file){
   if (!file || !file.type.startsWith('image/')) return;
@@ -1743,14 +1720,13 @@ async function acceptCardPhoto(file){
   pendingCardPhoto = { dataUrl, mediaType: 'image/jpeg' };
   const pv = $('photo-preview');
   pv.src = dataUrl; pv.style.display = '';
-  $('photo-extract-btn').disabled = false;
 }
 
 /* ============================================================ INIT ============================================================ */
 async function init(){
   apiKey = (await store.get('settings:apikey')) || '';
   if (apiKey) { $('apikey').value = apiKey; $('keystatus').textContent = '✓ Key loaded.'; }
-  else banner('global-banner','info','👋 First time? Paste your free Gemini API key above (get one at <b>aistudio.google.com/apikey</b> — no credit card needed) to enable Message &amp; Photo extraction. The Form mode works without a key.');
+  else banner('global-banner','info','👋 First time? Paste your free Groq API key above (get one at <b>console.groq.com/keys</b> — no credit card needed) to enable Message extraction. The Form mode works without a key; Photo mode is reference-only since Groq can\'t read images.');
 
   contactNo = (await store.get('settings:contact')) || '+92 321 2266621';
   $('contact').value = contactNo;
