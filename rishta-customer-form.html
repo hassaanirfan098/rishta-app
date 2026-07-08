@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>City Marriage Bureau — Rishta Profile Tool</title>
+<title>City Marriage Bureau — Submit Your Rishta Profile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -409,6 +409,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 //# sourceMappingURL=jspdf.umd.min.js.map
 
 </script>
+
 <style>
   :root{
     --plum:#6E1E3C; --plum2:#8E2A4D; --gold:#B5893B; --gold2:#D4AF61;
@@ -557,94 +558,31 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     nav.tabs{margin-left:0; width:100%;}
     main{padding:16px 12px 60px;}
   }
+
+
+  .customer-header{background:linear-gradient(120deg,var(--plum) 0%,var(--plum2) 100%); color:#fff; padding:26px 20px; text-align:center;}
+  .customer-header .logo{width:52px;height:52px;border-radius:50%;border:2px solid var(--gold2);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--gold2);font-size:16px;letter-spacing:1px;margin:0 auto 10px;}
+  .customer-header h1{font-size:20px;font-weight:700;}
+  .customer-header p{font-size:12.5px;color:#F3DFB8;margin-top:4px;}
+  .success-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:40px 30px;text-align:center;max-width:480px;margin:40px auto;}
+  .success-card .check{width:64px;height:64px;border-radius:50%;background:#E8F5E9;color:#2E7D32;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 18px;}
+  .success-card h2{color:var(--plum);font-size:20px;margin-bottom:10px;}
+  .success-card p{color:#7a6a55;font-size:13.5px;margin-bottom:20px;line-height:1.6;}
+
 </style>
 </head>
 <body>
 
-<div id="login-screen" class="login-screen">
-  <div class="login-card">
-    <div class="logo" style="margin:0 auto 14px;">CMB</div>
-    <h1 style="text-align:center;">City Marriage Bureau</h1>
-    <p style="text-align:center;color:#8a7a70;font-size:13px;margin-bottom:18px;">Team sign-in — ask your bureau owner for a login if you don't have one yet.</p>
-    <div class="banner error" id="login-error"></div>
-    <label class="fld">Email</label>
-    <input type="email" id="login-email" autocomplete="username">
-    <label class="fld" style="margin-top:10px;">Password</label>
-    <input type="password" id="login-password" autocomplete="current-password">
-    <button class="btn gold" style="width:100%;margin-top:16px;" onclick="handleLogin()" id="login-btn">Sign In</button>
-    <div style="text-align:center;margin-top:10px;"><span class="status" id="login-status"></span></div>
-  </div>
+<div class="customer-header">
+  <div class="logo">CMB</div>
+  <h1>City Marriage Bureau</h1>
+  <p>Submit your rishta profile — takes about 5 minutes</p>
 </div>
 
-<div id="app-root" style="display:none">
-<header class="app">
-  <div class="logo">CMB</div>
-  <div>
-    <h1>City Marriage Bureau</h1>
-    <p>Rishta Profile Tool — intake · matching · Instagram-ready cards</p>
-  </div>
-  <nav class="tabs">
-    <button id="tabbtn-new" class="active" onclick="showTab('new')">➕ New Profile</button>
-    <button id="tabbtn-match" onclick="showTab('match')">💞 Matching Space</button>
-    <button id="tabbtn-preview" onclick="showTab('preview')">🪪 Preview &amp; Download</button>
-    <button onclick="handleLogout()" style="background:rgba(0,0,0,.15);color:#fff;border:1px solid rgba(255,255,255,.25);padding:9px 16px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:13px;">Log out</button>
-  </nav>
-</header>
-
-<main>
+<main style="max-width:900px;">
   <div id="global-banner" class="banner"></div>
-  <div id="sync-banner" class="banner info" style="margin-bottom:12px;"></div>
 
-  <div class="keyrow" id="keyrow">
-    <label for="apikey">Groq API key <span style="font-weight:400;color:var(--na);">(free)</span></label>
-    <input type="password" id="apikey" placeholder="gsk_..." autocomplete="off">
-    <button class="btn sm gold" onclick="saveApiKey()">Save key</button>
-    <span class="status" id="keystatus">Needed for Message extraction. Get a free key at <b>console.groq.com/keys</b>. Stored only on this device.</span>
-  </div>
-
-  <div class="keyrow" id="contactrow">
-    <label for="contact">Bureau WhatsApp no.</label>
-    <input type="text" id="contact" placeholder="+92 321 2266621" autocomplete="off">
-    <button class="btn sm gold" onclick="saveContact()">Save number</button>
-    <span class="status" id="contactstatus">Shown on every card's contact slide.</span>
-  </div>
-
-  <!-- ============================== TAB: NEW PROFILE ============================== -->
-  <section class="tab active" id="tab-new">
-    <div class="modes">
-      <button id="modebtn-form" class="active" onclick="showMode('form')"><span class="t">📝 Form</span><span class="d">Step-by-step manual intake</span></button>
-      <button id="modebtn-message" onclick="showMode('message')"><span class="t">💬 Message</span><span class="d">Paste a WhatsApp rishta message — auto-extract</span></button>
-      <button id="modebtn-photo" onclick="showMode('photo')"><span class="t">📷 Photo</span><span class="d">Reference only — Groq can't read images, fill the form manually</span></button>
-    </div>
-
-    <!-- message mode input -->
-    <div class="panel" id="mode-message" style="display:none">
-      <h2>Paste WhatsApp message</h2>
-      <textarea id="msg-input" rows="10" placeholder="Paste the full rishta message here — Roman Urdu, English, mixed, any format."></textarea>
-      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
-        <button class="btn" id="msg-extract-btn" onclick="extractFromMessage()">✨ Extract profile</button>
-        <span class="status" id="msg-status" style="font-size:12.5px;color:#8a6d3b;"></span>
-      </div>
-      <div class="banner error" id="msg-error"></div>
-    </div>
-
-    <!-- photo mode input -->
-    <div class="panel" id="mode-photo" style="display:none">
-      <h2>Upload profile card photo</h2>
-      <div class="banner info show" style="margin-bottom:14px;">📌 Groq's free models can't read images, so this photo isn't auto-extracted — it's kept here on-screen for reference while you type the details into the form below.</div>
-      <div class="photodrop" id="photodrop" onclick="document.getElementById('photo-input').click()">
-        <div>📄 Click or drag a photo of the profile card here<br><small>Paper form, register page, or screenshot — JPG / PNG / WEBP</small></div>
-        <img id="photo-preview" style="display:none">
-      </div>
-      <input type="file" id="photo-input" accept="image/*" style="display:none">
-      <div style="margin-top:12px;">
-        <button class="btn gold" onclick="wizGo(1); $('wizard-panel').scrollIntoView({behavior:'smooth'});">📝 Fill the form below with these details →</button>
-      </div>
-    </div>
-
-    <div class="banner info" id="review-banner">✅ Extracted — step through Personal / Family / Requirements below, correct anything, then Save.</div>
-
-    <!-- ================= 3-STEP WIZARD (shared review surface for all 3 intake modes) ================= -->
+  <div id="form-view">
     <div class="panel" id="wizard-panel">
       <div class="stepper">
         <div class="step active" id="stepdot-1"><div class="circ2">1</div><div class="slbl">Personal Details</div></div>
@@ -763,349 +701,39 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         <div class="navrow">
           <button class="btn ghost" onclick="wizGo(2)">← Back</button>
           <div style="display:flex;gap:12px;align-items:center;">
-            <button class="btn gold" id="save-btn" style="font-size:15px; padding:13px 34px;" onclick="saveProfile()">✓ Save Profile</button>
-            <button class="btn ghost sm" onclick="clearForm()">Clear form</button>
+            <button class="btn gold" id="save-btn" style="font-size:15px; padding:13px 34px;" onclick="submitProfile()">✓ Submit My Profile</button>
+            
           </div>
         </div>
         <div style="margin-top:8px;"><span id="save-status" style="font-size:13px; color:#2E7D32; font-weight:600;"></span></div>
       </div>
     </div>
-  </section>
 
-  <!-- ============================== TAB: MATCHING SPACE ============================== -->
-  <section class="tab" id="tab-match">
-    <div class="panel">
-      <h2>Saved profiles</h2>
-      <div class="filters">
-        <div><label class="fld">Gender</label>
-          <select id="fl-gender" onchange="renderList()"><option value="">All</option><option value="male">Male</option><option value="female">Female</option></select></div>
-        <div><label class="fld">Age from</label><input id="fl-agemin" type="number" oninput="renderList()"></div>
-        <div><label class="fld">Age to</label><input id="fl-agemax" type="number" oninput="renderList()"></div>
-        <div><label class="fld">Height min</label><input id="fl-heightmin" placeholder="5'2" oninput="renderList()"></div>
-        <div><label class="fld">Marital status</label>
-          <select id="fl-marital" onchange="renderList()"><option value="">All</option><option value="single">Single</option><option value="divorced">Divorced</option><option value="widowed">Widowed</option></select></div>
-        <div><label class="fld">City</label><input id="fl-city" placeholder="contains..." oninput="renderList()"></div>
-        <div><label class="fld">Caste</label><input id="fl-caste" placeholder="contains..." oninput="renderList()"></div>
-        <div><label class="fld">Sect</label><input id="fl-sect" placeholder="contains..." oninput="renderList()"></div>
-        <div><label class="fld">Nationality</label><input id="fl-nationality" placeholder="contains..." oninput="renderList()"></div>
-        <div><label class="fld">Qualification</label><input id="fl-qualification" placeholder="contains..." oninput="renderList()"></div>
-        <div><label class="fld">Habits</label><input id="fl-habits" placeholder="e.g. non-smoker" oninput="renderList()"></div>
-        <div><label class="fld">Working woman?</label>
-          <select id="fl-workingwoman" onchange="renderList()"><option value="">Any</option><option value="Acceptable">Acceptable only</option></select></div>
-        <div><label class="fld">Search</label><input id="fl-search" placeholder="name or ID..." oninput="renderList()"></div>
-      </div>
-      <div id="plist" class="plist"></div>
-      <div id="plist-empty" class="empty" style="display:none">
-        <b>No profiles yet</b>
-        Add your first rishta from the <a href="#" onclick="showTab('new');return false;">New Profile</a> tab — paste a WhatsApp message, upload a card photo, or fill the form.
-      </div>
-    </div>
+  </div>
 
-    <div class="panel" id="matches-panel" style="display:none">
-      <div class="mhead">
-        <h2 id="matches-title" style="margin:0;">Matches</h2>
-        <button class="btn ghost sm" onclick="closeMatches()">✕ Close</button>
-      </div>
-      <div id="matches-body"></div>
-    </div>
-  </section>
-
-  <!-- ============================== TAB: PREVIEW & DOWNLOAD ============================== -->
-  <section class="tab" id="tab-preview">
-    <div class="panel">
-      <h2>Preview &amp; Download</h2>
-      <div style="min-width:260px; margin-bottom:18px;"><label class="fld">Choose profile</label>
-        <select id="prev-select" onchange="renderPreview()"></select></div>
-      <div id="prev-empty" class="empty" style="display:none">
-        <b>Nothing to preview yet</b>
-        Save a profile first from the <a href="#" onclick="showTab('new');return false;">New Profile</a> tab, then come back here.
-      </div>
-      <div id="prev-content" style="display:none">
-        <div class="dlgrid">
-          <div class="dlcard">
-            <h3>Carousel Post (5 slides)</h3>
-            <div class="sub">Cover · Personal · Family · Requirements · Contact</div>
-            <div class="thumbrow" id="carousel-thumbs"></div>
-            <div class="sizeopts">
-              <div class="sizeopt on" id="carousel-size-square" onclick="setCarouselSize('square')"><div class="dim">1080 × 1080</div><div class="tag">SQUARE</div></div>
-              <div class="sizeopt" id="carousel-size-portrait" onclick="setCarouselSize('portrait')"><div class="dim">1080 × 1350</div><div class="tag">PORTRAIT (4:5)</div></div>
-            </div>
-            <div class="dlbtns">
-              <button class="btn gold" onclick="downloadCarouselPdf()">⬇ Download PDF (all 5)</button>
-              <button class="btn ghost" onclick="downloadCarouselImages()">⬇ Download Images Individually</button>
-            </div>
-          </div>
-          <div class="dlcard">
-            <h3>Single Summary Card</h3>
-            <div class="sub">One portrait post — only the essential fields</div>
-            <img id="summary-thumb" class="fullimgprev" alt="Summary card preview">
-            <div class="sizeopts">
-              <div class="sizeopt on" id="summary-size-full" onclick="setSummarySize('full')"><div class="dim">Full Portrait</div><div class="tag">TALLEST FIT</div></div>
-              <div class="sizeopt" id="summary-size-crop" onclick="setSummarySize('crop')"><div class="dim">1080 × 1350</div><div class="tag">4:5 CROP</div></div>
-            </div>
-            <div class="dlbtns"><button class="btn gold" style="width:100%" onclick="downloadSummary()">⬇ Download Summary Card</button></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <div id="success-view" class="success-card" style="display:none">
+    <div class="check">✓</div>
+    <h2>Profile submitted!</h2>
+    <p id="success-msg">Thank you — your profile has been sent to City Marriage Bureau. Download a copy of your profile card below.</p>
+    <button class="btn gold" id="download-pdf-btn" style="width:100%;" onclick="downloadMyPdf()">⬇ Download My Profile PDF</button>
+  </div>
 </main>
-</div>
 
 <script>
 "use strict";
-/* ============================================================
-   STORAGE — window.storage compatible wrapper.
-   ============================================================ */
-const store = (() => {
-  const native = (typeof window.storage === 'object' && window.storage !== null &&
-                  (typeof window.storage.set === 'function' || typeof window.storage.setItem === 'function'))
-                 ? window.storage : null;
-  if (native) {
-    const S = {
-      async set(k, v){ return native.set ? native.set(k, JSON.stringify(v)) : native.setItem(k, JSON.stringify(v)); },
-      async get(k){
-        const r = native.get ? await native.get(k) : await native.getItem(k);
-        if (r == null) return null;
-        const val = (typeof r === 'object' && 'value' in r) ? r.value : r;
-        try { return JSON.parse(val); } catch { return val; }
-      },
-      async del(k){ return native.delete ? native.delete(k) : native.removeItem(k); }
-    };
-    return S;
-  }
-  let dbp = null;
-  function db(){
-    if (dbp) return dbp;
-    dbp = new Promise((res, rej) => {
-      const req = indexedDB.open('cmb-rishta', 1);
-      req.onupgradeneeded = () => req.result.createObjectStore('kv');
-      req.onsuccess = () => res(req.result);
-      req.onerror = () => rej(req.error);
-    });
-    return dbp;
-  }
-  const mem = new Map();
-  async function op(mode, fn){
-    try {
-      const d = await db();
-      return await new Promise((res, rej) => {
-        const tx = d.transaction('kv', mode);
-        const st = tx.objectStore('kv');
-        const r = fn(st);
-        r.onsuccess = () => res(r.result);
-        r.onerror = () => rej(r.error);
-      });
-    } catch (e) {
-      console.warn('Storage unavailable, using in-memory fallback:', e);
-      banner('global-banner','info','⚠️ Persistent storage is unavailable in this browser — profiles will be kept only for this session.');
-      return null;
-    }
-  }
-  return {
-    async set(k, v){ mem.set(k, v); await op('readwrite', st => st.put(v, k)); },
-    async get(k){ const r = await op('readonly', st => st.get(k)); return r !== null && r !== undefined ? r : (mem.has(k) ? mem.get(k) : null); },
-    async del(k){ mem.delete(k); await op('readwrite', st => st.delete(k)); }
-  };
-})();
-
-/* ============================================================================================
-   SUPABASE — shared team database. All saved profiles live here (not in this device's
-   IndexedDB), so every teammate on every device sees the same list, and the public customer
-   form can insert new profiles directly.
-
-   ⚠️ PASTE YOUR OWN PROJECT'S VALUES HERE — see bureau-supabase/schema.sql + the setup notes
-   for how to create a project and get these two values (Project Settings → API).
-   ============================================================================================ */
-const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';       // e.g. https://xxxxxxxx.supabase.co
-const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_PUBLIC_KEY_HERE';
-const SUPABASE_CONFIGURED = !SUPABASE_URL.startsWith('PASTE_') && !SUPABASE_ANON_KEY.startsWith('PASTE_');
-
-let authToken = null, refreshTokenVal = null, authUserEmail = null;
-
-async function restoreSession(){
-  const sess = await store.get('auth:session');
-  if (sess && sess.authToken) { authToken = sess.authToken; refreshTokenVal = sess.refreshToken; authUserEmail = sess.email; return true; }
-  return false;
-}
-async function persistSession(){
-  await store.set('auth:session', { authToken, refreshToken: refreshTokenVal, email: authUserEmail });
-}
-async function tryRefreshToken(){
-  if (!refreshTokenVal) return false;
-  try {
-    const resp = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-      method: 'POST', headers: { 'apikey': SUPABASE_ANON_KEY, 'content-type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshTokenVal })
-    });
-    if (!resp.ok) return false;
-    const data = await resp.json();
-    authToken = data.access_token; refreshTokenVal = data.refresh_token;
-    await persistSession();
-    return true;
-  } catch { return false; }
-}
-// Generic Supabase REST call with auth header + one 401-triggered refresh-and-retry.
-async function supaFetch(path, opts){
-  opts = opts || {};
-  const doFetch = () => fetch(SUPABASE_URL + path, {
-    ...opts,
-    headers: { 'apikey': SUPABASE_ANON_KEY, 'content-type': 'application/json', 'Authorization': 'Bearer ' + (authToken || SUPABASE_ANON_KEY), ...(opts.headers||{}) }
-  });
-  let resp = await doFetch();
-  if (resp.status === 401 && authToken) {
-    if (await tryRefreshToken()) resp = await doFetch();
-  }
-  return resp;
-}
-async function supaError(resp){
-  let detail = ''; try { const j = await resp.json(); detail = j.message || j.error_description || j.msg || JSON.stringify(j); } catch { detail = await resp.text().catch(()=>''); }
-  return `(${resp.status}) ${detail}`.trim();
-}
-
-async function handleLogin(){
-  const email = $('login-email').value.trim(), password = $('login-password').value;
-  if (!email || !password) { banner('login-error','error','Enter both email and password.'); return; }
-  hideBanner('login-error');
-  $('login-btn').disabled = true; $('login-status').textContent = 'Signing in…';
-  try {
-    if (!SUPABASE_CONFIGURED) throw new Error('This app has not been connected to a Supabase project yet — paste SUPABASE_URL and SUPABASE_ANON_KEY at the top of the script.');
-    const resp = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: 'POST', headers: { 'apikey': SUPABASE_ANON_KEY, 'content-type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    if (!resp.ok) throw new Error(await supaError(resp));
-    const data = await resp.json();
-    authToken = data.access_token; refreshTokenVal = data.refresh_token; authUserEmail = email;
-    await persistSession();
-    await enterApp();
-  } catch (e) {
-    banner('login-error','error', esc(e.message));
-  } finally {
-    $('login-btn').disabled = false; $('login-status').textContent = '';
-  }
-}
-async function handleLogout(){
-  authToken = null; refreshTokenVal = null; authUserEmail = null;
-  await store.del('auth:session');
-  $('app-root').style.display = 'none';
-  $('login-screen').style.display = 'flex';
-}
-
-/* ---------- profile row <-> app object mapping (DB columns are snake_case) ---------- */
-function profileToRow(p){
-  return {
-    id: p.id, catalog_id: p.catalogId, source_type: p.sourceType, photo: p.photo,
-    name: p.name, gender: p.gender, age: p.age, height_inches: p.heightInches, height_display: p.heightDisplay,
-    marital_status: p.maritalStatus, disability: p.disability,
-    education: p.education, job: p.job, religion: p.religion, property: p.property, address: p.address,
-    father: p.father, mother: p.mother, siblings: p.siblings, requirements: p.requirements, raw_note: p.raw_note
-  };
-}
-function rowToProfile(r){
-  return {
-    id: r.id, catalogId: r.catalog_id, createdAt: r.created_at, sourceType: r.source_type, photo: r.photo,
-    name: r.name, gender: r.gender, age: r.age, heightInches: r.height_inches, heightDisplay: r.height_display,
-    maritalStatus: r.marital_status, disability: r.disability,
-    education: r.education || {}, job: r.job || {}, religion: r.religion || {}, property: r.property || {}, address: r.address || {},
-    father: r.father, mother: r.mother, siblings: r.siblings || [], requirements: r.requirements || {}, raw_note: r.raw_note
-  };
-}
-async function loadProfilesFromCloud(){
-  const resp = await supaFetch('/rest/v1/bureau_profiles?select=*&order=created_at.desc');
-  if (!resp.ok) throw new Error('Could not load profiles: ' + await supaError(resp));
-  const rows = await resp.json();
-  return rows.map(rowToProfile);
-}
-async function fetchNextCatalogId(g){
-  const resp = await supaFetch('/rest/v1/rpc/bureau_next_catalog_id', { method:'POST', body: JSON.stringify({ g }) });
-  if (!resp.ok) throw new Error('Could not assign a catalog ID: ' + await supaError(resp));
-  return resp.json();
-}
-async function createProfileCloud(profile){
-  const resp = await supaFetch('/rest/v1/bureau_profiles', { method:'POST', headers:{ 'Prefer':'return=representation' }, body: JSON.stringify(profileToRow(profile)) });
-  if (!resp.ok) throw new Error('Could not save the profile: ' + await supaError(resp));
-  const rows = await resp.json();
-  return rowToProfile(rows[0]);
-}
-async function deleteProfileCloud(id){
-  const resp = await supaFetch(`/rest/v1/bureau_profiles?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' });
-  if (!resp.ok) throw new Error('Could not delete the profile: ' + await supaError(resp));
-}
-async function loadContactFromCloud(){
-  const resp = await supaFetch('/rest/v1/bureau_settings?key=eq.contact_no&select=value');
-  if (!resp.ok) return null;
-  const rows = await resp.json();
-  return rows[0] ? rows[0].value : null;
-}
-async function saveContactToCloud(value){
-  const resp = await supaFetch('/rest/v1/bureau_settings?key=eq.contact_no', { method:'PATCH', body: JSON.stringify({ value }) });
-  if (!resp.ok) throw new Error('Could not save the number: ' + await supaError(resp));
-}
-
-/* ---------- one-time migration: profiles saved locally before this device connected to the cloud ---------- */
-async function findLocalOnlyProfiles(){
-  const index = (await store.get('meta:index')) || [];
-  const local = [];
-  for (const id of index) { const p = await store.get('profiles:' + id); if (p) local.push(p); }
-  return local;
-}
-async function syncLocalProfilesToCloud(){
-  const local = await findLocalOnlyProfiles();
-  if (!local.length) return;
-  $('sync-banner').className = 'banner info show';
-  $('sync-banner').textContent = `Found ${local.length} profile(s) saved locally on this device before it connected to the cloud — syncing…`;
-  let ok = 0;
-  for (const p of local) {
-    try {
-      const g = p.gender === 'male' ? 'm' : 'f';
-      const catalogId = await fetchNextCatalogId(g);
-      const migrated = { ...p, catalogId, id: catalogId.toLowerCase(), sourceType: p.sourceType || 'form' };
-      await createProfileCloud(migrated);
-      await store.del('profiles:' + p.id);
-      ok++;
-    } catch (e) { console.warn('Migration failed for', p.id, e); }
-  }
-  const index = (await store.get('meta:index')) || [];
-  const remaining = [];
-  for (const id of index) { if (await store.get('profiles:' + id)) remaining.push(id); }
-  await store.set('meta:index', remaining);
-  $('sync-banner').className = ok ? 'banner success show' : 'banner error show';
-  $('sync-banner').textContent = ok === local.length
-    ? `✓ Synced ${ok} local profile(s) to the shared cloud database — reassigned new catalog IDs to avoid clashes with anyone else's.`
-    : `Synced ${ok} of ${local.length} local profile(s) — some failed, check console for details.`;
-  setTimeout(() => $('sync-banner').classList.remove('show'), 10000);
-}
-
-/* ============================================================ STATE ============================================================ */
-// Which Groq models are actually live changes over time (models get deprecated/renamed), so
-// instead of hardcoding a model name the app discovers a working one from the key's own
-// model list and remembers it.
-let resolvedModel = null;
-let profiles = [];
-let apiKey = '';
-let contactNo = '+92 321 2266621';
-let pendingPersonPhoto = null;
-let pendingCardPhoto = null;
-let sibCount = 0;
-let carouselSize = 'square';   // 'square' | 'portrait'
-let summarySize = 'full';      // 'full' | 'crop'
-
-/* ============================================================ HELPERS ============================================================ */
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function banner(id, type, msg){
   const el = $(id);
   el.className = 'banner show ' + type;
   el.innerHTML = msg;
-  if (type === 'success') setTimeout(() => el.classList.remove('show'), 6000);
 }
 function hideBanner(id){ $(id).classList.remove('show'); }
 
 function heightDisplay(inches){
   if (inches == null || inches === '' || isNaN(inches)) return null;
   const ft = Math.floor(inches / 12), inch = Math.round(inches % 12);
-  return ft + '′' + inch + '″';
+  return ft + '\u2032' + inch + '\u2033';
 }
 function parseHeightStr(s){
   if (s == null) return null;
@@ -1114,7 +742,7 @@ function parseHeightStr(s){
   if (!s) return null;
   let m = s.match(/(\d{2,3})\s*cm/);
   if (m) return Math.round(parseInt(m[1],10) / 2.54);
-  m = s.match(/(\d)\s*(?:'|′|ft|feet|\.|-|\s)\s*(\d{1,2})/);
+  m = s.match(/(\d)\s*(?:'|\u2032|ft|feet|\.|-|\s)\s*(\d{1,2})/);
   if (m) return parseInt(m[1],10)*12 + parseInt(m[2],10);
   m = s.match(/^(\d)\s*(?:'|ft|feet)?$/);
   if (m) return parseInt(m[1],10)*12;
@@ -1146,158 +774,53 @@ function resizeImage(file, maxEdge){
   });
 }
 
-/* ============================================================ GROQ API ============================================================ */
-const EXTRACTION_SYSTEM = `You extract matrimonial (rishta) profile data for a marriage bureau in Pakistan. Input is a raw WhatsApp-style text message that mixes English, Urdu script, and Roman Urdu.
+/* ============================================================================================
+   SUPABASE — public, insert-only. This form never reads, edits, or deletes any existing
+   profile; it can only add a new one (see bureau-supabase/schema.sql's "public insert only"
+   policy) and read the bureau's shared WhatsApp number so the generated card is correct.
 
-Return ONLY a single JSON object — no markdown fences, no commentary — with exactly these keys (use null when genuinely absent; never invent data):
+   ⚠️ PASTE THE SAME VALUES YOU USED IN rishta-profile-tool.html.
+   ============================================================================================ */
+const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_PUBLIC_KEY_HERE';
+const SUPABASE_CONFIGURED = !SUPABASE_URL.startsWith('PASTE_') && !SUPABASE_ANON_KEY.startsWith('PASTE_');
 
-{
-  "name": string|null,
-  "gender": "male"|"female"|null,
-  "age": number|null,
-  "height_inches": number|null,
-  "marital_status": "single"|"divorced"|"widowed"|null,
-  "disability": string|null,
-  "education": { "qualification": string|null, "institution": string|null },
-  "job": { "profession": string|null, "work_location": string|null, "future_plans": string|null, "income": string|null },
-  "religion": { "religion": string|null, "caste": string|null, "sect": string|null, "nationality": string|null },
-  "property": { "ownership": string|null, "size": string|null, "vehicle": string|null, "additional": string|null },
-  "address": { "city": string|null, "locality": string|null },
-  "father": string|null,
-  "mother": string|null,
-  "siblings": [ { "relation": "Brother"|"Sister", "age_bracket": string|null, "marital_status": string|null, "profession_education": string|null } ],
-  "requirements": {
-    "age_min": number|null, "age_max": number|null, "height_min_inches": number|null,
-    "city": string|null, "caste": string|null, "sect": string|null, "qualification": string|null,
-    "habits": string|null, "divorced_widowed": string|null, "working_woman": string|null, "other": string|null
-  },
-  "raw_note": string|null
+async function supaAnonFetch(path, opts){
+  opts = opts || {};
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'content-type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, ...(opts.headers||{}) }
+  });
 }
-
-NORMALIZATION RULES:
-1. HEIGHT: "5.7" / "Height: 5.7" means 5 feet 7 inches, never 5.7 ft. Convert 5'7, 5 ft 7, 5-7, 170cm to total inches.
-2. INCOME: "Alhamdulillah"/"Mashallah"/"handsome"/vague => income = "Undisclosed", original phrase into raw_note.
-3. EDUCATION typos: normalize obvious garbles ("McS" => "M.Sc" or "MCS" if CS context), record original in raw_note.
-4. ROMAN URDU: "shaadi shuda nahi" => single; "khula/talaq yafta" => divorced; "beta/beti" => count as siblings if referring to the person's own siblings; "apna ghar/makan" => property ownership "Own home"; "larki/larka chahiye" section => requirements. "Zaat" => caste, "Maslak" => sect.
-5. siblings: one entry per sibling mentioned, relation "Brother" or "Sister", age_bracket like "25-30" if inferable else null.
-6. raw_note: short string "field: original text" per uncertain item, separated by "; ". null if nothing ambiguous.
-7. requirements describes what THIS person's family demands in a spouse — never mix with the person's own attributes.
-8. Numbers must be JSON numbers. Do not add keys outside the schema.`;
-
-// Which Groq models are actually live changes over time (deprecations/renames happen often),
-// so we ask the key itself (list models) rather than hardcode a name that goes stale.
-const GROQ_BASE = 'https://api.groq.com/openai/v1';
-async function listGroqModels(){
-  const resp = await fetch(`${GROQ_BASE}/models`, { headers: { 'Authorization': 'Bearer ' + apiKey } });
-  if (!resp.ok) {
-    let detail = ''; try { const j = await resp.json(); detail = j?.error?.message || JSON.stringify(j); } catch { detail = await resp.text().catch(()=> ''); }
-    throw new Error(`Could not list Groq models for this key (API error ${resp.status}). ${detail}`.trim());
-  }
-  const data = await resp.json();
-  return (data.data || []).map(m => m.id);
+async function supaError(resp){
+  let detail = ''; try { const j = await resp.json(); detail = j.message || j.error_description || j.msg || JSON.stringify(j); } catch { detail = await resp.text().catch(()=>''); }
+  return `(${resp.status}) ${detail}`.trim();
 }
-function pickBestModel(names){
-  const rank = n => {
-    if (/whisper|tts|guard|moderation|prompt-guard/i.test(n)) return -1; // audio/moderation models, not chat/JSON extraction
-    if (/70b.*versatile/i.test(n)) return 4;
-    if (/70b/i.test(n)) return 3.5;
-    if (/8b.*instant/i.test(n)) return 3;
-    if (/instant/i.test(n)) return 2.5;
-    return 1;
+async function fetchNextCatalogId(g){
+  const resp = await supaAnonFetch('/rest/v1/rpc/bureau_next_catalog_id', { method:'POST', body: JSON.stringify({ g }) });
+  if (!resp.ok) throw new Error('Could not assign a profile ID: ' + await supaError(resp));
+  return resp.json();
+}
+function profileToRow(p){
+  return {
+    id: p.id, catalog_id: p.catalogId, source_type: p.sourceType, photo: p.photo,
+    name: p.name, gender: p.gender, age: p.age, height_inches: p.heightInches, height_display: p.heightDisplay,
+    marital_status: p.maritalStatus, disability: p.disability,
+    education: p.education, job: p.job, religion: p.religion, property: p.property, address: p.address,
+    father: p.father, mother: p.mother, siblings: p.siblings, requirements: p.requirements, raw_note: p.raw_note
   };
-  return names.filter(n => rank(n) > 0).sort((a,b) => rank(b) - rank(a))[0] || null;
 }
-async function resolveModel(force){
-  if (resolvedModel && !force) return resolvedModel;
-  if (!force) { const cached = await store.get('settings:groqModel'); if (cached) { resolvedModel = cached; return cached; } }
-  const names = await listGroqModels();
-  const best = pickBestModel(names);
-  if (!best) throw new Error('No chat model on this Groq key was found. Check the key at console.groq.com/keys.');
-  resolvedModel = best;
-  await store.set('settings:groqModel', best);
-  return best;
+async function insertProfile(profile){
+  const resp = await supaAnonFetch('/rest/v1/bureau_profiles', { method:'POST', body: JSON.stringify(profileToRow(profile)) });
+  if (!resp.ok) throw new Error('Could not submit your profile: ' + await supaError(resp));
 }
-function chatCompletion(modelId, body){
-  return fetch(`${GROQ_BASE}/chat/completions`,
-    { method:'POST', headers:{ 'content-type':'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ model: modelId, ...body }) });
-}
-// userContent: array of {type:'text',text} blocks (Groq's free models are text-only, so image
-// blocks are never sent — Photo mode is reference-only, see the UI note there).
-async function callGroq(userContent){
-  if (!apiKey) throw new Error('No API key set. Paste your free Groq API key in the bar at the top and press "Save key". Get one at console.groq.com/keys.');
-  const promptText = userContent.filter(b => b.type !== 'image').map(b => b.text).join('\n\n');
-  const body = {
-    messages: [{ role:'system', content: EXTRACTION_SYSTEM }, { role:'user', content: promptText }],
-    response_format: { type: 'json_object' },
-    temperature: 0.2,
-    max_tokens: 2000
-  };
-
-  let modelId = await resolveModel();
-  let resp;
-  try { resp = await chatCompletion(modelId, body); }
-  catch (e) { throw new Error('Network error — could not reach the Groq API. (' + e.message + ')'); }
-
-  if (resp.status === 404) {
-    // this key's available models changed since we last cached one — rediscover and retry once
-    modelId = await resolveModel(true);
-    try { resp = await chatCompletion(modelId, body); }
-    catch (e) { throw new Error('Network error — could not reach the Groq API. (' + e.message + ')'); }
-  }
-
-  if (!resp.ok) {
-    let detail = '';
-    try { const j = await resp.json(); detail = j?.error?.message || JSON.stringify(j); } catch { detail = await resp.text().catch(()=> ''); }
-    const hints = { 400:'The request was malformed or the model was decommissioned — try again (it will auto-pick another model).', 401:'The API key looks invalid — re-check it at console.groq.com/keys.', 429:'Rate limited — wait a minute and try again.', 503:'Groq is overloaded — try again shortly.' };
-    throw new Error(`API error ${resp.status} (model: ${modelId}). ${hints[resp.status] || ''}\n${detail}`.trim());
-  }
-  const data = await resp.json();
-  const text = data.choices?.[0]?.message?.content || '';
-  return parseJsonLoose(text);
-}
-function parseJsonLoose(text){
-  if (!text) throw new Error('The model returned an empty response — please try again.');
-  let t = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-  const a = t.indexOf('{'), b = t.lastIndexOf('}');
-  if (a === -1 || b === -1) throw new Error('Could not find JSON in the model response:\n' + text.slice(0, 400));
-  try { return JSON.parse(t.slice(a, b + 1)); }
-  catch (e) { throw new Error('The model response was not valid JSON (' + e.message + '):\n' + text.slice(0, 400)); }
-}
-
-/* ============================================================ API KEY / CONTACT ============================================================ */
-async function saveApiKey(){
-  apiKey = $('apikey').value.trim();
-  await store.set('settings:apikey', apiKey);
-  resolvedModel = null;
-  await store.del('settings:groqModel'); // re-discover a working model for the new key
-  $('keystatus').textContent = apiKey ? '✓ Key saved on this device.' : 'Key cleared.';
-}
-async function saveContact(){
-  contactNo = $('contact').value.trim() || '+92 321 2266621';
+async function loadContact(){
   try {
-    await saveContactToCloud(contactNo);
-    $('contactstatus').textContent = '✓ Number saved — shared with your whole team and the customer form.';
-  } catch (e) {
-    banner('global-banner','error', esc(e.message));
-    return;
-  }
-  if ($('tab-preview').classList.contains('active')) renderPreview();
-}
-
-/* ============================================================ TABS & MODES ============================================================ */
-function showTab(name){
-  for (const t of ['new','match','preview']) {
-    $('tab-'+t).classList.toggle('active', t === name);
-    $('tabbtn-'+t).classList.toggle('active', t === name);
-  }
-  if (name === 'match') renderList();
-  if (name === 'preview') refreshPreviewSelect();
-}
-function showMode(mode){
-  for (const m of ['form','message','photo']) $('modebtn-'+m).classList.toggle('active', m === mode);
-  $('mode-message').style.display = mode === 'message' ? '' : 'none';
-  $('mode-photo').style.display   = mode === 'photo'   ? '' : 'none';
-  hideBanner('review-banner');
+    const resp = await supaAnonFetch('/rest/v1/bureau_settings?key=eq.contact_no&select=value');
+    if (!resp.ok) return '+92 321 2266621';
+    const rows = await resp.json();
+    return rows[0] ? rows[0].value : '+92 321 2266621';
+  } catch { return '+92 321 2266621'; }
 }
 
 /* ============================================================ WIZARD NAV ============================================================ */
@@ -1312,6 +835,7 @@ function wizGo(step){
 }
 
 /* ============================================================ SIBLINGS (repeatable rows) ============================================================ */
+let sibCount = 0;
 function addSibling(data){
   const id = 'sib-' + (sibCount++);
   const wrap = document.createElement('div');
@@ -1322,14 +846,8 @@ function addSibling(data){
     <div><label class="fld">Age bracket</label><input class="sib-age" placeholder="25-30"></div>
     <div><label class="fld">Marital status</label><input class="sib-marital" placeholder="Married / Single"></div>
     <div><label class="fld">Profession / education</label><input class="sib-prof"></div>
-    <div class="rm" onclick="document.getElementById('${id}').remove()">✕</div>`;
+    <div class="rm" onclick="document.getElementById('${id}').remove()">\u2715</div>`;
   $('sib-list').appendChild(wrap);
-  if (data){
-    wrap.querySelector('.sib-relation').value = data.relation || 'Brother';
-    wrap.querySelector('.sib-age').value = data.ageBracket || '';
-    wrap.querySelector('.sib-marital').value = data.maritalStatus || '';
-    wrap.querySelector('.sib-prof').value = data.professionEducation || '';
-  }
 }
 function readSiblings(){
   return [...$('sib-list').querySelectorAll('.sibrow')].map(row => ({
@@ -1339,79 +857,18 @@ function readSiblings(){
     professionEducation: row.querySelector('.sib-prof').value.trim() || null
   })).filter(s => s.ageBracket || s.maritalStatus || s.professionEducation);
 }
-function clearSiblings(){ $('sib-list').innerHTML = ''; }
 
-/* ============================================================ EXTRACTION FLOWS ============================================================ */
-async function extractFromMessage(){
-  hideBanner('msg-error');
-  const text = $('msg-input').value.trim();
-  if (!text) { banner('msg-error','error','Paste a message first — the box is empty.'); return; }
-  const btn = $('msg-extract-btn');
-  btn.disabled = true; $('msg-status').textContent = 'Reading the message with Groq…';
-  try {
-    const data = await callGroq([{ type:'text', text: 'Extract the rishta profile from this message:\n\n' + text }]);
-    populateForm(data, 'message');
-  } catch (e) {
-    banner('msg-error','error', esc(e.message) + '\n\nYour pasted message is untouched — fix the issue and press Extract again.');
-  } finally {
-    btn.disabled = false; $('msg-status').textContent = '';
-  }
-}
-
-function populateForm(d, sourceType){
-  clearForm(true);
-  const set = (id, v) => { if (v != null && v !== '') $(id).value = v; };
-  set('f-name', d.name); set('f-gender', d.gender); set('f-age', d.age);
-  if (d.height_inches != null && !isNaN(d.height_inches)) {
-    $('f-feet').value = Math.floor(d.height_inches/12);
-    $('f-inches').value = Math.round(d.height_inches%12);
-  }
-  if (d.marital_status && MARITAL_LABEL[d.marital_status]) $('f-marital').value = d.marital_status;
-  set('f-disability', d.disability);
-  const e = d.education || {}; set('f-qualification', e.qualification); set('f-institution', e.institution);
-  const j = d.job || {}; set('f-profession', j.profession); set('f-worklocation', j.work_location); set('f-futureplans', j.future_plans); set('f-income', j.income);
-  const rl = d.religion || {}; set('f-religion', rl.religion); set('f-caste', rl.caste); set('f-sect', rl.sect); set('f-nationality', rl.nationality);
-  const pr = d.property || {}; set('f-ownership', pr.ownership); set('f-propsize', pr.size); set('f-vehicle', pr.vehicle); set('f-propadditional', pr.additional);
-  const ad = d.address || {}; set('f-city', ad.city); set('f-locality', ad.locality);
-  set('f-father', d.father); set('f-mother', d.mother);
-  clearSiblings();
-  (d.siblings || []).forEach(s => addSibling({ relation: s.relation, ageBracket: s.age_bracket, maritalStatus: s.marital_status, professionEducation: s.profession_education }));
-  const r = d.requirements || {};
-  set('r-agemin', r.age_min); set('r-agemax', r.age_max);
-  if (r.height_min_inches != null) $('r-heightmin').value = heightDisplay(r.height_min_inches) || '';
-  set('r-city', r.city); set('r-caste', r.caste); set('r-sect', r.sect); set('r-qualification', r.qualification);
-  set('r-habits', r.habits); set('r-divorcedwidowed', r.divorced_widowed); set('r-workingwoman', r.working_woman); set('r-other', r.other);
-  if (d.raw_note) { $('rawnote-wrap').style.display = ''; $('f-rawnote').value = d.raw_note; }
-  banner('review-banner','info','✅ Extracted from your ' + (sourceType === 'photo' ? 'photo' : 'message') + ' — step through Personal / Family / Requirements below, correct anything, then <b>Save Profile</b>.');
-  wizGo(1);
-  $('wizard-panel').scrollIntoView({ behavior:'smooth' });
-}
-
-function clearForm(keepHidden){
-  for (const el of document.querySelectorAll('#wizard-panel input:not([type=file]), #wizard-panel textarea, #wizard-panel select')) el.value = '';
-  $('f-marital').value = 'single';
-  $('f-disability').value = 'No';
-  $('f-religion').value = 'Islam';
-  $('f-nationality').value = 'Pakistani';
-  pendingPersonPhoto = null;
-  $('pphoto-circ').innerHTML = '👤';
-  $('rawnote-wrap').style.display = 'none';
-  $('save-status').textContent = '';
-  clearSiblings();
-  if (!keepHidden) hideBanner('review-banner');
-  wizGo(1);
-}
-
-/* ============================================================ BUILD / SAVE ============================================================ */
+/* ============================================================ BUILD PROFILE FROM FORM ============================================================ */
+let pendingPersonPhoto = null;
 function buildDraftProfile(){
   const ft = $('f-feet').value, inch = $('f-inches').value;
   const heightInches = ft !== '' ? (parseInt(ft,10)*12 + (inch !== '' ? parseInt(inch,10) : 0)) : null;
   const gender = $('f-gender').value || null;
   return {
     id: null,
-    catalogId: 'NEW', // real catalog ID is assigned atomically by the shared database on Save
+    catalogId: 'NEW',
     createdAt: null,
-    sourceType: 'form',
+    sourceType: 'customer',
     photo: pendingPersonPhoto,
     name: $('f-name').value.trim(),
     gender,
@@ -1456,249 +913,10 @@ function buildDraftProfile(){
       workingWoman: $('r-workingwoman').value || null,
       other: $('r-other').value.trim() || null
     },
-    raw_note: $('f-rawnote').value.trim() || null
+    raw_note: null
   };
 }
 
-async function saveProfile(){
-  const draft = buildDraftProfile();
-  if (!draft.name || !draft.gender) { banner('global-banner','error','Name and gender are required before saving.'); wizGo(1); window.scrollTo({top:0,behavior:'smooth'}); return; }
-  hideBanner('global-banner');
-
-  const btn = $('save-btn');
-  if (btn) btn.disabled = true;
-  try {
-    const g = draft.gender === 'male' ? 'm' : 'f';
-    const catalogId = await fetchNextCatalogId(g);
-    draft.catalogId = catalogId;
-    draft.id = catalogId.toLowerCase();
-    const saved = await createProfileCloud(draft);
-    profiles.unshift(saved);
-    const savedName = saved.name, savedId = saved.catalogId;
-    clearForm();
-    $('msg-input').value = '';
-    resetPhotoMode();
-    $('save-status').textContent = '✓ Saved as ' + savedId + ' (auto-approved)';
-    banner('global-banner','success','✅ <b>' + esc(savedName) + '</b> saved as <b>' + savedId + '</b> — visible to your whole team now. Find them in the Matching Space, or download their card from Preview &amp; Download.');
-  } catch (e) {
-    banner('global-banner','error', esc(e.message));
-  } finally {
-    if (btn) btn.disabled = false;
-  }
-}
-
-async function deleteProfile(id){
-  const p = profiles.find(x => x.id === id);
-  if (!p) return;
-  if (!confirm('Delete profile ' + p.catalogId + ' (' + p.name + ')? This removes it for your whole team and cannot be undone.')) return;
-  try {
-    await deleteProfileCloud(id);
-    profiles = profiles.filter(x => x.id !== id);
-    renderList(); closeMatches(); refreshPreviewSelect();
-  } catch (e) {
-    banner('global-banner','error', esc(e.message));
-  }
-}
-
-/* ============================================================ MATCHING ============================================================ */
-const EDU_LEVELS = [
-  { rank:1, words:['matric','metric','matriculation','o level','olevel','middle','primary'] },
-  { rank:2, words:['inter','intermediate','fa','fsc','f.sc','ics','icom','i.com','a level','alevel','dae','diploma'] },
-  { rank:3, words:['bachelor','ba','b.a','bsc','b.sc','bs','b.s','bba','b.com','bcom','be','b.e','llb','mbbs','graduation','graduate','bds','pharm'] },
-  { rank:4, words:['master','ma','m.a','msc','m.sc','mcs','m.cs','mba','m.com','mcom','ms','m.s','me','m.e','llm','mphil','m.phil'] },
-  { rank:5, words:['phd','ph.d','doctorate','post doc','postdoc'] }
-];
-function eduRank(s){
-  if (!s) return null;
-  const t = ' ' + String(s).toLowerCase().replace(/[^a-z.]+/g,' ') + ' ';
-  let best = null;
-  for (const lvl of EDU_LEVELS)
-    for (const w of lvl.words)
-      if (t.includes(' ' + w + ' ') || t.includes(' ' + w + '.')) best = Math.max(best || 0, lvl.rank);
-  return best;
-}
-function normTxt(s){ return String(s || '').toLowerCase().replace(/[^a-z؀-ۿ]+/g,' ').trim(); }
-
-function scoreDirection(req, cand){
-  const chips = [];
-  let score = 0, weight = 0;
-  const R = req.requirements || {};
-  const candQual = cand.education && cand.education.qualification;
-  const candCaste = cand.religion && cand.religion.caste;
-  const candSect = cand.religion && cand.religion.sect;
-  const candCity = cand.address && cand.address.city;
-  const reqCity = req.address && req.address.city;
-
-  if (R.ageMin != null || R.ageMax != null) {
-    if (cand.age == null) chips.push({ s:'na', t:'Age unknown' });
-    else {
-      weight += 3;
-      const lo = R.ageMin ?? 0, hi = R.ageMax ?? 200;
-      if (cand.age >= lo && cand.age <= hi) { score += 3; chips.push({ s:'hit', t:`Age ${cand.age} in ${lo}–${hi === 200 ? '∞' : hi}` }); }
-      else if (cand.age >= lo - 2 && cand.age <= hi + 2) { score += 1.5; chips.push({ s:'partial', t:`Age ${cand.age} near ${lo}–${hi === 200 ? '∞' : hi}` }); }
-      else chips.push({ s:'miss', t:`Age ${cand.age} outside ${lo}–${hi === 200 ? '∞' : hi}` });
-    }
-  }
-  if (R.heightMinInches != null) {
-    if (cand.heightInches == null) chips.push({ s:'na', t:'Height unknown' });
-    else {
-      weight += 2;
-      const hd = cand.heightDisplay || heightDisplay(cand.heightInches);
-      if (cand.heightInches >= R.heightMinInches) { score += 2; chips.push({ s:'hit', t:`Height ${hd} meets minimum` }); }
-      else if (cand.heightInches >= R.heightMinInches - 1) { score += 1; chips.push({ s:'partial', t:`Height ${hd} ~1″ short` }); }
-      else chips.push({ s:'miss', t:`Height ${hd} below minimum` });
-    }
-  }
-  if (R.caste) {
-    const demand = normTxt(R.caste);
-    if (/(any|koi bhi|no demand|khula|open)/.test(demand)) chips.push({ s:'na', t:'Caste: any' });
-    else if (!candCaste) { weight += 3; score += 1; chips.push({ s:'partial', t:`Caste demanded ${R.caste}, candidate's unknown` }); }
-    else {
-      weight += 3;
-      const cc = normTxt(candCaste);
-      if (cc.includes(demand) || demand.includes(cc)) { score += 3; chips.push({ s:'hit', t:`Caste ${candCaste} ✓ (${R.caste})` }); }
-      else chips.push({ s:'miss', t:`Caste demanded ${R.caste} ≠ ${candCaste}` });
-    }
-  }
-  if (R.sect) {
-    const demand = normTxt(R.sect);
-    if (/(any|open)/.test(demand)) chips.push({ s:'na', t:'Sect: any' });
-    else if (!candSect) { weight += 2; score += 0.5; chips.push({ s:'partial', t:'Sect unknown' }); }
-    else {
-      weight += 2;
-      if (normTxt(candSect).includes(demand) || demand.includes(normTxt(candSect))) { score += 2; chips.push({ s:'hit', t:`Sect ${candSect} ✓` }); }
-      else chips.push({ s:'miss', t:`Sect demanded ${R.sect} ≠ ${candSect}` });
-    }
-  }
-  if (R.qualification) {
-    const need = eduRank(R.qualification), have = eduRank(candQual);
-    if (need == null) chips.push({ s:'na', t:'Qualification demand unclear' });
-    else if (have == null) { weight += 2; score += 0.5; chips.push({ s:'partial', t:'Qualification unknown' }); }
-    else {
-      weight += 2;
-      if (have >= need) { score += 2; chips.push({ s:'hit', t:`Qualification ${candQual} ≥ ${R.qualification}` }); }
-      else if (have === need - 1) { score += 1; chips.push({ s:'partial', t:`Qualification ${candQual} slightly below` }); }
-      else chips.push({ s:'miss', t:`Qualification below ${R.qualification}` });
-    }
-  }
-  if (R.city) {
-    weight += 1;
-    const rc = normTxt(R.city);
-    if (!candCity) chips.push({ s:'na', t:'City unknown' });
-    else if (normTxt(candCity).includes(rc) || rc.includes(normTxt(candCity)) || /any/.test(rc)) { score += 1; chips.push({ s:'hit', t:`City ${candCity} ✓` }); }
-    else chips.push({ s:'miss', t:`City demanded ${R.city} ≠ ${candCity}` });
-  } else if (reqCity && candCity) {
-    weight += 1;
-    if (normTxt(reqCity) === normTxt(candCity)) { score += 1; chips.push({ s:'hit', t:`Same city (${candCity})` }); }
-    else chips.push({ s:'partial', t:'Different city' });
-  }
-  if (R.divorcedWidowed && (cand.maritalStatus === 'divorced' || cand.maritalStatus === 'widowed')) {
-    weight += 2;
-    if (/open|accept|consider|ok/i.test(R.divorcedWidowed)) { score += 2; chips.push({ s:'hit', t:`${MARITAL_LABEL[cand.maritalStatus]} — accepted` }); }
-    else if (/not/i.test(R.divorcedWidowed)) chips.push({ s:'miss', t:`${MARITAL_LABEL[cand.maritalStatus]} — not accepted` });
-    else chips.push({ s:'partial', t:'Marital status preference unclear' });
-  }
-  if (weight === 0) chips.push({ s:'na', t:'No specific demands — neutral' });
-  return { chips, score, weight };
-}
-
-function matchScore(a, b){
-  const dA = scoreDirection(a, b);
-  const dB = scoreDirection(b, a);
-  const pcts = [];
-  if (dA.weight > 0) pcts.push(dA.score / dA.weight);
-  if (dB.weight > 0) pcts.push(dB.score / dB.weight);
-  const pct = pcts.length ? Math.round(100 * pcts.reduce((x,y)=>x+y,0) / pcts.length) : 50;
-  return { pct, dA, dB };
-}
-
-function renderList(){
-  const g = $('fl-gender').value, amin = $('fl-agemin').value, amax = $('fl-agemax').value;
-  const hmin = parseHeightStr($('fl-heightmin').value);
-  const caste = normTxt($('fl-caste').value), city = normTxt($('fl-city').value);
-  const sect = normTxt($('fl-sect').value), nat = normTxt($('fl-nationality').value);
-  const qual = normTxt($('fl-qualification').value), habits = normTxt($('fl-habits').value);
-  const workingWoman = $('fl-workingwoman').value;
-  const ms = $('fl-marital').value, q = normTxt($('fl-search').value);
-  const list = profiles.filter(p => {
-    const rl = p.religion || {}, ad = p.address || {}, ed = p.education || {}, rq = p.requirements || {};
-    return (!g || p.gender === g) &&
-      (!amin || (p.age != null && p.age >= +amin)) &&
-      (!amax || (p.age != null && p.age <= +amax)) &&
-      (hmin == null || (p.heightInches != null && p.heightInches >= hmin)) &&
-      (!caste || normTxt(rl.caste).includes(caste)) &&
-      (!city || normTxt(ad.city).includes(city) || normTxt(ad.locality).includes(city)) &&
-      (!sect || normTxt(rl.sect).includes(sect)) &&
-      (!nat || normTxt(rl.nationality).includes(nat)) &&
-      (!qual || normTxt(ed.qualification).includes(qual)) &&
-      (!habits || normTxt(rq.habits).includes(habits)) &&
-      (!workingWoman || rq.workingWoman === workingWoman) &&
-      (!ms || p.maritalStatus === ms) &&
-      (!q || normTxt(p.name).includes(q) || normTxt(p.catalogId).includes(q));
-  });
-  $('plist-empty').style.display = profiles.length ? 'none' : '';
-  $('plist').innerHTML = list.map(p => {
-    const ed = p.education || {}, jb = p.job || {}, rl = p.religion || {}, ad = p.address || {};
-    return `
-    <div class="pcard">
-      <div class="top">
-        <div class="circ">${p.photo ? `<img src="${p.photo}">` : '👤'}</div>
-        <div><span class="nm">${esc(p.name)}</span><span class="id">${p.catalogId}</span>
-          <div class="meta">${[p.age ? p.age + ' yrs' : null, p.heightDisplay, MARITAL_LABEL[p.maritalStatus]].filter(Boolean).join(' · ')}</div>
-        </div>
-      </div>
-      <div class="meta">${[rl.caste, rl.sect, ed.qualification, jb.profession].filter(Boolean).map(esc).join(' · ') || '—'}<br>${esc(ad.city || '')}</div>
-      <div class="acts">
-        <button class="btn sm" onclick="openMatches('${p.id}')">💞 Matches</button>
-        <button class="btn sm ghost" onclick="showTab('preview'); $('prev-select').value='${p.id}'; renderPreview();">🪪 Card</button>
-        <button class="btn sm ghost" style="color:var(--bad);border-color:#E9B8B4;" onclick="deleteProfile('${p.id}')">🗑</button>
-      </div>
-    </div>`;
-  }).join('');
-  if (profiles.length && !list.length)
-    $('plist').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>No profiles match these filters</b>Loosen the filters above to see your ' + profiles.length + ' saved profile(s).</div>';
-}
-
-function openMatches(id){
-  const p = profiles.find(x => x.id === id);
-  if (!p) return;
-  const pool = profiles.filter(x => x.gender !== p.gender && x.gender && p.gender);
-  $('matches-panel').style.display = '';
-  $('matches-title').textContent = 'Matches for ' + p.name + ' (' + p.catalogId + ')';
-  if (!pool.length) {
-    $('matches-body').innerHTML = '<div class="empty"><b>No ' + (p.gender === 'male' ? 'female' : 'male') + ' profiles saved yet</b>Add profiles of the opposite gender from the New Profile tab — matches will appear here ranked by compatibility.</div>';
-    return;
-  }
-  const scored = pool.map(c => ({ c, ...matchScore(p, c) })).sort((x,y) => y.pct - x.pct);
-  const pron = p.gender === 'male' ? 'His' : 'Her';
-  $('matches-body').innerHTML = scored.map(({ c, pct, dA, dB }) => {
-    const ed = c.education || {}, rl = c.religion || {}, ad = c.address || {};
-    return `
-    <div class="mcard">
-      <div class="row1">
-        <div class="pct">${pct}%<small>MATCH</small></div>
-        <div class="circ" style="width:52px;height:52px;border-radius:50%;border:2.5px solid var(--gold2);overflow:hidden;display:flex;align-items:center;justify-content:center;background:#F1E6D2;color:var(--gold);flex-shrink:0;">${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover">` : '👤'}</div>
-        <div>
-          <span class="nm" style="font-weight:700;color:var(--plum)">${esc(c.name)}</span><span class="id" style="background:var(--gold2);color:var(--plum);font-size:11px;font-weight:700;border-radius:6px;padding:1px 8px;margin-left:6px;">${c.catalogId}</span>
-          <div class="meta" style="font-size:12px;color:#7a6a55;">${[c.age ? c.age+' yrs' : null, c.heightDisplay, rl.caste, ed.qualification, ad.city].filter(Boolean).map(esc).join(' · ')}</div>
-        </div>
-        <button class="btn sm ghost" style="margin-left:auto" onclick="showTab('preview'); $('prev-select').value='${c.id}'; renderPreview();">🪪 Card</button>
-      </div>
-      <div class="dirlabel">${pron} side's demands → ${esc(c.name.split(' ')[0])}</div>
-      <div class="chips">${dA.chips.map(ch => `<span class="chip ${ch.s}">${ch.s==='hit'?'✓':ch.s==='miss'?'✗':ch.s==='partial'?'≈':'—'} ${esc(ch.t)}</span>`).join('')}</div>
-      <div class="dirlabel">${esc(c.name.split(' ')[0])}'s side's demands → ${esc(p.name.split(' ')[0])}</div>
-      <div class="chips">${dB.chips.map(ch => `<span class="chip ${ch.s}">${ch.s==='hit'?'✓':ch.s==='miss'?'✗':ch.s==='partial'?'≈':'—'} ${esc(ch.t)}</span>`).join('')}</div>
-    </div>`;
-  }).join('');
-  $('matches-panel').scrollIntoView({ behavior:'smooth' });
-}
-function closeMatches(){ $('matches-panel').style.display = 'none'; }
-
-/* ============================================================================================
-   CARD RENDERING — 5-slide Instagram carousel + single Summary Card.
-   Ported from the approved canvas mockups; every field/section is skipped when empty so the
-   generated post never shows a blank heading.
-   ============================================================================================ */
 const PLUM='#6E1E3C', PLUM2='#8E2A4D', GOLD='#B5893B', GOLD2='#D4AF61', CREAM='#FDF7F1', INK='#3A1220';
 const HFONT='"DM Serif Display", serif';
 const WA_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#25D366" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.359.101 11.945c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a11.96 11.96 0 005.71 1.454h.006c6.585 0 11.946-5.359 11.949-11.945a11.9 11.9 0 00-3.48-8.408"/></svg>';
@@ -2231,151 +1449,76 @@ async function renderAllSlides(p, size){
   return canvases;
 }
 
-/* ============================================================ PREVIEW & DOWNLOAD WIRING ============================================================ */
-function refreshPreviewSelect(){
-  const sel = $('prev-select');
-  const cur = sel.value;
-  sel.innerHTML = profiles.map(p => `<option value="${p.id}">${p.catalogId} — ${esc(p.name)}</option>`).join('');
-  if (profiles.find(p => p.id === cur)) sel.value = cur;
-  renderPreview();
-}
-function setCarouselSize(size){ carouselSize = size; $('carousel-size-square').classList.toggle('on', size==='square'); $('carousel-size-portrait').classList.toggle('on', size==='portrait'); renderPreview(); }
-function setSummarySize(size){ summarySize = size; $('summary-size-full').classList.toggle('on', size==='full'); $('summary-size-crop').classList.toggle('on', size==='crop'); renderPreview(); }
 
-let previewToken = 0;
-async function renderPreview(){
-  const id = $('prev-select').value;
-  const p = profiles.find(x => x.id === id);
-  $('prev-empty').style.display = p ? 'none' : '';
-  $('prev-content').style.display = p ? '' : 'none';
-  $('prev-select').parentElement.style.display = profiles.length ? '' : 'none';
-  if (!p) return;
-  const t = ++previewToken;
+let contactNo = '+92 321 2266621';
+let generatedCanvases = null;
+let submittedProfile = null;
 
-  const canvases = await renderAllSlides(p, carouselSize);
-  if (t !== previewToken) return;
-  const thumbs = $('carousel-thumbs');
-  thumbs.innerHTML = '';
-  canvases.forEach(cnv => { const t2 = document.createElement('canvas'); t2.width=64; t2.height=64; t2.getContext('2d').drawImage(cnv,0,0,64,64); thumbs.appendChild(t2); });
+async function submitProfile(){
+  const draft = buildDraftProfile();
+  if (!draft.name || !draft.gender) { banner('global-banner','error','Full name and gender are required before submitting.'); wizGo(1); window.scrollTo({top:0,behavior:'smooth'}); return; }
+  hideBanner('global-banner');
+  if (!SUPABASE_CONFIGURED) { banner('global-banner','error','This form has not been connected yet — please contact the bureau directly.'); return; }
 
-  const scnv = document.createElement('canvas');
-  await drawSummary(scnv.getContext('2d'), p, summarySize);
-  if (t !== previewToken) return;
-  $('summary-thumb').src = scnv.toDataURL('image/png');
-}
-
-function cardFileName(p, suffix){
-  return 'CMB-' + p.catalogId + '-' + (p.name || 'profile').replace(/[^\w]+/g, '_') + '-' + suffix + '.png';
-}
-function triggerDownload(url, name){
-  const a = document.createElement('a'); a.download = name; a.href = url;
-  document.body.appendChild(a); a.click(); a.remove();
-}
-function currentProfile(){ return profiles.find(x => x.id === $('prev-select').value); }
-
-async function downloadCarouselImages(){
-  const p = currentProfile(); if (!p) return;
+  const btn = $('save-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
   try {
-    const canvases = await renderAllSlides(p, carouselSize);
-    for (let i=0;i<canvases.length;i++){
-      triggerDownload(canvases[i].toDataURL('image/png'), cardFileName(p, (i+1)+'-'+SLIDE_DRAWERS[i][0].toLowerCase().replace(/\s+/g,'-')));
-      await new Promise(r => setTimeout(r, 350));
-    }
-  } catch (e) {
-    banner('global-banner','error','Could not generate the images: ' + esc(e.message));
-  }
-}
-async function downloadCarouselPdf(){
-  const p = currentProfile(); if (!p) return;
-  try {
-    if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') throw new Error('The PDF library did not load. Try reloading the page.');
-    const canvases = await renderAllSlides(p, carouselSize);
-    const { jsPDF } = window.jspdf;
-    const first = canvases[0];
-    const pdf = new jsPDF({ orientation: first.width > first.height ? 'l' : 'p', unit: 'px', format: [first.width, first.height] });
-    canvases.forEach((cnv, i) => {
-      if (i > 0) pdf.addPage([cnv.width, cnv.height], cnv.width > cnv.height ? 'l' : 'p');
-      pdf.addImage(cnv.toDataURL('image/png'), 'PNG', 0, 0, cnv.width, cnv.height);
-    });
-    pdf.save(cardFileName(p, 'carousel').replace('.png', '.pdf'));
-  } catch (e) {
-    banner('global-banner','error','Could not generate the PDF: ' + esc(e.message) + ' — try "Download Images Individually" instead.');
-  }
-}
-async function downloadSummary(){
-  const p = currentProfile(); if (!p) return;
-  try {
-    const cnv = document.createElement('canvas');
+    const g = draft.gender === 'male' ? 'm' : 'f';
+    draft.catalogId = await fetchNextCatalogId(g);
+    draft.id = draft.catalogId.toLowerCase();
+    await insertProfile(draft);
+    submittedProfile = draft;
+
+    $('success-msg').textContent = 'Thank you — your profile has been sent to City Marriage Bureau. Generating your profile card…';
+    $('form-view').style.display = 'none';
+    $('success-view').style.display = '';
+    $('download-pdf-btn').disabled = true;
+
+    contactNo = await loadContact();
     await fontsReady(); await waLogo();
-    await drawSummary(cnv.getContext('2d'), p, summarySize);
-    triggerDownload(cnv.toDataURL('image/png'), cardFileName(p, 'summary-'+summarySize));
+    generatedCanvases = await renderAllSlides(draft, 'square');
+    $('success-msg').textContent = 'Thank you — your profile has been sent to City Marriage Bureau. Download a copy of your profile card below.';
+    $('download-pdf-btn').disabled = false;
   } catch (e) {
-    banner('global-banner','error','Could not generate the summary card: ' + esc(e.message));
+    banner('global-banner','error', esc(e.message));
+    btn.disabled = false; btn.textContent = '✓ Submit My Profile';
   }
 }
 
-/* ============================================================ PHOTO MODE WIRING (reference-only — Groq has no vision) ============================================================ */
-function resetPhotoMode(){
-  pendingCardPhoto = null;
-  $('photo-preview').style.display = 'none';
-  $('photo-input').value = '';
-}
-async function acceptCardPhoto(file){
-  if (!file || !file.type.startsWith('image/')) return;
-  const dataUrl = await resizeImage(file, 1568);
-  pendingCardPhoto = { dataUrl, mediaType: 'image/jpeg' };
-  const pv = $('photo-preview');
-  pv.src = dataUrl; pv.style.display = '';
-}
-
-/* ============================================================ ENTER APP (post-login) ============================================================ */
-async function enterApp(){
-  $('login-screen').style.display = 'none';
-  $('app-root').style.display = '';
-
-  if (!SUPABASE_CONFIGURED) {
-    banner('global-banner','error','⚠️ This app has not been connected to a Supabase project yet — see bureau-supabase/schema.sql and paste SUPABASE_URL / SUPABASE_ANON_KEY at the top of the script.');
-    return;
-  }
-
+async function downloadMyPdf(){
+  if (!generatedCanvases) return;
+  const dlBtn = $('download-pdf-btn');
+  dlBtn.disabled = true;
   try {
-    const cloudContact = await loadContactFromCloud();
-    contactNo = cloudContact || '+92 321 2266621';
-    $('contact').value = contactNo;
-
-    profiles = await loadProfilesFromCloud();
-    renderList();
-    refreshPreviewSelect();
-    clearForm();
-
-    if (!apiKey) banner('global-banner','info','👋 First time? Paste your free Groq API key above (get one at <b>console.groq.com/keys</b> — no credit card needed) to enable Message extraction. The Form mode works without a key; Photo mode is reference-only since Groq can\'t read images.');
-
-    await syncLocalProfilesToCloud(); // pulls in anything saved locally before this device connected to the cloud
+    if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') throw new Error('The PDF library did not load — try reloading the page.');
+    const { jsPDF } = window.jspdf;
+    const first = generatedCanvases[0];
+    const pdf = new jsPDF({ orientation: first.width > first.height ? 'l' : 'p', unit: 'px', format: [first.width, first.height] });
+    generatedCanvases.forEach((cnv, i) => {
+      if (i > 0) pdf.addPage([cnv.width, cnv.height], cnv.width > cnv.height ? 'l' : 'p');
+      pdf.addImage(cnv.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, cnv.width, cnv.height);
+    });
+    const name = (submittedProfile.catalogId || 'profile') + '-' + (submittedProfile.name || 'profile').replace(/[^\w]+/g,'_');
+    pdf.save('CMB-' + name + '.pdf');
   } catch (e) {
-    // stored session is present but no longer valid against the cloud — send back to login
-    await handleLogout();
-    banner('login-error','error','Your session expired — please sign in again. (' + esc(e.message) + ')');
+    banner('global-banner','error','Could not generate the PDF: ' + esc(e.message));
+  } finally {
+    dlBtn.disabled = false;
   }
 }
 
 /* ============================================================ INIT ============================================================ */
 async function init(){
-  apiKey = (await store.get('settings:apikey')) || '';
-  if (apiKey) { $('apikey').value = apiKey; $('keystatus').textContent = '✓ Key loaded.'; }
-
   $('pphoto-input').addEventListener('change', async e => {
     const f = e.target.files[0];
     if (!f) return;
     pendingPersonPhoto = await resizeImage(f, 512);
     $('pphoto-circ').innerHTML = `<img src="${pendingPersonPhoto}">`;
   });
-  $('photo-input').addEventListener('change', e => acceptCardPhoto(e.target.files[0]));
-  const drop = $('photodrop');
-  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
-  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
-  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('drag'); acceptCardPhoto(e.dataTransfer.files[0]); });
-
-  if (await restoreSession()) await enterApp();
+  if (!SUPABASE_CONFIGURED) {
+    banner('global-banner','error','⚠️ This form has not been connected to the bureau\'s database yet.');
+  }
+  contactNo = await loadContact();
 }
 init();
 </script>
