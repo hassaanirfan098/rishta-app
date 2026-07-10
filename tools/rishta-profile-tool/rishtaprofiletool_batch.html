@@ -571,6 +571,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   .queue-table{width:100%; border-collapse:collapse; font-size:13px;}
   .queue-table th{text-align:left; padding:6px; background:var(--plum); color:#fff;}
   .queue-table td{padding:6px; border-bottom:1px solid var(--line);}
+
+  .preview-thumbs canvas{cursor:pointer; transition:transform .1s;}
+  .preview-thumbs canvas:hover{transform:scale(1.04);}
+  .preview-modal{position:fixed; inset:0; background:rgba(20,6,12,.82); z-index:1000; display:none; align-items:center; justify-content:center; padding:30px;}
+  .preview-modal-inner{position:relative; max-width:min(92vw,600px); max-height:90vh; display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .preview-modal-inner img{max-width:100%; max-height:78vh; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.5); background:var(--plum);}
+  .preview-modal-caption{color:#fff; font-size:13px; text-align:center;}
+  .preview-modal-close{position:absolute; top:-18px; right:-18px; width:36px; height:36px; border-radius:50%; border:none; background:var(--gold2); color:var(--plum); font-weight:800; font-size:16px; cursor:pointer;}
+  .preview-modal-nav{position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px; border-radius:50%; border:none; background:rgba(255,255,255,.15); color:#fff; font-size:22px; cursor:pointer;}
+  .preview-modal-nav:hover{background:rgba(255,255,255,.3);}
+  #preview-modal-prev{left:-56px;}
+  #preview-modal-next{right:-56px;}
+  @media (max-width:640px){
+    .preview-modal-inner{max-width:94vw;}
+    #preview-modal-prev{left:-6px;}
+    #preview-modal-next{right:-6px;}
+    .preview-modal-close{top:-14px; right:0;}
+  }
 </style>
 </head>
 <body>
@@ -1014,6 +1032,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       </div>
     </div>
   </section>
+
+<div class="preview-modal" id="preview-modal" onclick="closePreviewModal(event)">
+  <div class="preview-modal-inner" onclick="event.stopPropagation()">
+    <button class="preview-modal-close" onclick="closePreviewModal()">✕</button>
+    <button class="preview-modal-nav" id="preview-modal-prev" onclick="modalNav(-1)">‹</button>
+    <img id="preview-modal-img" alt="Post preview">
+    <button class="preview-modal-nav" id="preview-modal-next" onclick="modalNav(1)">›</button>
+    <div class="preview-modal-caption" id="preview-modal-caption"></div>
+  </div>
+</div>
 </main>
 </div>
 
@@ -2308,6 +2336,31 @@ function setComposerScheduleMode(mode){
   refreshFormatValidity();
 }
 
+/* ---------- lightbox: click any preview thumbnail to see the actual post full-size ---------- */
+let modalImages = [];
+let modalIndex = 0;
+let modalCaptionBase = '';
+function openPreviewModal(images, index, captionBase){
+  modalImages = images; modalIndex = index; modalCaptionBase = captionBase || '';
+  renderPreviewModal();
+  $('preview-modal').style.display = 'flex';
+}
+function renderPreviewModal(){
+  $('preview-modal-img').src = modalImages[modalIndex];
+  $('preview-modal-caption').textContent = modalCaptionBase + (modalImages.length > 1 ? ` — slide ${modalIndex+1} of ${modalImages.length}` : '');
+  const multi = modalImages.length > 1;
+  $('preview-modal-prev').style.display = multi ? '' : 'none';
+  $('preview-modal-next').style.display = multi ? '' : 'none';
+}
+function modalNav(delta){
+  modalIndex = (modalIndex + delta + modalImages.length) % modalImages.length;
+  renderPreviewModal();
+}
+function closePreviewModal(e){
+  if (e && e.target && e.target.id !== 'preview-modal') return;
+  $('preview-modal').style.display = 'none';
+}
+
 async function renderFormatPreview(){
   const targetProfiles = profiles.filter(p => postSelected.has(p.id));
   const wrap = $('fmt-preview-thumbs');
@@ -2322,15 +2375,18 @@ async function renderFormatPreview(){
       const p = targetProfiles[i];
       $('fmt-preview-status').textContent = `Rendering ${i+1} of ${targetProfiles.length}…`;
       const canvases = await renderAllSlides(p, carouselSize);
+      const images = canvases.map(c => c.toDataURL('image/png'));
+      const caption = (p.catalogId||'') + ' — ' + (p.name||'');
       const cell = document.createElement('div'); cell.className = 'pt';
       const row = document.createElement('div'); row.style.cssText = 'display:flex; gap:4px;';
-      canvases.forEach(c => {
+      canvases.forEach((c, slideIdx) => {
         const t = document.createElement('canvas'); t.width = 64; t.height = 64;
         t.getContext('2d').drawImage(c, 0, 0, 64, 64);
         t.style.cssText = 'width:64px; height:64px; border-radius:8px; border:2px solid var(--gold2); object-fit:cover; background:var(--plum);';
+        t.onclick = () => openPreviewModal(images, slideIdx, caption);
         row.appendChild(t);
       });
-      const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = (p.catalogId||'') + ' — ' + (p.name||'');
+      const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = caption;
       cell.appendChild(row); cell.appendChild(cap);
       wrap.appendChild(cell);
     }
@@ -2345,11 +2401,14 @@ async function renderFormatPreview(){
     $('fmt-preview-status').textContent = `Rendering ${i+1} of ${targetProfiles.length}…`;
     const full = document.createElement('canvas');
     await drawSummary(full.getContext('2d'), p, size);
+    const image = full.toDataURL('image/png');
+    const caption = (p.catalogId||'') + ' — ' + (p.name||'');
     const thumb = document.createElement('canvas');
     thumb.width = 260; thumb.height = Math.round(260 * full.height / full.width);
     thumb.getContext('2d').drawImage(full, 0, 0, thumb.width, thumb.height);
+    thumb.onclick = () => openPreviewModal([image], 0, caption);
     const cell = document.createElement('div'); cell.className = 'pt';
-    const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = (p.catalogId||'') + ' — ' + (p.name||'');
+    const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = caption;
     cell.appendChild(thumb); cell.appendChild(cap);
     wrap.appendChild(cell);
   }
