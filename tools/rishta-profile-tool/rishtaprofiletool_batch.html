@@ -2159,7 +2159,11 @@ async function insertPostQueueItem(item){
     const detail = await supaError(resp);
     if (/relation .* does not exist|42P01/i.test(detail)) {
       throw new Error('The post_queue table doesn\'t exist yet in Supabase. Run this once in the Supabase SQL editor, then try again:\n\n'
-        + 'create table post_queue (\n  id uuid primary key default gen_random_uuid(),\n  profile_id text,\n  catalog_id text,\n  post_type text not null,\n  category text,\n  images jsonb not null,\n  scheduled_for timestamptz,\n  status text not null default \'ready\',\n  created_at timestamptz not null default now()\n);');
+        + 'create table post_queue (\n  id uuid primary key default gen_random_uuid(),\n  profile_id text,\n  catalog_id text,\n  post_type text not null,\n  category text,\n  images jsonb not null,\n  scheduled_for timestamptz,\n  status text not null default \'ready\',\n  caption text,\n  created_at timestamptz not null default now()\n);');
+    }
+    if (/column .*caption.* does not exist|42703/i.test(detail)) {
+      throw new Error('The post_queue table needs a caption column. Run this once in the Supabase SQL editor, then try again:\n\n'
+        + 'alter table post_queue add column if not exists caption text;');
     }
     throw new Error('Could not queue the post: ' + detail);
   }
@@ -2424,19 +2428,91 @@ function postScheduleTargets(){
   return selectedProfiles.map(p => ({ label: p.catalogId + ' — ' + p.name, ids: [p.id] }));
 }
 
+/* ---------- free, template-based captions + hashtags (no AI/tokens) ---------- */
+const CAPTION_OPENERS = [
+  p => `💍 ${p.gender==='male'?'Groom':p.gender==='female'?'Bride':'Profile'} Alert!`,
+  p => `✨ New Rishta Profile — ${p.gender==='male'?'Groom':p.gender==='female'?'Bride':'Candidate'} Seeking a Match`,
+  p => `🌙 A wonderful match is looking for a life partner`
+];
+function buildCaption(p, seed){
+  const jb=p.job||{}, ad=p.address||{}, rl=p.religion||{}, ed=p.education||{};
+  const info = reqInfo(p);
+  const opener = CAPTION_OPENERS[(seed||0) % CAPTION_OPENERS.length](p);
+  const bits = [];
+  if (p.age != null) bits.push(`🎂 ${p.age} yrs`);
+  if (p.heightDisplay) bits.push(`📏 ${p.heightDisplay}`);
+  if (jb.profession) bits.push(`💼 ${jb.profession}`);
+  if (ed.qualification) bits.push(`🎓 ${ed.qualification}`);
+  if (ad.city) bits.push(`📍 ${ad.city}`);
+  if (rl.caste) bits.push(`🕌 ${rl.caste}`);
+  return [
+    opener,
+    bits.join('   '),
+    `Looking for: ${info.highlight}`,
+    `📩 DM us or WhatsApp ${contactNo} to know more — serious inquiries only.`,
+    buildHashtags([p])
+  ].filter(Boolean).join('\n\n');
+}
+function buildMultiCaption(targetProfiles, seed){
+  const opener = ['✨ New Rishta Profiles — Swipe Through!', '💍 Fresh Matches Just Added', '🌙 Meet This Week\'s New Profiles'][(seed||0) % 3];
+  const lines = targetProfiles.map(p => {
+    const jb = p.job||{};
+    const bits = [p.gender==='male'?'Groom':'Bride', p.age!=null ? p.age+' yrs' : null, jb.profession, (p.address||{}).city].filter(Boolean);
+    return `👉 ${p.catalogId||''} — ${bits.join(', ')}`;
+  });
+  return [
+    opener,
+    lines.join('\n'),
+    `📩 DM us to know more about any profile — mention the ID above.`,
+    buildHashtags(targetProfiles)
+  ].filter(Boolean).join('\n\n');
+}
+function buildHashtags(targetProfiles){
+  const tagWord = s => '#' + String(s).replace(/[^a-zA-Z0-9]+/g,'');
+  const tags = new Set(['#RishtaProposal', '#MarriageProposal', '#PakistaniRishta', '#CityMarriageBureau']);
+  targetProfiles.forEach(p => {
+    const jb=p.job||{}, ad=p.address||{}, rl=p.religion||{};
+    if (ad.city) tags.add(tagWord(ad.city));
+    if (rl.caste) tags.add(tagWord(rl.caste));
+    if (rl.nationality) tags.add(tagWord(rl.nationality));
+    if (jb.profession) tags.add(tagWord(jb.profession));
+    tags.add(p.gender === 'male' ? '#GroomWanted' : p.gender === 'female' ? '#BrideWanted' : '#RishtaWanted');
+  });
+  return Array.from(tags).slice(0, 14).join(' ');
+}
+function targetCaption(t, seed){
+  const targetProfiles = profiles.filter(p => t.ids.includes(p.id));
+  if (postFormat === 'multi') return buildMultiCaption(targetProfiles, seed);
+  return buildCaption(targetProfiles[0], seed);
+}
+let captionSeeds = {};
+function regenerateCaption(i){
+  captionSeeds[i] = (captionSeeds[i] || 0) + 1;
+  const targets = postScheduleTargets();
+  const caption = targetCaption(targets[i], captionSeeds[i]);
+  document.querySelector('#post-schedule-rows textarea[data-caprow="'+i+'"]').value = caption;
+}
+
 function buildPostScheduleRows(){
   const targets = postScheduleTargets();
   const start = new Date($('post-sched-start').value);
   const hrs = parseInt($('post-sched-interval').value, 10);
   const blank = (postFormat === 'single-portrait' || postFormat === 'single-square') && composerScheduleMode === 'custom';
+  captionSeeds = {};
   let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;"><thead><tr style="border-bottom:1px solid var(--line,#e7dccf);">
-    <th style="text-align:left; padding:6px;">Post</th><th style="text-align:left; padding:6px;">Scheduled for</th><th style="padding:6px; width:60px;">Reset</th>
+    <th style="text-align:left; padding:6px;">Post</th><th style="text-align:left; padding:6px;">Scheduled for</th>
+    <th style="text-align:left; padding:6px;">Caption &amp; hashtags (free template — edit freely)</th><th style="padding:6px; width:60px;">Reset</th>
   </tr></thead><tbody>`;
   targets.forEach((t, i) => {
     const when = new Date(start.getTime() + i * hrs * 60 * 60 * 1000);
-    html += `<tr style="border-bottom:1px solid var(--line,#e7dccf);">
+    const caption = targetCaption(t, 0);
+    html += `<tr style="border-bottom:1px solid var(--line,#e7dccf); vertical-align:top;">
       <td style="padding:6px;">${esc(t.label)}</td>
       <td style="padding:6px;"><input type="datetime-local" data-row="${i}" value="${blank ? '' : toLocalInputValue(when)}" oninput="onScheduleRowChange()"></td>
+      <td style="padding:6px; min-width:260px;">
+        <textarea data-caprow="${i}" rows="6" style="font-size:12px; line-height:1.5;">${esc(caption)}</textarea>
+        <button class="btn sm ghost" style="margin-top:4px;" onclick="regenerateCaption(${i})">🔁 New wording</button>
+      </td>
       <td style="padding:6px; text-align:center;"><button class="btn sm" onclick="resetPostScheduleRow(${i})">↺</button></td>
     </tr>`;
   });
@@ -2512,6 +2588,8 @@ async function renderAndQueuePost(){
       const when = document.querySelector('#post-schedule-rows input[data-row="'+i+'"]').value;
       const scheduled_for = when ? new Date(when).toISOString() : new Date().toISOString();
       const targetProfiles = profiles.filter(p => t.ids.includes(p.id));
+      const captionEl = document.querySelector('#post-schedule-rows textarea[data-caprow="'+i+'"]');
+      const caption = captionEl ? captionEl.value : '';
       $('post-queue-status').textContent = `Rendering ${i+1} of ${targets.length}…`;
 
       if (postFormat === 'single-portrait' || postFormat === 'single-square') {
@@ -2520,13 +2598,13 @@ async function renderAndQueuePost(){
         const carouselCanvases = await renderAllSlides(p, carouselSize);
         await insertPostQueueItem({
           profile_id: p.id, catalog_id: p.catalogId, post_type: 'single_carousel',
-          category: profileCategory(p), images: carouselCanvases.map(c => c.toDataURL('image/png')), scheduled_for, status: 'ready'
+          category: profileCategory(p), images: carouselCanvases.map(c => c.toDataURL('image/png')), scheduled_for, status: 'ready', caption
         });
         const summaryCanvas = document.createElement('canvas');
         await drawSummary(summaryCanvas.getContext('2d'), p, 'crop');
         await insertPostQueueItem({
           profile_id: p.id, catalog_id: p.catalogId, post_type: 'highlight_card',
-          category: profileCategory(p), images: [summaryCanvas.toDataURL('image/png')], scheduled_for, status: 'ready_for_highlight'
+          category: profileCategory(p), images: [summaryCanvas.toDataURL('image/png')], scheduled_for, status: 'ready_for_highlight', caption
         });
         queued++;
       } else if (postFormat === 'multi') {
@@ -2538,7 +2616,7 @@ async function renderAndQueuePost(){
         }
         await insertPostQueueItem({
           profile_id: null, catalog_id: targetProfiles.map(p => p.catalogId).join(','), post_type: 'multi_profile_carousel',
-          category: 'Mixed selection', images, scheduled_for, status: 'ready'
+          category: 'Mixed selection', images, scheduled_for, status: 'ready', caption
         });
         queued++;
       } else if (postFormat === 'story') {
@@ -2547,7 +2625,7 @@ async function renderAndQueuePost(){
         await drawSummary(c.getContext('2d'), p, 'full');
         await insertPostQueueItem({
           profile_id: p.id, catalog_id: p.catalogId, post_type: 'story',
-          category: profileCategory(p), images: [c.toDataURL('image/png')], scheduled_for, status: 'ready'
+          category: profileCategory(p), images: [c.toDataURL('image/png')], scheduled_for, status: 'ready', caption
         });
         queued++;
       }
@@ -2590,21 +2668,27 @@ async function toggleQueuePanel(){
 async function loadQueueTable(){
   $('queue-status').textContent = 'Loading…';
   try {
-    const resp = await supaFetch('/rest/v1/post_queue?status=neq.published&order=scheduled_for.asc&select=id,profile_id,catalog_id,post_type,category,scheduled_for,status');
-    if (!resp.ok) throw new Error(await supaError(resp));
+    const resp = await supaFetch('/rest/v1/post_queue?status=neq.published&order=scheduled_for.asc&select=id,profile_id,catalog_id,post_type,category,scheduled_for,status,caption');
+    if (!resp.ok) {
+      const detail = await supaError(resp);
+      if (/column .*caption.* does not exist|42703/i.test(detail)) throw new Error('The post_queue table needs a caption column. Run this once in the Supabase SQL editor:\n\nalter table post_queue add column if not exists caption text;');
+      throw new Error(detail);
+    }
     const rows = await resp.json();
     $('queue-status').textContent = `${rows.length} pending`;
     if (!rows.length) { $('queue-table-wrap').innerHTML = '<div class="empty">Nothing queued right now.</div>'; return; }
-    let html = '<table class="queue-table"><thead><tr><th>Profile</th><th>Format</th><th>Category</th><th>Scheduled for</th><th>Status</th><th></th></tr></thead><tbody>';
+    let html = '<table class="queue-table"><thead><tr><th>Profile</th><th>Format</th><th>Category</th><th>Scheduled for</th><th>Status</th><th>Caption</th><th></th></tr></thead><tbody>';
     rows.forEach(r => {
       const p = profiles.find(x => x.id === r.profile_id);
       const when = r.scheduled_for ? new Date(r.scheduled_for).toLocaleString(undefined,{weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) : '—';
+      const captionPreview = r.caption ? (r.caption.length > 60 ? r.caption.slice(0,60) + '…' : r.caption) : '—';
       html += `<tr>
         <td>${esc(p ? p.catalogId + ' — ' + p.name : (r.catalog_id || '—'))}</td>
         <td>${esc(r.post_type||'')}</td>
         <td>${esc(r.category||'')}</td>
         <td>${esc(when)}</td>
         <td>${esc(r.status||'')}</td>
+        <td title="${esc(r.caption||'')}" style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(captionPreview)}</td>
         <td><button class="btn sm ghost" onclick="deletePostQueueItem('${esc(r.id)}')">✕ Cancel</button></td>
       </tr>`;
     });
