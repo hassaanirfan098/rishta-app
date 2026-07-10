@@ -3497,22 +3497,35 @@ async function drawSummary(c, p, size){
       panel(c,xFull,y,fullW,h3); sectionHeader(c,xFull+pad,y+40,'Address'); fieldGrid(c,xFull,y,fullW,rows);
       y+=h3+50;
     }
+  } else if (keyPairs.length){
+    // The 1080×1350 crop (used for the multi-profile carousel + highlight card) gets room
+    // for Key Details too — not Family Snapshot/Address, to leave enough space for the
+    // bottom-anchored contact block within Instagram's max feed height.
+    const rows=pairsToRows(keyPairs); const h1=boxHeight(rows.length);
+    panel(c,xFull,y,fullW,h1); sectionHeader(c,xFull+pad,y+40,'Key Details'); fieldGrid(c,xFull,y,fullW,rows);
+    y+=h1+50;
   }
 
   const showCandidate = includeContactInDownload && !!p.contactPhone;
 
   if (size==='crop'){
-    // 1080×1350 is Instagram's actual max feed height, so when the candidate's own
-    // number also needs room, the "Looking For" teaser (least essential here) is
-    // dropped rather than growing past that platform limit.
+    // 1080×1350 is Instagram's actual max feed height, so content just flows top-down and
+    // stops — no forced bottom anchor (unlike Full Portrait below), since that would push
+    // the contact footer/tagline past the fixed height once Key Details is also on the card.
+    // The "Looking For" teaser is the one thing dropped when something else needs the room:
+    // the candidate's own number takes priority, and Key Details (added above) takes priority
+    // over the teaser too, since it's the more useful use of the same space.
     if (showCandidate){
       y=contactFooter(c,W,y,contactNo);
       y+=26;
       y=candidateContactBox(c,W,y,p.contactPhone);
       y+=40;
-    } else {
+    } else if (!keyPairs.length){
       quoteBox(c,xFull,y,fullW,150,'LOOKING FOR',info.highlight);
       y+=150+50;
+      y=contactFooter(c,W,y,contactNo);
+      y+=54;
+    } else {
       y=contactFooter(c,W,y,contactNo);
       y+=54;
     }
