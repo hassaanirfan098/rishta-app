@@ -2293,9 +2293,8 @@ async function refreshFormatValidity(){
     document.querySelector('#fmt-toggle-custom input').checked = composerScheduleMode === 'custom';
   }
 
-  const showPreview = postFormat === 'multi' || postFormat === 'story';
-  $('fmt-preview-wrap').style.display = showPreview ? '' : 'none';
-  if (showPreview) await renderFormatPreview();
+  $('fmt-preview-wrap').style.display = '';
+  await renderFormatPreview();
 
   $('post-schedule-wrap').style.display = '';
   $('post-schedule-heading').textContent = postFormat === 'multi' ? 'Schedule the carousel' : 'Schedule';
@@ -2313,6 +2312,33 @@ async function renderFormatPreview(){
   const targetProfiles = profiles.filter(p => postSelected.has(p.id));
   const wrap = $('fmt-preview-thumbs');
   wrap.innerHTML = '';
+  const isCarousel = postFormat === 'single-portrait' || postFormat === 'single-square';
+
+  if (isCarousel) {
+    // Every selected profile becomes its own 5-slide carousel post — preview all 5 slides per profile.
+    const carouselSize = postFormat === 'single-square' ? 'square' : 'portrait';
+    await fontsReady(); await waLogo();
+    for (let i = 0; i < targetProfiles.length; i++) {
+      const p = targetProfiles[i];
+      $('fmt-preview-status').textContent = `Rendering ${i+1} of ${targetProfiles.length}…`;
+      const canvases = await renderAllSlides(p, carouselSize);
+      const cell = document.createElement('div'); cell.className = 'pt';
+      const row = document.createElement('div'); row.style.cssText = 'display:flex; gap:4px;';
+      canvases.forEach(c => {
+        const t = document.createElement('canvas'); t.width = 64; t.height = 64;
+        t.getContext('2d').drawImage(c, 0, 0, 64, 64);
+        t.style.cssText = 'width:64px; height:64px; border-radius:8px; border:2px solid var(--gold2); object-fit:cover; background:var(--plum);';
+        row.appendChild(t);
+      });
+      const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = (p.catalogId||'') + ' — ' + (p.name||'');
+      cell.appendChild(row); cell.appendChild(cap);
+      wrap.appendChild(cell);
+    }
+    $('fmt-preview-status').textContent = '';
+    return;
+  }
+
+  // Multi-profile carousel and Story both post the highlight card — preview that.
   const size = postFormat === 'story' ? 'full' : 'crop';
   for (let i = 0; i < targetProfiles.length; i++) {
     const p = targetProfiles[i];
