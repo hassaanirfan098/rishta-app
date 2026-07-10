@@ -633,6 +633,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     <span class="status" id="contactstatus">Shown on every card's contact slide.</span>
   </div>
 
+  <div class="keyrow" id="contacticonrow">
+    <label for="contacticon">Contact icon</label>
+    <select id="contacticon" onchange="saveContactIconStyle()">
+      <option value="whatsapp">WhatsApp</option>
+      <option value="phone">Phone call</option>
+      <option value="sms">SMS / Text</option>
+      <option value="email">Email</option>
+    </select>
+    <span class="status" id="contacticonstatus">Icon shown in the contact circle on every card — shared with your whole team.</span>
+  </div>
+
   <!-- ============================== TAB: NEW PROFILE ============================== -->
   <section class="tab active" id="tab-new">
     <div class="modes">
@@ -1177,6 +1188,19 @@ async function saveContactToCloud(value){
   const resp = await supaFetch('/rest/v1/bureau_settings?key=eq.contact_no', { method:'PATCH', body: JSON.stringify({ value }) });
   if (!resp.ok) throw new Error('Could not save the number: ' + await supaError(resp));
 }
+// Generic bureau_settings key/value helpers (contact_no above predates these and PATCHes a
+// row assumed to already exist; these upsert instead, so a brand-new key like
+// contact_icon_style doesn't silently no-op on a team's table that's never seen it before).
+async function loadSettingFromCloud(key){
+  const resp = await supaFetch(`/rest/v1/bureau_settings?key=eq.${encodeURIComponent(key)}&select=value`);
+  if (!resp.ok) return null;
+  const rows = await resp.json();
+  return rows[0] ? rows[0].value : null;
+}
+async function saveSettingToCloud(key, value){
+  const resp = await supaFetch('/rest/v1/bureau_settings?on_conflict=key', { method:'POST', headers:{ 'Prefer':'resolution=merge-duplicates' }, body: JSON.stringify({ key, value }) });
+  if (!resp.ok) throw new Error('Could not save the setting: ' + await supaError(resp));
+}
 
 /* ---------- one-time migration: profiles saved locally before this device connected to the cloud ---------- */
 async function findLocalOnlyProfiles(){
@@ -1577,6 +1601,17 @@ async function saveContact(){
   try {
     await saveContactToCloud(contactNo);
     $('contactstatus').textContent = '✓ Number saved — shared with your whole team and the customer form.';
+  } catch (e) {
+    banner('global-banner','error', esc(e.message));
+    return;
+  }
+  if ($('tab-preview').classList.contains('active')) renderPreview();
+}
+async function saveContactIconStyle(){
+  contactIconStyle = $('contacticon').value;
+  try {
+    await saveSettingToCloud('contact_icon_style', contactIconStyle);
+    $('contacticonstatus').textContent = '✓ Saved — shared with your whole team.';
   } catch (e) {
     banner('global-banner','error', esc(e.message));
     return;
@@ -3102,10 +3137,30 @@ function closeMatches(){ $('matches-panel').style.display = 'none'; }
 const PLUM='#6E1E3C', PLUM2='#8E2A4D', GOLD='#B5893B', GOLD2='#D4AF61', CREAM='#FDF7F1', INK='#3A1220';
 const HFONT='"DM Serif Display", serif';
 const WA_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#25D366" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.359.101 11.945c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a11.96 11.96 0 005.71 1.454h.006c6.585 0 11.946-5.359 11.949-11.945a11.9 11.9 0 00-3.48-8.408"/></svg>';
-const WA_DATAURL = 'data:image/svg+xml;base64,' + btoa(WA_SVG);
-let waImg = null;
+// 3 alternative icons for the contact circle on the last slide/highlight card, besides
+// WhatsApp — generic Material-style glyphs (not brand logos) in the card's own plum, so
+// they read as intentional/branded rather than a random stand-in icon.
+const PHONE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="${PLUM}" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>`;
+const SMS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="${PLUM}" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7 9h10v2H7V9zm6 5H7v-2h6v2zm4-6H7V6h10v2z"/></svg>`;
+const EMAIL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="${PLUM}" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>`;
+const CONTACT_ICONS = {
+  whatsapp: { label:'WhatsApp', svg: WA_SVG },
+  phone:    { label:'Phone call', svg: PHONE_SVG },
+  sms:      { label:'SMS / Text', svg: SMS_SVG },
+  email:    { label:'Email', svg: EMAIL_SVG }
+};
+let contactIconStyle = 'whatsapp'; // which of CONTACT_ICONS shows in the contact circle — team-wide setting, saved to bureau_settings
+let contactIconImgs = {}; // cache of loaded <img> per style, keyed by style name
+let waImg = null; // the CURRENTLY ACTIVE contact icon image (kept this name so contactFooter's existing drawImage call needs no change)
 function loadImg(src){ return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
-async function waLogo(){ if (!waImg) { try { waImg = await loadImg(WA_DATAURL); } catch { waImg = null; } } return waImg; }
+async function waLogo(){
+  if (!contactIconImgs[contactIconStyle]) {
+    try { contactIconImgs[contactIconStyle] = await loadImg('data:image/svg+xml;base64,' + btoa(CONTACT_ICONS[contactIconStyle].svg)); }
+    catch { contactIconImgs[contactIconStyle] = null; }
+  }
+  waImg = contactIconImgs[contactIconStyle];
+  return waImg;
+}
 async function fontsReady(){ try { await document.fonts.ready; } catch {} }
 
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
@@ -3274,7 +3329,8 @@ function contactFooter(c,W,y,contact){
   const logoR=28,logoY=y+54;
   c.beginPath();c.arc(cx,logoY,logoR,0,7);c.fillStyle=CREAM;c.fill();c.lineWidth=1.6;c.strokeStyle=GOLD2;c.stroke();
   if(waImg) c.drawImage(waImg, cx-logoR*0.62, logoY-logoR*0.62, logoR*1.24, logoR*1.24);
-  c.textAlign='center';c.fillStyle=GOLD;c.font='700 13px Poppins, sans-serif';c.fillText(sp('DM US IF INTERESTED',.5),cx,y+118);
+  const ctaLabel = { whatsapp:'DM US IF INTERESTED', sms:'TEXT US IF INTERESTED', phone:'CALL US IF INTERESTED', email:'EMAIL US IF INTERESTED' }[contactIconStyle] || 'DM US IF INTERESTED';
+  c.textAlign='center';c.fillStyle=GOLD;c.font='700 13px Poppins, sans-serif';c.fillText(sp(ctaLabel,.5),cx,y+118);
   c.fillStyle=PLUM;c.font='400 36px '+HFONT;c.fillText(contact||'—',cx,y+164);
   return y+boxH;
 }
@@ -3312,6 +3368,104 @@ function reqInfo(p){
 }
 function sibLine(s){
   return [s.professionEducation].filter(Boolean).join(' · ') || 'Details not specified';
+}
+
+/* ---------- dynamic slide plan ----------
+   Family Details and Requirements each get their own dedicated slide only when there's
+   enough content to justify one. When a section is very sparse, its content is folded into
+   the end of whichever slide precedes it (with its own heading) instead of giving it a
+   near-empty slide of its own; when a section has nothing at all, it's dropped completely —
+   no slide, no leftover heading. The swipe pill on every slide is generated from the actual
+   next slide in the resulting sequence, so it never points at a slide that got merged away. */
+const SECTION_MERGE_MAX = 2; // 1-2 fields: fold into the previous slide. 0: drop entirely. 3+: own slide.
+function familyRichness(p){
+  const parentPairs = [["Father's Occupation", p.father], ["Mother's Occupation", p.mother]].filter(([, v]) => v);
+  const sibs = p.siblings || [];
+  return { parentPairs, sibs, count: parentPairs.length + sibs.length };
+}
+function requirementsRichness(p){
+  const info = reqInfo(p);
+  return { info, count: info.pairs.length + (info.other ? 1 : 0) };
+}
+function planSlides(p){
+  const family = familyRichness(p);
+  const req = requirementsRichness(p);
+
+  const nodes = [];
+  nodes.push({ type: 'cover', label: 'Cover' });
+  const personalNode = { type: 'personal', label: 'Personal Details', extras: [] };
+  nodes.push(personalNode);
+
+  let familyTarget = personalNode; // whichever slide Requirements folds into if it's also sparse
+  if (family.count > 0 && family.count <= SECTION_MERGE_MAX) {
+    personalNode.extras.push({ kind: 'family', data: family });
+  } else if (family.count > SECTION_MERGE_MAX) {
+    const familyNode = { type: 'family', label: 'Family Details', extras: [] };
+    nodes.push(familyNode);
+    familyTarget = familyNode;
+  } // count === 0: dropped entirely, nothing pushed and nothing merged
+
+  if (req.count > 0 && req.count <= SECTION_MERGE_MAX) {
+    familyTarget.extras.push({ kind: 'requirements', data: req });
+  } else if (req.count > SECTION_MERGE_MAX) {
+    nodes.push({ type: 'requirements', label: 'Requirements' });
+  }
+
+  nodes.push({ type: 'contact', label: 'Contact' });
+  return nodes;
+}
+// Renders a merged-in section at the bottom of whatever slide it landed on, with its own
+// heading — same panel/fieldGrid visual language as a dedicated slide, just appended in place.
+function renderMergedFamily(c, xFull, y, fullW, pad, family, size){
+  const { parentPairs, sibs } = family;
+  if (parentPairs.length){
+    const h = boxHeight(Math.ceil(parentPairs.length/2));
+    panel(c,xFull,y,fullW,h); sectionHeader(c,xFull+pad,y+40,'Family — Parents'); fieldGrid(c,xFull,y,fullW,pairsToRows(parentPairs));
+    y += h + (size==='portrait'?50:14);
+  }
+  if (sibs.length){
+    const rowH=86;
+    const hS=78+(sibs.length-1)*rowH+59+24;
+    panel(c,xFull,y,fullW,hS); sectionHeader(c,xFull+pad,y+40,'Family — Siblings');
+    sibs.forEach((s,i)=>{
+      const rowTop=y+78+i*rowH;
+      c.textAlign='left';c.fillStyle=PLUM;c.font='400 26px '+HFONT;c.fillText(s.relation||'Sibling',xFull+pad,rowTop+22);
+      if (s.maritalStatus){
+        c.font='700 13px Poppins, sans-serif';const pillW=c.measureText(s.maritalStatus.toUpperCase()).width+30;
+        rr(c,xFull+fullW-pad-pillW,rowTop-6,pillW,30,15);c.fillStyle=GOLD2;c.fill();
+        c.fillStyle=PLUM;c.textAlign='center';c.fillText(sp(s.maritalStatus.toUpperCase(),.5),xFull+fullW-pad-pillW/2,rowTop+14);
+      }
+      c.textAlign='left';c.fillStyle=INK;c.font='400 19px Poppins, sans-serif';c.fillText(sibLine(s),xFull+pad,rowTop+54);
+      if(i<sibs.length-1){
+        c.strokeStyle='rgba(181,137,59,.3)';c.lineWidth=1;
+        c.beginPath();c.moveTo(xFull+pad,rowTop+rowH-14);c.lineTo(xFull+fullW-pad,rowTop+rowH-14);c.stroke();
+      }
+    });
+    y += hS + (size==='portrait'?50:14);
+  }
+  return y;
+}
+function renderMergedRequirements(c, xFull, y, fullW, pad, req, size){
+  const { info } = req;
+  if (info.pairs.length){
+    const rows=pairsToRows(info.pairs); const h=boxHeight(rows.length);
+    panel(c,xFull,y,fullW,h); sectionHeader(c,xFull+pad,y+40,'Requirements'); fieldGrid(c,xFull,y,fullW,rows);
+    y += h + (size==='portrait'?50:14);
+  }
+  if (info.other){
+    const h=124;
+    panel(c,xFull,y,fullW,h); sectionHeader(c,xFull+pad,y+40,'Other Demands');
+    c.textAlign='left';c.fillStyle=PLUM;c.font='400 30px '+HFONT;c.fillText('“'+info.other+'”',xFull+pad,y+86);
+    y += h + (size==='portrait'?50:14);
+  }
+  return y;
+}
+function renderMergedExtras(c, xFull, y, fullW, pad, extras, size){
+  (extras||[]).forEach(ex => {
+    if (ex.kind === 'family') y = renderMergedFamily(c, xFull, y, fullW, pad, ex.data, size);
+    else if (ex.kind === 'requirements') y = renderMergedRequirements(c, xFull, y, fullW, pad, ex.data, size);
+  });
+  return y;
 }
 
 /* ---------- SLIDE 1: COVER ---------- */
@@ -3356,7 +3510,7 @@ async function drawCover(c, p, size){
 }
 
 /* ---------- SLIDE 2: PERSONAL DETAILS ---------- */
-async function drawPersonal(c, p, size){
+async function drawPersonal(c, p, size, extras, nextLabel){
   const W=1080, H = size==='portrait' ? 1350 : 1080;
   c.canvas.width=W; c.canvas.height=H;
   c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
@@ -3397,18 +3551,25 @@ async function drawPersonal(c, p, size){
     y+=h3;
   }
 
-  if (size==='portrait'){
+  const hasExtras = extras && extras.length;
+  if (hasExtras) {
+    y += size==='portrait' ? 20 : 8;
+    y = renderMergedExtras(c, xFull, y, fullW, pad, extras, size);
+  } else if (size==='portrait'){
+    // Only draw the "more below" caption when nothing was folded in here — once Family/
+    // Requirements content is merged in, that space is genuinely occupied instead.
     const capY=y+(H-118-y)/2;
     c.strokeStyle=GOLD2;c.lineWidth=1.4;c.lineCap='round';
     c.beginPath();c.moveTo(W/2-60,capY-14);c.lineTo(W/2+60,capY-14);c.stroke();
     c.textAlign='center';c.fillStyle='rgba(58,18,32,.5)';c.font='500 16px Poppins, sans-serif';
     c.fillText('Complete details continue on the next slides',W/2,capY+18);
   }
-  swipeFooter(c,W,H,'SWIPE FOR FAMILY DETAILS');
+  swipeFooter(c,W,H,'SWIPE FOR ' + nextLabel.toUpperCase());
 }
 
-/* ---------- SLIDE 3: FAMILY DETAILS ---------- */
-async function drawFamily(c, p, size){
+/* ---------- SLIDE 3: FAMILY DETAILS (only rendered when there's enough for its own slide —
+   see planSlides; a sparse Family section is merged into Personal Details instead) ---------- */
+async function drawFamily(c, p, size, extras, nextLabel){
   const W=1080, H = size==='portrait' ? 1350 : 1080;
   c.canvas.width=W; c.canvas.height=H;
   c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
@@ -3418,7 +3579,7 @@ async function drawFamily(c, p, size){
   const fullW=WW-88, xFull=X0+44, pad=24;
   let y=FR+headerH+(size==='portrait'?60:44);
 
-  const parentPairs=[["Father's Occupation",p.father],["Mother's Occupation",p.mother]].filter(([,v])=>v);
+  const { parentPairs, sibs } = familyRichness(p);
   if (parentPairs.length){
     const hP=boxHeight(Math.ceil(parentPairs.length/2));
     panel(c,xFull,y,fullW,hP);
@@ -3427,7 +3588,6 @@ async function drawFamily(c, p, size){
     y+=hP+30;
   }
 
-  const sibs=p.siblings||[];
   if (sibs.length){
     const rowH=86;
     const hS=78+(sibs.length-1)*rowH+59+24;
@@ -3451,15 +3611,21 @@ async function drawFamily(c, p, size){
   }
 
   if (!parentPairs.length && !sibs.length){
+    // Defensive fallback only — planSlides() never gives this slide a real render call when
+    // there's truly nothing here, it drops the slide entirely instead.
     c.textAlign='center';c.fillStyle='rgba(58,18,32,.45)';c.font='400 24px '+HFONT;
     c.fillText('Family details not specified',W/2,y+80);
+    y+=110;
   }
 
-  swipeFooter(c,W,H,'SWIPE FOR REQUIREMENTS');
+  if (extras && extras.length) y = renderMergedExtras(c, xFull, y, fullW, pad, extras, size);
+
+  swipeFooter(c,W,H,'SWIPE FOR ' + nextLabel.toUpperCase());
 }
 
-/* ---------- SLIDE 4: REQUIREMENTS ---------- */
-async function drawRequirements(c, p, size){
+/* ---------- SLIDE 4: REQUIREMENTS (only rendered when there's enough for its own slide —
+   see planSlides; a sparse Requirements section is merged into the previous slide instead) ---------- */
+async function drawRequirements(c, p, size, nextLabel){
   const W=1080, H = size==='portrait' ? 1350 : 1080;
   c.canvas.width=W; c.canvas.height=H;
   c.fillStyle=CREAM;c.fillRect(0,0,W,H);watermarkTexture(c,W,H);
@@ -3499,7 +3665,7 @@ async function drawRequirements(c, p, size){
     c.fillText('“'+info.other+'”',xFull+pad,y+86);
   }
 
-  swipeFooter(c,W,H,'SWIPE FOR CONTACT');
+  swipeFooter(c,W,H,'SWIPE FOR ' + nextLabel.toUpperCase());
 }
 
 /* ---------- SLIDE 5: CONTACT / CLOSING ---------- */
@@ -3531,7 +3697,8 @@ async function drawContact(c, p, size){
 
   y+=tight?86:110;
   c.fillStyle=INK;c.font='500 30px Poppins, sans-serif';
-  c.fillText('DM us if you’re interested in', cx, y);
+  const ctaVerb = { whatsapp:'DM', sms:'Text', phone:'Call', email:'Email' }[contactIconStyle] || 'DM';
+  c.fillText(ctaVerb + ' us if you’re interested in', cx, y);
   y+=42;
   c.fillText('this profile', cx, y);
 
@@ -3664,20 +3831,26 @@ async function drawSummary(c, p, size){
   }
 }
 
-const SLIDE_DRAWERS = [
-  ['Cover', drawCover],
-  ['Personal Details', drawPersonal],
-  ['Family Details', drawFamily],
-  ['Requirements', drawRequirements],
-  ['Contact', drawContact]
-];
+// Slide count/labels are no longer fixed — see planSlides() above: a profile with sparse
+// Family/Requirements sections gets fewer slides than one with a lot to say. This just
+// returns the labels for whatever plan a given profile actually produces (used for filenames
+// and thumbnail captions without re-deriving the plan in three different places).
+function planSlideLabels(p){ return planSlides(p).map(n => n.label); }
 
 async function renderAllSlides(p, size){
   await fontsReady(); await waLogo();
+  const plan = planSlides(p);
   const canvases = [];
-  for (const [, fn] of SLIDE_DRAWERS) {
+  for (let i = 0; i < plan.length; i++) {
+    const node = plan[i];
+    const nextLabel = plan[i+1] ? plan[i+1].label : null;
     const cnv = document.createElement('canvas');
-    await fn(cnv.getContext('2d'), p, size);
+    const ctx = cnv.getContext('2d');
+    if (node.type === 'cover') await drawCover(ctx, p, size);
+    else if (node.type === 'personal') await drawPersonal(ctx, p, size, node.extras, nextLabel);
+    else if (node.type === 'family') await drawFamily(ctx, p, size, node.extras, nextLabel);
+    else if (node.type === 'requirements') await drawRequirements(ctx, p, size, nextLabel);
+    else if (node.type === 'contact') await drawContact(ctx, p, size);
     canvases.push(cnv);
   }
   return canvases;
@@ -3730,8 +3903,9 @@ async function downloadCarouselImages(){
   const p = currentProfile(); if (!p) return;
   try {
     const canvases = await renderAllSlides(p, carouselSize);
+    const labels = planSlideLabels(p);
     for (let i=0;i<canvases.length;i++){
-      triggerDownload(canvases[i].toDataURL('image/png'), cardFileName(p, (i+1)+'-'+SLIDE_DRAWERS[i][0].toLowerCase().replace(/\s+/g,'-')));
+      triggerDownload(canvases[i].toDataURL('image/png'), cardFileName(p, (i+1)+'-'+labels[i].toLowerCase().replace(/\s+/g,'-')));
       await new Promise(r => setTimeout(r, 350));
     }
   } catch (e) {
@@ -3792,6 +3966,10 @@ async function enterApp(){
     const cloudContact = await loadContactFromCloud();
     contactNo = cloudContact || '+92 321 2266621';
     $('contact').value = contactNo;
+
+    const cloudIconStyle = await loadSettingFromCloud('contact_icon_style');
+    contactIconStyle = (cloudIconStyle && CONTACT_ICONS[cloudIconStyle]) ? cloudIconStyle : 'whatsapp';
+    $('contacticon').value = contactIconStyle;
 
     profiles = await loadProfilesFromCloud();
     renderList();
