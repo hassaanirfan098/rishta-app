@@ -1445,7 +1445,9 @@ async function callGroq(userContent, systemPrompt, maxTokens, preferFast){
     throw new Error(`API error ${resp.status} (model: ${modelId}). ${hints[resp.status] || ''}\n${detail}`.trim());
   }
   const data = await resp.json();
-  const text = data.choices?.[0]?.message?.content || '';
+  const choice = data.choices?.[0];
+  const text = choice?.message?.content || '';
+  if (choice?.finish_reason === 'length') throw new Error('TRUNCATED_OUTPUT: the model ran out of its response budget (max_tokens) before finishing.');
   return parseJsonLoose(text);
 }
 function parseJsonLoose(text){
@@ -1542,7 +1544,9 @@ async function callCerebras(userContent, systemPrompt, maxTokens){
     throw new Error(`API error ${resp.status} (model: ${modelId}). ${hints[resp.status] || ''}\n${detail}`.trim());
   }
   const data = await resp.json();
-  const text = data.choices?.[0]?.message?.content || '';
+  const choice = data.choices?.[0];
+  const text = choice?.message?.content || '';
+  if (choice?.finish_reason === 'length') throw new Error('TRUNCATED_OUTPUT: the model ran out of its response budget (max_tokens) before finishing.');
   return parseJsonLoose(text);
 }
 // Single entry point the batch pipeline calls — dispatches to whichever engine is selected
@@ -1734,6 +1738,11 @@ function is413(message){ return /API error 413/.test(message || ''); }
 // and retrying every chunk against the same wall wastes a long time for no benefit — better
 // to stop the whole batch immediately and tell the person plainly what's going on.
 function isDailyLimit(message){ return /tokens per day|daily.*(limit|quota)|requests per day/i.test(message || ''); }
+// The model ran out of its max_tokens budget before finishing the JSON (too many profiles
+// crammed into one chunk for the token ceiling) — surfaces either as an explicit finish_reason
+// of "length" (checked in callGroq/callCerebras below) or, since that isn't always reliable
+// across providers, as the resulting cut-off text failing to parse as JSON at all.
+function isTruncatedOutput(message){ return /TRUNCATED_OUTPUT|Could not find JSON in the model response|was not valid JSON/i.test(message || ''); }
 
 // Extracts one chunk, with automatic recovery:
 //  - 429 per-minute (rate limited): wait the time Groq tells us, then retry the same chunk.
@@ -1768,6 +1777,21 @@ async function extractOneChunk(chunkText, maxTokens, chunkLabel, depth, engine){
         }
         return results;
       }
+      if (isTruncatedOutput(e.message) && depth < 4 && chunkText.length > 200) {
+        // The model ran out of its max_tokens budget partway through the JSON — usually
+        // because this chunk held more profiles than the budget was sized for. Split the
+        // chunk in half but KEEP the same max_tokens per half (not halved, unlike the 413
+        // path above) since half the profiles genuinely need less output, not just a smaller
+        // slice of the same budget — this converges in 1-2 splits instead of repeating the
+        // same shortfall.
+        $('batch-status').textContent = `${chunkLabel}: response was cut off before finishing, splitting into smaller pieces…`;
+        const halves = splitIntoChunks(chunkText, Math.ceil(chunkText.length / 2));
+        const results = [];
+        for (let h = 0; h < halves.length; h++) {
+          results.push(...await extractOneChunk(halves[h], maxTokens, `${chunkLabel}.${h+1}`, depth + 1, engine));
+        }
+        return results;
+      }
       const retryAfter = parseRetryAfterSeconds(e.message);
       if (retryAfter != null) {
         // real per-minute 429 — the provider told us exactly how long to wait
@@ -1775,8 +1799,9 @@ async function extractOneChunk(chunkText, maxTokens, chunkLabel, depth, engine){
         await sleep((retryAfter + 1) * 1000);
         continue;
       }
-      if (/Failed to generate JSON|malformed|decommissioned/i.test(e.message) && attempt < MAX_RETRIES) {
-        // transient generation hiccup — short pause and retry
+      if (/Failed to generate JSON|malformed|decommissioned|empty response/i.test(e.message) && attempt < MAX_RETRIES) {
+        // transient generation hiccup (including an occasional empty completion) — short
+        // pause and retry before giving up on this chunk entirely
         $('batch-status').textContent = `${chunkLabel}: generation error, retrying ${attempt}/${MAX_RETRIES}…`;
         await sleep(2000);
         continue;
@@ -1799,12 +1824,15 @@ async function extractBatchFromMessage(){
   // llama-3.3-70b-versatile's verified real limit on this account is 12,000 tokens per
   // minute (rolling window — see waitForTokenBudget() above). Chunk size is tuned so one
   // request (system prompt + input + reserved output) stays comfortably under that, with
-  // the 413 auto-split in extractOneChunk() as a safety net if a chunk still runs over.
+  // the 413 auto-split in extractOneChunk() as a safety net if a chunk still runs over —
+  // and a smaller max_tokens-truncation auto-split (same function) if a chunk holds more
+  // profiles than its reserved output budget can actually fit (each profile's full JSON
+  // schema is verbose, so a handful of profiles can legitimately need 2000+ output tokens).
   // Cerebras's free tier runs a much bigger daily budget, so it can afford bigger chunks —
   // this hasn't been tuned against a live Cerebras account yet, so it may need adjusting
   // after the first real run.
-  const CHUNK_CHARS = engine === 'cerebras' ? 6000 : 2600;
-  const CHUNK_MAX_TOKENS = engine === 'cerebras' ? 4000 : 2500;
+  const CHUNK_CHARS = engine === 'cerebras' ? 6000 : 2200;
+  const CHUNK_MAX_TOKENS = engine === 'cerebras' ? 4000 : 3200;
   if (engine === 'cerebras') { TPM_SAFETY_OVERRIDE = 25000; } else { TPM_SAFETY_OVERRIDE = null; }
   const chunks = splitIntoChunks(text, CHUNK_CHARS);
 
