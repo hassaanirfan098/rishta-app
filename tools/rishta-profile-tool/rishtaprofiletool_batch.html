@@ -725,11 +725,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             <input type="file" id="pphoto-input" accept="image/*">
           </div>
         </div>
+        <div id="photo-in-post-row" style="margin-bottom:16px; display:none;">
+          <label id="photo-in-post-label" style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--plum); cursor:pointer;">
+            <input type="checkbox" id="f-showphoto" checked style="width:auto;">
+            Show this photo on the generated post
+          </label>
+          <div class="note" id="photo-in-post-note" style="display:none;">Photos are never shown on posts for female profiles — a fixed bureau policy, not a per-profile choice.</div>
+        </div>
         <h3 style="margin-top:0">Basic Info</h3>
         <div class="grid">
           <div><label class="fld">Full name *</label><input id="f-name"></div>
           <div><label class="fld">Gender *</label>
-            <select id="f-gender"><option value="">—</option><option value="male">Male</option><option value="female">Female</option></select></div>
+            <select id="f-gender" onchange="refreshShowPhotoRow()"><option value="">—</option><option value="male">Male</option><option value="female">Female</option></select></div>
           <div><label class="fld">Age</label><input id="f-age" type="number" min="16" max="80"></div>
           <div><label class="fld">Height</label>
             <div class="hrow">
@@ -1141,7 +1148,7 @@ async function supaError(resp){
 /* ---------- profile row <-> app object mapping (DB columns are snake_case) ---------- */
 function profileToRow(p){
   return {
-    id: p.id, catalog_id: p.catalogId, source_type: p.sourceType, photo: p.photo,
+    id: p.id, catalog_id: p.catalogId, source_type: p.sourceType, photo: p.photo, photo_in_post: p.photoInPost !== false,
     name: p.name, gender: p.gender, age: p.age, height_inches: p.heightInches, height_display: p.heightDisplay,
     marital_status: p.maritalStatus, disability: p.disability, contact_phone: p.contactPhone,
     education: p.education, job: p.job, religion: p.religion, property: p.property, address: p.address,
@@ -1150,7 +1157,7 @@ function profileToRow(p){
 }
 function rowToProfile(r){
   return {
-    id: r.id, catalogId: r.catalog_id, createdAt: r.created_at, sourceType: r.source_type, photo: r.photo,
+    id: r.id, catalogId: r.catalog_id, createdAt: r.created_at, sourceType: r.source_type, photo: r.photo, photoInPost: r.photo_in_post !== false,
     name: r.name, gender: r.gender, age: r.age, heightInches: r.height_inches, heightDisplay: r.height_display,
     maritalStatus: r.marital_status, disability: r.disability, contactPhone: r.contact_phone,
     education: r.education || {}, job: r.job || {}, religion: r.religion || {}, property: r.property || {}, address: r.address || {},
@@ -1170,7 +1177,14 @@ async function fetchNextCatalogId(g){
 }
 async function createProfileCloud(profile){
   const resp = await supaFetch('/rest/v1/bureau_profiles', { method:'POST', headers:{ 'Prefer':'return=representation' }, body: JSON.stringify(profileToRow(profile)) });
-  if (!resp.ok) throw new Error('Could not save the profile: ' + await supaError(resp));
+  if (!resp.ok) {
+    const detail = await supaError(resp);
+    if (/column .*photo_in_post.* does not exist|42703/i.test(detail)) {
+      throw new Error('The bureau_profiles table needs a photo_in_post column. Run this once in the Supabase SQL editor, then try again:\n\n'
+        + 'alter table bureau_profiles add column if not exists photo_in_post boolean not null default true;');
+    }
+    throw new Error('Could not save the profile: ' + detail);
+  }
   const rows = await resp.json();
   return rowToProfile(rows[0]);
 }
@@ -1958,7 +1972,7 @@ async function inferMissingGenders(){
 function groqToDraft(d, idx){
   const heightInches = (d.height_inches != null && !isNaN(d.height_inches)) ? d.height_inches : null;
   return {
-    id: null, catalogId: 'NEW', createdAt: null, sourceType: 'batch', photo: null,
+    id: null, catalogId: 'NEW', createdAt: null, sourceType: 'batch', photo: null, photoInPost: true,
     name: (d.name || '').toString().trim() || ('Profile ' + (idx + 1)),
     gender: d.gender || null,
     age: d.age != null ? d.age : null,
@@ -2140,6 +2154,7 @@ function cancelBatchEdit(){
 function populateFormFromDraft(d){
   clearForm(true);
   const set = (id, v) => { if (v != null && v !== '') $(id).value = v; };
+  if (d.photo) { pendingPersonPhoto = d.photo; $('pphoto-circ').innerHTML = `<img src="${d.photo}">`; }
   set('f-name', d.name); set('f-gender', d.gender); set('f-age', d.age);
   if (d.heightInches != null) { $('f-feet').value = Math.floor(d.heightInches/12); $('f-inches').value = Math.round(d.heightInches%12); }
   if (d.maritalStatus && MARITAL_LABEL[d.maritalStatus]) $('f-marital').value = d.maritalStatus;
@@ -2159,6 +2174,8 @@ function populateFormFromDraft(d){
   set('r-city', r.city); set('r-caste', r.caste); set('r-sect', r.sect); set('r-qualification', r.qualification);
   set('r-habits', r.habits); set('r-divorcedwidowed', r.divorcedWidowed); set('r-workingwoman', r.workingWoman); set('r-other', r.other);
   if (d.raw_note) { $('rawnote-wrap').style.display = ''; $('f-rawnote').value = d.raw_note; }
+  refreshShowPhotoRow();
+  if (d.photo && d.photoInPost === false && d.gender !== 'female') $('f-showphoto').checked = false;
   wizGo(1);
 }
 
@@ -2811,11 +2828,29 @@ function clearForm(keepHidden){
   $('f-nationality').value = 'Pakistani';
   pendingPersonPhoto = null;
   $('pphoto-circ').innerHTML = '👤';
+  $('f-showphoto').checked = true;
+  refreshShowPhotoRow();
   $('rawnote-wrap').style.display = 'none';
   $('save-status').textContent = '';
   clearSiblings();
   if (!keepHidden) hideBanner('review-banner');
   wizGo(1);
+}
+
+// Female profiles never show the person's photo on the generated post — a fixed bureau
+// policy, not a per-profile choice — so the toggle only ever applies to male profiles, and
+// only once a photo has actually been uploaded (nothing to toggle otherwise).
+function refreshShowPhotoRow(){
+  const gender = $('f-gender').value;
+  const hasPhoto = !!pendingPersonPhoto;
+  const row = $('photo-in-post-row');
+  if (!hasPhoto) { row.style.display = 'none'; return; }
+  row.style.display = '';
+  const isFemale = gender === 'female';
+  $('f-showphoto').disabled = isFemale;
+  if (isFemale) $('f-showphoto').checked = false;
+  $('photo-in-post-note').style.display = isFemale ? '' : 'none';
+  $('photo-in-post-label').style.display = isFemale ? 'none' : '';
 }
 
 /* ============================================================ BUILD / SAVE ============================================================ */
@@ -2829,6 +2864,7 @@ function buildDraftProfile(){
     createdAt: null,
     sourceType: 'form',
     photo: pendingPersonPhoto,
+    photoInPost: gender !== 'female' && $('f-showphoto').checked,
     name: $('f-name').value.trim(),
     gender,
     age: $('f-age').value ? parseInt($('f-age').value,10) : null,
@@ -3369,6 +3405,14 @@ function reqInfo(p){
 function sibLine(s){
   return [s.professionEducation].filter(Boolean).join(' · ') || 'Details not specified';
 }
+// Female profiles never show the person's photo on a generated post — a fixed bureau policy
+// enforced here regardless of what's stored, not just a default — so even old rows saved
+// before the photoInPost field existed, or a row somehow saved with a stale true value, still
+// never show a photo for a female profile. Male profiles respect the per-profile toggle
+// (defaulting to shown, since most saved rows predate the toggle and had no way to opt out).
+function shouldShowPhoto(p){
+  return !!p.photo && p.gender !== 'female' && p.photoInPost !== false;
+}
 
 /* ---------- dynamic slide plan ----------
    Family Details and Requirements each get their own dedicated slide only when there's
@@ -3477,7 +3521,7 @@ async function drawCover(c, p, size){
   c.strokeStyle=GOLD2;c.lineWidth=3;rr(c,FR,FR,WW,H-2*FR,26);c.stroke();
   c.strokeStyle='rgba(181,137,59,.4)';c.lineWidth=1.2;rr(c,FR+9,FR+9,WW-18,H-2*FR-18,20);c.stroke();
 
-  let photoImg=null; if (p.photo) { try { photoImg = await loadImg(p.photo); } catch(e){} }
+  let photoImg=null; if (shouldShowPhoto(p)) { try { photoImg = await loadImg(p.photo); } catch(e){} }
   const headerH = heroHeader(c, W, X0, WW, FR, (p.job&&p.job.profession) || 'City Marriage Bureau', photoImg);
 
   const stats=[['Male'===p.gender||p.gender==='male'?'Male':p.gender==='female'?'Female':null,'GENDER'],
@@ -3718,7 +3762,7 @@ async function drawContact(c, p, size){
 /* ---------- SUMMARY CARD (full portrait / 4:5 crop) ---------- */
 async function drawSummary(c, p, size){
   const W=1080;
-  let photoImg=null; if (p.photo) { try { photoImg = await loadImg(p.photo); } catch(e){} }
+  let photoImg=null; if (shouldShowPhoto(p)) { try { photoImg = await loadImg(p.photo); } catch(e){} }
   const ed=p.education||{}, jb=p.job||{}, rl=p.religion||{}, pr=p.property||{}, ad=p.address||{};
   const info=reqInfo(p);
   const stats=[[p.gender==='male'?'Male':p.gender==='female'?'Female':null,'GENDER'],
@@ -3996,6 +4040,7 @@ async function init(){
     if (!f) return;
     pendingPersonPhoto = await resizeImage(f, 512);
     $('pphoto-circ').innerHTML = `<img src="${pendingPersonPhoto}">`;
+    refreshShowPhotoRow();
   });
   $('photo-input').addEventListener('change', e => acceptCardPhoto(e.target.files[0]));
   const drop = $('photodrop');
