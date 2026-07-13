@@ -143,9 +143,9 @@ export default function DiscoverPage() {
       .or(`and(user1_id.eq.${user.id},user2_id.eq.${profileId}),and(user1_id.eq.${profileId},user2_id.eq.${user.id})`)
       .single();
     if (match) {
-      toast("It's a match! 💚 Start a conversation.", "success");
+      toast("It's a match! Start a conversation.", "success");
     } else {
-      toast("Liked 💚", "success");
+      toast("Liked", "success");
     }
   };
 
@@ -282,7 +282,7 @@ export default function DiscoverPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-2xl mx-auto px-5 py-6">
+      <div className="max-w-md mx-auto px-5 py-6">
         {loading ? (
           <div className="max-w-md mx-auto">
             <div className="h-[min(66vh,600px)] min-h-[430px] rounded-[20px] skeleton" />
@@ -290,22 +290,6 @@ export default function DiscoverPage() {
               <div className="w-14 h-14 rounded-full skeleton" />
               <div className="w-16 h-16 rounded-full skeleton" />
             </div>
-          </div>
-        ) : combined.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <h3 className="text-lg font-semibold text-ink">
-              {activeFilters ? "No matches for these filters" : "No profiles yet"}
-            </h3>
-            <p className="text-sm text-muted mt-2 max-w-xs">
-              {activeFilters
-                ? "Try widening your filters to see more people."
-                : "New members join every day. Check back soon for fresh matches."}
-            </p>
-            {activeFilters && (
-              <Button variant="outline" size="sm" className="mt-5" onClick={clearFilters}>
-                Clear filters
-              </Button>
-            )}
           </div>
         ) : (
           <SwipeDeck
@@ -315,9 +299,13 @@ export default function DiscoverPage() {
             onOpenProfile={(id) => router.push(`/profile/${id}`)}
             emptyState={
               <>
-                <h3 className="text-lg font-semibold text-ink">You&apos;re all caught up</h3>
+                <h3 className="text-lg font-semibold text-ink">
+                  {activeFilters ? "No matches for these filters" : "You're all caught up"}
+                </h3>
                 <p className="text-sm text-muted mt-2 max-w-xs">
-                  You&apos;ve seen everyone for now. New members join every day — check back soon.
+                  {activeFilters
+                    ? "Try widening your filters to see more people."
+                    : "You've seen everyone for now. New members join every day — check back soon."}
                 </p>
                 {activeFilters && (
                   <Button variant="outline" size="sm" className="mt-5" onClick={clearFilters}>
