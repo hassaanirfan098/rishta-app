@@ -142,18 +142,18 @@ export default function PersonalizedPage() {
           href={WHATSAPP_LINK}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-between rounded-[14px] border border-hairline p-4 hover:bg-surface-soft transition-colors"
+          className="flex items-center justify-between rounded-[14px] bg-[#25D366] p-4 shadow-card hover:brightness-95 active:scale-[0.99] transition-all"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center">
-              <MessageCircle className="h-5 w-5 text-brand-600" />
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <MessageCircle className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-medium text-ink">Talk to our matchmaker</p>
-              <p className="text-sm text-muted">Prefer to speak first? Message us on WhatsApp.</p>
+              <p className="font-semibold text-white">Talk to our matchmaker</p>
+              <p className="text-sm text-white/85">Prefer to speak first? Message us on WhatsApp.</p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-muted" />
+          <ChevronRight className="h-5 w-5 text-white/80" />
         </a>
 
         {/* How it works */}
