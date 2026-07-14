@@ -34,7 +34,7 @@ export default function DirectoryPage() {
 
     const { data: dirProfiles } = await supabase
       .from("directory_profiles")
-      .select("id, full_name, age, city, country, sect, ethnicity, education, profession, marital_status, about_me, avatar_url, reference_code, is_featured")
+      .select("id, full_name, age, city, country, sect, ethnicity, education, profession, marital_status, about_me, avatar_url, reference_code, is_featured, gender")
       .eq("is_active", true)
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false });

@@ -27,7 +27,7 @@ export async function GET() {
 
   const { data, error } = await adminSupabase
     .from("directory_profiles")
-    .select("id, full_name, age, city, country, sect, profession, is_active, created_at")
+    .select("id, full_name, age, city, country, sect, profession, is_active, gender, created_at")
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -51,6 +51,16 @@ export async function POST(req: NextRequest) {
   if (action === "toggle") {
     const { id, is_active } = body;
     const { error } = await adminSupabase.from("directory_profiles").update({ is_active }).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "set_gender") {
+    const { id, gender } = body;
+    if (gender !== "male" && gender !== "female") {
+      return NextResponse.json({ error: "gender must be male or female" }, { status: 400 });
+    }
+    const { error } = await adminSupabase.from("directory_profiles").update({ gender }).eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
