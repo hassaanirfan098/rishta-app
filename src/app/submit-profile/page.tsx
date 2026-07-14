@@ -128,7 +128,7 @@ function SubmitProfileContent() {
   const submit = async () => {
     const err = validateStep1();
     if (err) { setError(err); setStep(1); return; }
-    if (!consent) { setError("Please confirm consent to submit this proposal."); return; }
+    if (!consent) { setError("Please confirm consent to complete your profile."); return; }
     setError("");
     setLoading(true);
     const res = await fetch("/api/directory/submit", {
@@ -139,7 +139,7 @@ function SubmitProfileContent() {
     const data = await res.json();
     setLoading(false);
     if (!res.ok) { setError(data.error || "Something went wrong. Please try again."); return; }
-    setDone(data.reference_code || "your proposal");
+    setDone(data.reference_code || "your profile");
   };
 
   const skip = async () => {
@@ -157,7 +157,7 @@ function SubmitProfileContent() {
         <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-5">
           <Check className="h-8 w-8 text-brand-600" />
         </div>
-        <h1 className="text-2xl font-semibold text-ink">Proposal submitted</h1>
+        <h1 className="text-2xl font-semibold text-ink">Profile completed</h1>
         <p className="text-muted text-sm mt-2 max-w-xs">
           Thank you. Your reference is <span className="font-medium text-ink">{done}</span>. Our team will review the details before it appears in our directory.
         </p>
@@ -174,7 +174,7 @@ function SubmitProfileContent() {
         <div className="max-w-lg mx-auto px-5 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <LogoMark className="w-8 h-8" />
-            <span className="font-semibold text-ink">Submit a Proposal</span>
+            <span className="font-semibold text-ink">Complete Your Profile</span>
           </div>
           <button onClick={skip} disabled={skipping} aria-label="Skip for now" className="text-muted hover:text-ink p-1">
             {skipping ? <Loader2 className="h-5 w-5 animate-spin" /> : <X className="h-5 w-5" />}
@@ -192,7 +192,7 @@ function SubmitProfileContent() {
           <>
             <div>
               <h2 className="text-2xl font-semibold text-ink tracking-tight">Basic Info</h2>
-              <p className="text-sm text-muted mt-1">Tell us about the person this proposal is for.</p>
+              <p className="text-sm text-muted mt-1">Tell us a little about yourself to complete your profile.</p>
             </div>
 
             <div className="flex items-start gap-2.5 rounded-[14px] bg-brand-50 px-4 py-3">
@@ -377,7 +377,7 @@ function SubmitProfileContent() {
             <label className="flex items-start gap-3 pt-4 cursor-pointer">
               <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4 accent-brand-600" />
               <span className="text-sm text-body">
-                I confirm the above details are accurate and I consent to this proposal being reviewed and listed in the bureau's directory, with contact details kept private until unlocked or an introduction is arranged.
+                I confirm the above details are accurate and I consent to my profile being reviewed and listed in the bureau's directory, with my contact details kept private until unlocked or an introduction is arranged.
               </span>
             </label>
           </>
@@ -402,7 +402,7 @@ function SubmitProfileContent() {
           ) : (
             <button onClick={submit} disabled={loading} className="flex-1 h-12 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Submit proposal
+              Complete profile
             </button>
           )}
         </div>

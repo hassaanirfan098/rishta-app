@@ -132,10 +132,10 @@ export default function DirectoryPage() {
           className="flex items-center justify-between rounded-[14px] border border-hairline p-4 mb-2 hover:bg-surface-soft transition-colors"
         >
           <div>
-            <p className="font-medium text-ink text-sm">Have a proposal to submit?</p>
-            <p className="text-xs text-muted mt-0.5">Add a profile to our directory for review.</p>
+            <p className="font-medium text-ink text-sm">Haven't completed your profile yet?</p>
+            <p className="text-xs text-muted mt-0.5">Complete your profile to get discovered and unlock contacts.</p>
           </div>
-          <span className="text-sm font-medium text-brand-600 shrink-0">Submit →</span>
+          <span className="text-sm font-medium text-brand-600 shrink-0">Complete →</span>
         </a>
       </div>
 
@@ -176,7 +176,7 @@ export default function DirectoryPage() {
             <p className="text-sm text-body mb-5">
               {ownProposalSubmitted
                 ? <>Unlock this person's phone number for <strong className="text-ink">Rs 500</strong>, or send an interest and our team will help arrange it.</>
-                : <>To unlock a contact, please first submit your own proposal — it only takes a minute and all details stay private.</>}
+                : <>To unlock a contact, please first complete your profile — it only takes a minute and all details stay private.</>}
             </p>
 
             <Button className="w-full mb-3" disabled={paymentLoading} onClick={() => startPayment("unlock")}>
