@@ -17,6 +17,8 @@ interface DirectoryProfile {
   about_me?: string;
   avatar_url?: string;
   gender?: string;
+  is_featured?: boolean;
+  reference_code?: string;
 }
 
 interface DirectoryCardProps {
@@ -53,6 +55,16 @@ export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className 
           <Lock className="h-3 w-3 text-gold-600" />
           Directory
         </span>
+        {profile.is_featured && (
+          <span className="absolute top-3 right-3 bg-gold-500 text-white text-xs font-medium px-2.5 py-1 rounded-full shadow-card">
+            Featured
+          </span>
+        )}
+        {profile.reference_code && (
+          <span className="absolute bottom-3 left-3 bg-black/45 text-white text-[11px] font-medium px-2 py-0.5 rounded-full">
+            {profile.reference_code}
+          </span>
+        )}
       </div>
 
       <div className="pt-3">
@@ -70,10 +82,10 @@ export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className 
       </div>
 
       <div className="pt-3.5">
-        {isUnlocked && phone ? (
+        {isUnlocked ? (
           <div className="flex items-center justify-center gap-2 h-12 rounded-lg bg-surface-soft text-ink font-medium">
             <Phone className="h-4 w-4 text-brand-600" />
-            {phone}
+            {phone || "Contact unlocked"}
           </div>
         ) : (
           <button

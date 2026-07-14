@@ -49,7 +49,7 @@ const TESTIMONIALS = [
 export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (user) redirect("/discover");
+  if (user) redirect("/directory");
 
   return (
     <div className="min-h-screen bg-white text-ink">

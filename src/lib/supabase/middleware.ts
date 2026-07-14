@@ -31,11 +31,10 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Protected routes
-  const protectedPaths = ["/discover", "/matches", "/chat", "/directory", "/profile", "/settings"];
+  // Bureau model: Directory + Personalized Service. No member onboarding gate.
+  const protectedPaths = ["/directory", "/personalized", "/requests", "/settings", "/profile", "/account"];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup") || pathname.startsWith("/verify");
-  const isAdminPage = pathname.startsWith("/admin");
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
@@ -45,23 +44,8 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/discover";
+    url.pathname = "/directory";
     return NextResponse.redirect(url);
-  }
-
-  // Check onboarding completion for protected non-onboarding routes
-  if (user && isProtected && !pathname.startsWith("/onboarding")) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("onboarding_complete")
-      .eq("id", user.id)
-      .single();
-
-    if (profile && !profile.onboarding_complete) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/onboarding";
-      return NextResponse.redirect(url);
-    }
   }
 
   return supabaseResponse;
