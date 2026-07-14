@@ -44,8 +44,24 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/directory";
+    url.pathname = "/submit-profile";
     return NextResponse.redirect(url);
+  }
+
+  // Show the intake form once after auth (skippable) before any other
+  // protected page — but never re-trigger once submitted or skipped.
+  if (user && isProtected) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("own_proposal_submitted, intake_skipped")
+      .eq("id", user.id)
+      .single();
+
+    if (profile && !profile.own_proposal_submitted && !profile.intake_skipped) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/submit-profile";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Phone, Lock, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fallbackAvatar } from "@/lib/avatar";
 
 interface DirectoryProfile {
   id: string;
@@ -30,10 +31,6 @@ interface DirectoryCardProps {
   className?: string;
 }
 
-function initials(name: string) {
-  return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-}
-
 /**
  * Directory card in the same Airbnb photo-first style, with a gold "Directory"
  * tag and an Unlock CTA (gold = the pay-per-unlock sub-accent).
@@ -46,14 +43,11 @@ export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className 
   return (
     <div className={cn(className)}>
       <button onClick={open} aria-label={`View ${profile.full_name}'s proposal`} className="relative block w-full aspect-[4/5] rounded-[14px] overflow-hidden bg-surface-strong">
-        {profile.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold-100 to-gold-300 text-gold-700 text-5xl font-semibold">
-            {initials(profile.full_name)}
-          </div>
-        )}
+        <img
+          src={profile.avatar_url || fallbackAvatar(profile.gender)}
+          alt={profile.full_name}
+          className="w-full h-full object-cover"
+        />
         <span className="absolute top-3 left-3 flex items-center gap-1 bg-white text-ink text-xs font-medium pl-1.5 pr-2.5 py-1 rounded-full shadow-card">
           <Lock className="h-3 w-3 text-gold-600" />
           Directory

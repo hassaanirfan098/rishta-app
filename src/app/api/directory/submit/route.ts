@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createAdmin } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 
-const admin = createClient(
+const admin = createAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Public proposal intake — no auth required, mirrors the standalone bureau
-// tool's fields. New submissions land inactive (is_active: false) so an
-// admin reviews and approves them (Show) before they appear in Browse.
+// Intake form: submitter must be signed in (app requires auth before any
+// page). New submissions land inactive (is_active: false) so an admin
+// reviews and approves them (Show) before they appear in Browse.
 export async function POST(req: NextRequest) {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Please sign in first." }, { status: 401 });
+
   const body = await req.json();
   const {
     photo, // data URL, optional
@@ -98,9 +103,12 @@ export async function POST(req: NextRequest) {
     reference_code: refCode || null,
     consent_captured: true,
     is_active: false, // pending admin approval
+    user_id: user.id,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await admin.from("profiles").update({ own_proposal_submitted: true }).eq("id", user.id);
 
   return NextResponse.json({ success: true, reference_code: refCode });
 }

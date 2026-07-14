@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
-import Link from "next/link";
-import { Camera, Check, Loader2, Plus, X, ArrowLeft } from "lucide-react";
+import { useState, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Camera, Check, Loader2, Plus, X, ShieldCheck } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
+import { createClient } from "@/lib/supabase/client";
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
@@ -54,8 +55,22 @@ async function resizePhoto(file: File, maxEdge = 640): Promise<string> {
 }
 
 export default function SubmitProfilePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <SubmitProfileContent />
+    </Suspense>
+  );
+}
+
+function SubmitProfileContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextUrl = searchParams.get("next") || "/directory";
+  const supabase = createClient();
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [skipping, setSkipping] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -127,6 +142,15 @@ export default function SubmitProfilePage() {
     setDone(data.reference_code || "your proposal");
   };
 
+  const skip = async () => {
+    setSkipping(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("profiles").update({ intake_skipped: true }).eq("id", user.id);
+    }
+    router.push(nextUrl);
+  };
+
   if (done) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
@@ -137,9 +161,9 @@ export default function SubmitProfilePage() {
         <p className="text-muted text-sm mt-2 max-w-xs">
           Thank you. Your reference is <span className="font-medium text-ink">{done}</span>. Our team will review the details before it appears in our directory.
         </p>
-        <Link href="/" className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-600 text-white font-medium">
-          Back to home
-        </Link>
+        <button onClick={() => router.push(nextUrl)} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-600 text-white font-medium">
+          Continue
+        </button>
       </div>
     );
   }
@@ -147,10 +171,14 @@ export default function SubmitProfilePage() {
   return (
     <div className="min-h-screen bg-white pb-16">
       <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-hairline">
-        <div className="max-w-lg mx-auto px-5 h-16 flex items-center gap-3">
-          <Link href="/" className="text-muted hover:text-ink"><ArrowLeft className="h-5 w-5" /></Link>
-          <LogoMark className="w-8 h-8" />
-          <span className="font-semibold text-ink">Submit a Proposal</span>
+        <div className="max-w-lg mx-auto px-5 h-16 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <LogoMark className="w-8 h-8" />
+            <span className="font-semibold text-ink">Submit a Proposal</span>
+          </div>
+          <button onClick={skip} disabled={skipping} aria-label="Skip for now" className="text-muted hover:text-ink p-1">
+            {skipping ? <Loader2 className="h-5 w-5 animate-spin" /> : <X className="h-5 w-5" />}
+          </button>
         </div>
         <div className="max-w-lg mx-auto px-5 pb-3 flex gap-1.5">
           {[1, 2, 3].map((n) => (
@@ -167,6 +195,13 @@ export default function SubmitProfilePage() {
               <p className="text-sm text-muted mt-1">Tell us about the person this proposal is for.</p>
             </div>
 
+            <div className="flex items-start gap-2.5 rounded-[14px] bg-brand-50 px-4 py-3">
+              <ShieldCheck className="h-4 w-4 text-brand-600 shrink-0 mt-0.5" />
+              <p className="text-xs text-brand-800 leading-relaxed">
+                All information you share here is kept completely private and confidential. Nothing is shown publicly — your contact number is never revealed to anyone until you approve an introduction.
+              </p>
+            </div>
+
             <div className="flex items-center gap-4">
               <button
                 onClick={() => fileRef.current?.click()}
@@ -178,7 +213,9 @@ export default function SubmitProfilePage() {
                 <button onClick={() => fileRef.current?.click()} className="text-sm font-medium text-brand-600">
                   {photo ? "Change photo" : "Add photo"}
                 </button>
-                <p className="text-xs text-muted mt-0.5">Optional — kept private until requested.</p>
+                <p className="text-xs text-muted mt-0.5">
+                  Optional — kept private until requested. Not comfortable sharing one? No problem, feel free to skip — we'll use a tasteful placeholder instead.
+                </p>
               </div>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handlePhoto(e.target.files[0])} />
             </div>

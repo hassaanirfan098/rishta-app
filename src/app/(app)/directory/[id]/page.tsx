@@ -5,10 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Lock, Heart, MapPin, Loader2, Phone } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
-
-function initials(name: string) {
-  return (name || "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-}
+import { fallbackAvatar } from "@/lib/avatar";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -40,11 +37,15 @@ export default function DirectoryDetailPage() {
   const [phone, setPhone] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [interestLoading, setInterestLoading] = useState(false);
+  const [ownProposalSubmitted, setOwnProposalSubmitted] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
+
+      const { data: me } = await supabase.from("profiles").select("own_proposal_submitted").eq("id", user.id).single();
+      setOwnProposalSubmitted(!!me?.own_proposal_submitted);
 
       const { data: p } = await supabase.from("directory_profiles").select("*").eq("id", id).single();
       if (!p) { router.push("/directory"); return; }
@@ -65,6 +66,10 @@ export default function DirectoryDetailPage() {
   }, [id]);
 
   const startPayment = async () => {
+    if (!ownProposalSubmitted) {
+      router.push(`/submit-profile?next=${encodeURIComponent(`/directory/${id}`)}`);
+      return;
+    }
     setPaymentLoading(true);
     const res = await fetch("/api/payment/create", {
       method: "POST",
@@ -112,13 +117,7 @@ export default function DirectoryDetailPage() {
       <div className="max-w-lg mx-auto px-5 py-6 space-y-5">
         {/* Photo + headline */}
         <div className="relative w-full aspect-[4/5] rounded-[20px] overflow-hidden bg-surface-strong">
-          {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold-100 to-gold-300 text-gold-700 text-6xl font-semibold">
-              {initials(profile.full_name)}
-            </div>
-          )}
+          <img src={profile.avatar_url || fallbackAvatar(profile.gender)} alt={profile.full_name} className="w-full h-full object-cover" />
           <span className="absolute top-4 left-4 flex items-center gap-1 bg-white text-ink text-xs font-medium pl-1.5 pr-2.5 py-1 rounded-full shadow-card">
             <Lock className="h-3 w-3 text-gold-600" /> Directory
           </span>

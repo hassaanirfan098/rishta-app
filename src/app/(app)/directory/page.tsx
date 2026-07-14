@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Search, X, Loader2, Heart } from "lucide-react";
 import { DirectoryCard } from "@/components/DirectoryCard";
 import { Button } from "@/components/ui/button";
@@ -17,14 +18,19 @@ export default function DirectoryPage() {
   const [target, setTarget] = useState<any | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [interestLoading, setInterestLoading] = useState(false);
+  const [ownProposalSubmitted, setOwnProposalSubmitted] = useState(true);
   const supabase = createClient();
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    const { data: me } = await supabase.from("profiles").select("own_proposal_submitted").eq("id", user.id).single();
+    setOwnProposalSubmitted(!!me?.own_proposal_submitted);
 
     const { data: dirProfiles } = await supabase
       .from("directory_profiles")
@@ -51,6 +57,11 @@ export default function DirectoryPage() {
   };
 
   const startPayment = async (type: "unlock" | "bundle") => {
+    if (!ownProposalSubmitted) {
+      setShowModal(false);
+      router.push(`/submit-profile?next=${encodeURIComponent("/directory")}`);
+      return;
+    }
     setPaymentLoading(true);
     const res = await fetch("/api/payment/create", {
       method: "POST",
@@ -163,7 +174,9 @@ export default function DirectoryPage() {
             {target.reference_code && <p className="text-xs text-muted mb-4">Ref {target.reference_code}</p>}
 
             <p className="text-sm text-body mb-5">
-              Unlock this person's phone number for <strong className="text-ink">Rs 500</strong>, or send an interest and our team will help arrange it.
+              {ownProposalSubmitted
+                ? <>Unlock this person's phone number for <strong className="text-ink">Rs 500</strong>, or send an interest and our team will help arrange it.</>
+                : <>To unlock a contact, please first submit your own proposal — it only takes a minute and all details stay private.</>}
             </p>
 
             <Button className="w-full mb-3" disabled={paymentLoading} onClick={() => startPayment("unlock")}>
