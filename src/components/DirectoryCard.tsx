@@ -90,7 +90,7 @@ export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className 
             className="w-full h-12 rounded-lg bg-gold-500 hover:bg-gold-600 text-white font-medium transition-colors flex items-center justify-center gap-2"
           >
             <Lock className="h-4 w-4" />
-            Unlock to Call — Rs 500
+            Unlock to Call
           </button>
         )}
       </div>

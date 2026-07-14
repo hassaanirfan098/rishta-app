@@ -106,7 +106,7 @@ export default function DirectoryDetailPage() {
   const siblings = Array.isArray(profile.siblings) ? profile.siblings : [];
 
   return (
-    <div className="min-h-screen bg-white pb-32">
+    <div className="min-h-screen bg-white pb-24">
       <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-hairline">
         <div className="max-w-lg mx-auto px-5 h-16 flex items-center gap-3">
           <button onClick={() => router.back()} aria-label="Go back" className="text-muted hover:text-ink"><ArrowLeft className="h-5 w-5" /></button>
@@ -197,24 +197,30 @@ export default function DirectoryDetailPage() {
             {profile.pref_other && <p className="text-sm text-body mt-3">{profile.pref_other}</p>}
           </Section>
         )}
-      </div>
 
-      {/* Sticky action bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-hairline px-5 py-4 max-w-lg mx-auto">
-        {isUnlocked ? (
-          <div className="flex items-center justify-center gap-2 h-12 rounded-lg bg-surface-soft text-ink font-medium">
-            <Phone className="h-4 w-4 text-brand-600" /> {phone || "Contact unlocked"}
-          </div>
-        ) : (
-          <div className="flex gap-3">
-            <button onClick={expressInterest} disabled={interestLoading} className="flex-1 h-12 rounded-lg border border-hairline text-ink font-medium hover:bg-surface-soft transition-colors flex items-center justify-center gap-2">
-              {interestLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />} Interested
-            </button>
-            <button onClick={startPayment} disabled={paymentLoading} className="flex-1 h-12 rounded-lg bg-gold-500 hover:bg-gold-600 text-white font-medium transition-colors flex items-center justify-center gap-2">
-              {paymentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} Unlock — Rs 500
-            </button>
-          </div>
-        )}
+        {/* Unlock / checkout section — end of profile */}
+        <div className="rounded-[14px] border border-hairline p-5">
+          {isUnlocked ? (
+            <div className="flex items-center justify-center gap-2 h-12 rounded-lg bg-surface-soft text-ink font-medium">
+              <Phone className="h-4 w-4 text-brand-600" /> {phone || "Contact unlocked"}
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-body">Unlock this person's phone number</span>
+                <span className="font-semibold text-ink">Rs 500</span>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={expressInterest} disabled={interestLoading} className="flex-1 h-12 rounded-lg border border-hairline text-ink font-medium hover:bg-surface-soft transition-colors flex items-center justify-center gap-2">
+                  {interestLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />} Interested
+                </button>
+                <button onClick={startPayment} disabled={paymentLoading} className="flex-1 h-12 rounded-lg bg-gold-500 hover:bg-gold-600 text-white font-medium transition-colors flex items-center justify-center gap-2">
+                  {paymentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} Unlock contact
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
