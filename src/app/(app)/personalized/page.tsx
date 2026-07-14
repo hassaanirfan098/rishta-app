@@ -1,47 +1,70 @@
 "use client";
 
 import { useState } from "react";
-import { Check, HeartHandshake, Search, Users, Loader2, ChevronRight } from "lucide-react";
+import { Check, HeartHandshake, Search, Users, Loader2, ChevronRight, MessageCircle, ShieldCheck, Lock, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/Toast";
 import { LogoGlyph } from "@/components/Logo";
 
+// TODO: replace with your real WhatsApp number (international format, no +/spaces)
+const WHATSAPP_NUMBER = "923000000000";
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Assalamu Alaikum, I'd like to know more about your matchmaking service.")}`;
+
 const PACKAGES = [
   {
-    id: "basic",
-    name: "Basic",
-    price: "Rs 3,000",
-    tagline: "Get featured",
-    perks: ["Your proposal featured to matching candidates", "Shared on our Instagram", "Valid for 30 days"],
+    id: "featured",
+    name: "Featured Introduction",
+    price: "Rs 5,000",
+    tagline: "Get your proposal seen",
+    perks: [
+      "Featured on our platform & network",
+      "Direct introductions to interested families",
+      "Verified & kept fully confidential",
+      "Valid for 30 days",
+    ],
   },
   {
-    id: "standard",
-    name: "Standard",
-    price: "Rs 7,000",
-    tagline: "Featured + shortlist",
-    perks: ["Everything in Basic", "We personally shortlist 5 matches", "Priority Instagram placement", "Valid for 60 days"],
+    id: "priority",
+    name: "Priority Introduction",
+    price: "Rs 20,000",
+    tagline: "Maximum reach",
     popular: true,
+    perks: [
+      "Everything in Featured",
+      "Shown to a much wider matching audience",
+      "Priority placement",
+      "Every interested inquiry forwarded straight to you",
+      "Valid for 60 days",
+    ],
   },
   {
-    id: "premium",
-    name: "Premium",
-    price: "Rs 15,000",
-    tagline: "Full concierge",
-    perks: ["Everything in Standard", "Dedicated matchmaker", "We arrange the introductions", "Family coordination", "Until you find your match"],
+    id: "concierge",
+    name: "Personal Matchmaker",
+    price: "Rs 35,000",
+    tagline: "Handpicked, just for you",
+    perks: [
+      "Everything in Priority",
+      "A dedicated matchmaker for your family",
+      "Up to 50 curated, requirement-matched proposals (~Rs 700 each)",
+      "Every match pre-screened & genuinely interested",
+      "We personally coordinate the introductions",
+      "Split payment available",
+    ],
+    guarantee: "Our promise: up to 50 compatible proposals — or we keep working until we deliver.",
   },
 ];
 
 const STEPS = [
-  { icon: HeartHandshake, title: "Tell us what you want", desc: "Share your requirements and what you're looking for in a partner." },
-  { icon: Search, title: "We find & feature", desc: "We promote your proposal and personally shortlist candidates who fit." },
-  { icon: Users, title: "We introduce", desc: "We connect you with serious, matching families — you take it from there." },
+  { icon: HeartHandshake, title: "Tell us what you're looking for", desc: "Share your requirements and the kind of family and partner you have in mind." },
+  { icon: Search, title: "We find & screen for you", desc: "We bring the right families to you and hand-screen every one against your requirements." },
+  { icon: Users, title: "We make the introduction", desc: "We connect you with serious, compatible families — privately and respectfully." },
 ];
 
 export default function PersonalizedPage() {
   const { toast } = useToast();
-  const [pkg, setPkg] = useState("standard");
+  const [pkg, setPkg] = useState("priority");
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -79,8 +102,11 @@ export default function PersonalizedPage() {
         </div>
         <h1 className="text-2xl font-semibold text-ink">Request received</h1>
         <p className="text-muted text-sm mt-2 max-w-xs">
-          Thank you — our team will review your requirements and reach out to you on WhatsApp shortly to confirm your package and get started.
+          Thank you — our matchmaker will personally reach out to you on WhatsApp shortly to confirm the details and get started.
         </p>
+        <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-600 text-white font-medium">
+          <MessageCircle className="h-4 w-4" /> Message us on WhatsApp
+        </a>
       </div>
     );
   }
@@ -100,9 +126,35 @@ export default function PersonalizedPage() {
         <div>
           <h2 className="text-3xl font-semibold text-ink tracking-tight leading-tight">Let us find your rishta</h2>
           <p className="text-body mt-3">
-            Skip the searching. Tell us what you're looking for and our matchmakers will personally find and introduce you to serious, compatible proposals.
+            Skip the searching. Tell us what you're looking for, and our matchmakers will personally bring you serious, compatible proposals — privately and respectfully.
           </p>
         </div>
+
+        {/* Trust badges */}
+        <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
+          <span className="flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-brand-600" /> Verified proposals</span>
+          <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-brand-600" /> 100% confidential</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-brand-600" /> No public photos</span>
+        </div>
+
+        {/* Talk to matchmaker */}
+        <a
+          href={WHATSAPP_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between rounded-[14px] border border-hairline p-4 hover:bg-surface-soft transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center">
+              <MessageCircle className="h-5 w-5 text-brand-600" />
+            </div>
+            <div>
+              <p className="font-medium text-ink">Talk to our matchmaker</p>
+              <p className="text-sm text-muted">Prefer to speak first? Message us on WhatsApp.</p>
+            </div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-muted" />
+        </a>
 
         {/* How it works */}
         <div className="space-y-5">
@@ -131,7 +183,7 @@ export default function PersonalizedPage() {
               }`}
             >
               {p.popular && (
-                <span className="absolute -top-2.5 left-5 bg-gold-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">Most popular</span>
+                <span className="absolute -top-2.5 left-5 bg-gold-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">Most families choose this</span>
               )}
               <div className="flex items-start justify-between">
                 <div>
@@ -142,12 +194,18 @@ export default function PersonalizedPage() {
               </div>
               <ul className="mt-3 space-y-1.5">
                 {p.perks.map((perk) => (
-                  <li key={perk} className="flex items-center gap-2 text-sm text-body">
-                    <Check className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+                  <li key={perk} className="flex items-start gap-2 text-sm text-body">
+                    <Check className="h-3.5 w-3.5 text-brand-600 shrink-0 mt-0.5" />
                     {perk}
                   </li>
                 ))}
               </ul>
+              {p.guarantee && (
+                <p className="mt-3 text-xs text-brand-700 bg-brand-50 rounded-lg px-3 py-2 flex items-start gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                  {p.guarantee}
+                </p>
+              )}
             </button>
           ))}
         </div>
@@ -206,12 +264,15 @@ export default function PersonalizedPage() {
                 className="w-full min-h-[100px] rounded-lg border border-hairline bg-white px-4 py-3 text-base text-ink placeholder:text-muted focus:outline-none focus:border-2 focus:border-ink"
               />
             </div>
+            <div className="rounded-lg bg-surface-soft px-4 py-3 text-sm text-body">
+              Selected: <span className="font-medium text-ink">{PACKAGES.find((p) => p.id === pkg)?.name}</span> · {PACKAGES.find((p) => p.id === pkg)?.price}
+            </div>
             <Button className="w-full" disabled={loading} onClick={submit}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Submit request
             </Button>
             <p className="text-xs text-muted text-center">
-              We'll contact you on WhatsApp to confirm your package and payment.
+              No payment now. Our matchmaker will confirm everything with you on WhatsApp first.
             </p>
           </div>
         )}
