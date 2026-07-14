@@ -9,7 +9,7 @@ import { useToast } from "@/components/Toast";
 import { LogoGlyph } from "@/components/Logo";
 
 // TODO: replace with your real WhatsApp number (international format, no +/spaces)
-const WHATSAPP_NUMBER = "923000000000";
+const WHATSAPP_NUMBER = "923212266621";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Assalamu Alaikum, I'd like to know more about your matchmaking service.")}`;
 
 const PACKAGES = [
@@ -47,7 +47,7 @@ const PACKAGES = [
     perks: [
       "Everything in Priority",
       "A dedicated matchmaker for your family",
-      "Up to 50 curated, requirement-matched proposals (~Rs 700 each)",
+      "Up to 50 curated, requirement-matched proposals",
       "Every match pre-screened & genuinely interested",
       "We personally coordinate the introductions",
       "Split payment available",
