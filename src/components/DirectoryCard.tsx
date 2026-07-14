@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Phone, Lock, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,10 +40,12 @@ function initials(name: string) {
  */
 export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className }: DirectoryCardProps) {
   const meta = [profile.sect, profile.profession].filter(Boolean).join(" · ");
+  const router = useRouter();
+  const open = () => router.push(`/directory/${profile.id}`);
 
   return (
     <div className={cn(className)}>
-      <div className="relative w-full aspect-[4/5] rounded-[14px] overflow-hidden bg-surface-strong">
+      <button onClick={open} aria-label={`View ${profile.full_name}'s proposal`} className="relative block w-full aspect-[4/5] rounded-[14px] overflow-hidden bg-surface-strong">
         {profile.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
@@ -65,9 +68,9 @@ export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className 
             {profile.reference_code}
           </span>
         )}
-      </div>
+      </button>
 
-      <div className="pt-3">
+      <button onClick={open} className="block text-left w-full pt-3">
         <h3 className="text-lg font-semibold text-ink leading-tight">
           {profile.full_name}
           {profile.age ? <span className="text-muted font-normal">, {profile.age}</span> : ""}
@@ -79,7 +82,7 @@ export function DirectoryCard({ profile, isUnlocked, phone, onUnlock, className 
           </p>
         )}
         {meta && <p className="text-sm text-muted mt-0.5">{meta}</p>}
-      </div>
+      </button>
 
       <div className="pt-3.5">
         {isUnlocked ? (

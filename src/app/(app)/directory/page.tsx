@@ -115,6 +115,19 @@ export default function DirectoryPage() {
         </div>
       </div>
 
+      <div className="max-w-lg mx-auto px-5 pt-5">
+        <a
+          href="/submit-profile"
+          className="flex items-center justify-between rounded-[14px] border border-hairline p-4 mb-2 hover:bg-surface-soft transition-colors"
+        >
+          <div>
+            <p className="font-medium text-ink text-sm">Have a proposal to submit?</p>
+            <p className="text-xs text-muted mt-0.5">Add a profile to our directory for review.</p>
+          </div>
+          <span className="text-sm font-medium text-brand-600 shrink-0">Submit →</span>
+        </a>
+      </div>
+
       <div className="max-w-lg mx-auto px-5 py-6">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-8">
